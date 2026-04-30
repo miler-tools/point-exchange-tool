@@ -155,26 +155,6 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
 .vtag.ok{background:#e8f5e9;color:#2e7d32;border:1px solid #81c784}
 .vtag.warn{background:#fff3cd;color:#c17d00;border:1px solid #ffc107}
 
-/* SIMULATOR CARD */
-.simcard{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;margin-bottom:14px}
-.simcard-title{font-size:12px;font-weight:700;color:var(--text2);margin-bottom:12px;display:flex;align-items:center;gap:6px}
-.simcard-title span{font-size:10px;font-weight:400;color:var(--text3)}
-.sim-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
-.sim-col{display:flex;flex-direction:column;gap:4px;flex:1;min-width:120px}
-.sim-col label{font-size:10px;font-weight:600;color:var(--text2)}
-.ssel{font-size:12px;padding:7px 8px;border:1px solid var(--border2);border-radius:var(--rsm);background:var(--bg);width:100%}
-.sinp{font-size:13px;padding:7px 8px;border:1px solid var(--border2);border-radius:var(--rsm);background:var(--bg);width:100%;font-weight:600}
-.swbtn{font-size:20px;cursor:pointer;background:none;border:1px solid var(--border2);border-radius:var(--rsm);color:var(--text2);padding:4px 8px;margin-top:18px;flex-shrink:0}
-.swbtn:hover{background:var(--bg2)}
-.sim-result{background:var(--bg2);border-radius:var(--rsm);padding:12px 14px;display:flex;flex-direction:column;gap:4px}
-.sim-result-row{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
-.sim-result-label{font-size:10px;color:var(--text2);min-width:60px;flex-shrink:0}
-.sim-result-val{font-size:20px;font-weight:700;color:var(--text)}
-.sim-result-sub{font-size:10px;color:var(--text2)}
-.sim-result-na{font-size:12px;color:var(--text3);font-style:italic}
-.sim-hint{font-size:10px;color:var(--text3);margin-top:8px;line-height:1.6}
-.sim-example{font-size:10px;color:#185fa5;margin-top:6px;cursor:pointer;text-decoration:underline}
-
 /* FOOTER INFO */
 .footer-info{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin:0 16px 14px;display:flex;flex-direction:column;gap:10px;font-size:10px;line-height:1.7;color:var(--text2)}
 .footer-update{color:var(--text2);border-bottom:1px solid var(--border);padding-bottom:8px}
@@ -229,37 +209,7 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
   </div>
 </div>
 
-<div class="simcard">
-  <div class="simcard-title">
-    🔢 換算シミュレーター
-    <span>— 持っているポイント数を入力して交換後の数を確認できます</span>
-  </div>
-  <div class="sim-row">
-    <div class="sim-col">
-      <label>持っているポイント/マイル（FROM）</label>
-      <select class="ssel" id="simF" onchange="calcSim()"></select>
-    </div>
-    <div class="sim-col" style="max-width:130px">
-      <label>保有数量</label>
-      <input class="sinp" type="number" id="simA" value="10000" min="1" oninput="calcSim()">
-    </div>
-    <button class="swbtn" onclick="swapSim()" title="FROMとTOを入れ替え">⇄</button>
-    <div class="sim-col">
-      <label>交換したいポイント/マイル（TO）</label>
-      <select class="ssel" id="simT" onchange="calcSim()"></select>
-    </div>
-  </div>
-  <div class="sim-result" id="simR">
-    <div class="sim-result-na">↑ FROMとTOに異なるポイントを選択すると換算結果が表示されます</div>
-  </div>
-  <div class="sim-hint">
-    ※ 表示レートは参考値です。交換前に各社公式サイトで最新レートをご確認ください。<br>
-    ※ 「直接」= 一段階で交換できる公式ルートのレート。「最良間接」= 複数のポイントを経由する最高レートのルート（例: モッピー→Vポイント→JRキューポ→永久不滅P→ANAマイル のみずほルート等）。<br>
-    ※ <strong>各セルをクリック</strong>すると、具体的なルート名・各ステップのレート・所要日数・注意事項・交換上限などの詳細が確認できます。
-  </div>
-  <div class="sim-example" onclick="setExample()">
-    📌 例を試す: 14万モッピーポイント → KrisFlyer は?
-  </div>
+
 </div>
 
 <div class="footer-info">
@@ -567,11 +517,11 @@ function togCat(cat,el){
     ptSt[p.id]=catSt[cat];
     document.querySelector(`[data-pt="${p.id}"]`)?.classList.toggle('active',catSt[cat]);
   });
-  buildMatrix();buildSim();
+  buildMatrix();
 }
-function togPt(id,el){ptSt[id]=!ptSt[id];el.classList.toggle('active',ptSt[id]);buildMatrix();buildSim();}
-function selAll(){PTS.forEach(p=>ptSt[p.id]=true);Object.keys(catSt).forEach(k=>catSt[k]=true);document.querySelectorAll('.chip').forEach(c=>c.classList.add('active'));buildMatrix();buildSim();}
-function selNone(){PTS.forEach(p=>ptSt[p.id]=false);Object.keys(catSt).forEach(k=>catSt[k]=false);document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));buildMatrix();buildSim();}
+function togPt(id,el){ptSt[id]=!ptSt[id];el.classList.toggle('active',ptSt[id]);buildMatrix();}
+function selAll(){PTS.forEach(p=>ptSt[p.id]=true);Object.keys(catSt).forEach(k=>catSt[k]=true);document.querySelectorAll('.chip').forEach(c=>c.classList.add('active'));buildMatrix();}
+function selNone(){PTS.forEach(p=>ptSt[p.id]=false);Object.keys(catSt).forEach(k=>catSt[k]=false);document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));buildMatrix();}
 function setLevel(lv){
   curLv=lv;
   document.querySelectorAll('.lv-btn').forEach(b=>b.classList.toggle('active',b.dataset.lv===lv));
@@ -580,7 +530,7 @@ function setLevel(lv){
     ptSt[p.id]=allowed.includes(p.lv);
     document.querySelector(`[data-pt="${p.id}"]`)?.classList.toggle('active',ptSt[p.id]);
   });
-  buildMatrix();buildSim();
+  buildMatrix();
 }
 
 // ════════════════════════════════
@@ -665,125 +615,6 @@ function buildMatrix(){
   });
   h+='</tbody>';
   tbl.innerHTML=h;
-}
-
-// ════════════════════════════════
-// SIMULATOR
-// ════════════════════════════════
-function buildSim(){
-  const vis=getVis();
-  ['simF','simT'].forEach((id,idx)=>{
-    const s=document.getElementById(id);
-    const fv=s.value;
-    s.innerHTML='';
-    // カテゴリ別にoptgroupで分類
-    const catOrder=Object.keys(CATS);
-    const grouped={};
-    catOrder.forEach(c=>grouped[c]=[]);
-    vis.forEach(p=>{if(grouped[p.cat])grouped[p.cat].push(p);});
-    catOrder.forEach(cat=>{
-      if(!grouped[cat].length)return;
-      const og=document.createElement('optgroup');
-      og.label=CATS[cat].label;
-      grouped[cat].forEach(p=>{
-        const o=document.createElement('option');
-        o.value=p.id;o.textContent=p.name;
-        og.appendChild(o);
-      });
-      s.appendChild(og);
-    });
-    // デフォルト: FROM=モッピー, TO=ANAマイル
-    if(!fv){
-      s.value=idx===0?'moppy':'ana';
-    } else if(vis.find(p=>p.id===fv)){
-      s.value=fv;
-    }
-  });
-  calcSim();
-}
-
-function calcSim(){
-  const f=document.getElementById('simF').value;
-  const t=document.getElementById('simT').value;
-  const amt=parseFloat(document.getElementById('simA').value)||0;
-  const el=document.getElementById('simR');
-  const fn=PTS.find(p=>p.id===f)?.name||f;
-  const tn=PTS.find(p=>p.id===t)?.name||t;
-  const isCashFrom=(f==='jpy'||f==='usd');
-  const fromUnit=f==='jpy'?'円':f==='usd'?'ドル':'pt';
-
-  if(f===t){
-    el.innerHTML=`<div class="sim-result-na">FROMとTOに同じポイントが選ばれています。異なるポイントを選択してください。</div>`;
-    return;
-  }
-  if(!amt||amt<=0){
-    el.innerHTML=`<div class="sim-result-na">保有数量を入力してください。</div>`;
-    return;
-  }
-
-  const rd=RD[\`\${f}->\${t}\`];
-  const dr=rd?.direct;
-  const ir=rd?.indirect;
-  const hasD=dr&&dr.rate!=null;
-  const hasI=ir&&ir.rate!=null;
-
-  if(!hasD&&!hasI){
-    el.innerHTML=`<div class="sim-result-na">⚠ ${fn}から${tn}への交換ルートは登録されていません。<br>マトリクス表のセルをクリックすると間接ルートを含む詳細を確認できます。</div>`;
-    return;
-  }
-
-  let rows='';
-
-  if(hasD){
-    const resNum=Math.round(amt*dr.rate);
-    const pctTxt=isCashFrom
-      ?`1${fromUnit}あたり約${Math.round(dr.rate)}pt`
-      :`交換レート ${(dr.rate*100).toFixed(1)}%`;
-    rows+=`<div class="sim-result-row">
-      <span class="sim-result-label">直接交換</span>
-      <span class="sim-result-val">${resNum.toLocaleString()}</span>
-      <span class="sim-result-sub">${tn} （${pctTxt}）</span>
-    </div>`;
-  }
-
-  if(hasI){
-    const resNum2=Math.round(amt*ir.rate);
-    const pctTxt2=isCashFrom
-      ?`1${fromUnit}あたり約${Math.round(ir.rate)}pt`
-      :`交換レート ${(ir.rate*100).toFixed(1)}%`;
-    const badge=ir.rate>(dr?.rate||0)
-      ?'<span style="font-size:9px;background:#e8f5e9;color:#2e7d32;border:1px solid #81c784;border-radius:99px;padding:1px 6px;margin-left:4px">お得↑</span>'
-      :'';
-    rows+=`<div class="sim-result-row" style="margin-top:6px">
-      <span class="sim-result-label">最良間接${badge}</span>
-      <span class="sim-result-val" style="font-size:16px;opacity:.85">${resNum2.toLocaleString()}</span>
-      <span class="sim-result-sub">${tn} （${pctTxt2}）</span>
-    </div>`;
-  }
-
-  // 差分表示
-  if(hasD&&hasI&&ir.rate>dr.rate){
-    const diff=Math.round(amt*ir.rate)-Math.round(amt*dr.rate);
-    rows+=`<div style="font-size:10px;color:#2e7d32;margin-top:4px">
-      💡 間接ルートを使うと直接交換より <strong>${diff.toLocaleString()} ${tn}</strong> 多く得られます
-    </div>`;
-  }
-
-  el.innerHTML=rows;
-}
-
-function swapSim(){
-  const sf=document.getElementById('simF'),st=document.getElementById('simT');
-  const tmp=sf.value;sf.value=st.value;st.value=tmp;calcSim();
-}
-
-function setExample(){
-  // 14万モッピー→KrisFlyer の例
-  document.getElementById('simF').value='moppy';
-  document.getElementById('simT').value='kris';
-  document.getElementById('simA').value='140000';
-  calcSim();
-  document.getElementById('simF').scrollIntoView({behavior:'smooth',block:'center'});
 }
 
 // ════════════════════════════════
@@ -920,12 +751,9 @@ function closeMod(){document.getElementById('ov').classList.remove('open');if(ch
 function maybeClose(e){if(e.target===document.getElementById('ov'))closeMod();}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMod();});
 
-
-
 // ════════════════════════════════
 // INIT
 // ════════════════════════════════
-// simF/simT/simAのイベントはHTML側onchange/oninputで登録済み
 buildChips();
 setLevel('major');
 </script>
