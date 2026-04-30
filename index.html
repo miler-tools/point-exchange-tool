@@ -33,11 +33,6 @@ body{font-family:'Hiragino Kaku Gothic ProN','Hiragino Sans','Noto Sans JP',sans
 .hdr{background:var(--bg);border-bottom:1px solid var(--border);padding:10px 16px;position:sticky;top:0;z-index:300;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .hdr h1{font-size:14px;font-weight:700}
 .hdr-sub{font-size:10px;color:var(--text3)}
-.upd-btn{font-size:11px;padding:5px 11px;border:1px solid #185fa5;border-radius:var(--rsm);cursor:pointer;background:#e8f0fb;font-weight:600;color:#185fa5;white-space:nowrap}
-.upd-btn:hover{background:#d0e4f7}
-.upd-btn:disabled{opacity:.5;cursor:not-allowed}
-.upd-btn.spin::before{content:'⏳ ';animation:sp .8s linear infinite}
-
 /* FILTER */
 .filter{background:var(--bg);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .flbl{font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
@@ -53,11 +48,6 @@ body{font-family:'Hiragino Kaku Gothic ProN','Hiragino Sans','Noto Sans JP',sans
 
 /* MAIN */
 .main{padding:12px 16px;max-width:2000px;margin:0 auto}
-.upd-banner{background:#e8f0fb;border:1px solid #185fa5;border-radius:var(--rsm);padding:10px 14px;font-size:11px;color:#185fa5;margin-bottom:10px;display:none;line-height:1.7}
-.upd-banner.show{display:block}
-.upd-banner pre{white-space:pre-wrap;font-size:10px;margin-top:8px;max-height:220px;overflow-y:auto;background:#fff;border:1px solid #b3cff0;border-radius:var(--rsm);padding:8px;color:#1a1a18;font-family:inherit}
-.upd-close{font-size:10px;cursor:pointer;color:#185fa5;text-decoration:underline;float:right}
-
 /* MATRIX */
 .mtx-wrap{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:12px}
 .mtx-scroll{overflow:auto;max-height:calc(100vh - 210px);position:relative}
@@ -165,22 +155,39 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
 .vtag.ok{background:#e8f5e9;color:#2e7d32;border:1px solid #81c784}
 .vtag.warn{background:#fff3cd;color:#c17d00;border:1px solid #ffc107}
 
-/* SIM BAR */
-.sim{background:var(--bg);border-top:1px solid var(--border);padding:8px 16px;display:flex;gap:7px;align-items:center;flex-wrap:wrap;position:sticky;bottom:0;z-index:200}
-.slbl{font-size:9px;color:var(--text2);font-weight:700;white-space:nowrap}
-.ssel,.sinp{font-size:11px;padding:4px 6px;border:1px solid var(--border2);border-radius:var(--rsm);background:var(--bg)}
-.sinp{width:82px}
-.swbtn{font-size:15px;cursor:pointer;background:none;border:none;color:var(--text2);padding:0 2px}
-.sres{font-size:12px;font-weight:700;color:var(--text);min-width:180px}
-.sres span{font-size:9px;font-weight:400;color:var(--text2)}
-.sdis{font-size:9px;color:var(--text3);margin-left:auto}
+/* SIMULATOR CARD */
+.simcard{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;margin-bottom:14px}
+.simcard-title{font-size:12px;font-weight:700;color:var(--text2);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.simcard-title span{font-size:10px;font-weight:400;color:var(--text3)}
+.sim-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.sim-col{display:flex;flex-direction:column;gap:4px;flex:1;min-width:120px}
+.sim-col label{font-size:10px;font-weight:600;color:var(--text2)}
+.ssel{font-size:12px;padding:7px 8px;border:1px solid var(--border2);border-radius:var(--rsm);background:var(--bg);width:100%}
+.sinp{font-size:13px;padding:7px 8px;border:1px solid var(--border2);border-radius:var(--rsm);background:var(--bg);width:100%;font-weight:600}
+.swbtn{font-size:20px;cursor:pointer;background:none;border:1px solid var(--border2);border-radius:var(--rsm);color:var(--text2);padding:4px 8px;margin-top:18px;flex-shrink:0}
+.swbtn:hover{background:var(--bg2)}
+.sim-result{background:var(--bg2);border-radius:var(--rsm);padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.sim-result-row{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.sim-result-label{font-size:10px;color:var(--text2);min-width:60px;flex-shrink:0}
+.sim-result-val{font-size:20px;font-weight:700;color:var(--text)}
+.sim-result-sub{font-size:10px;color:var(--text2)}
+.sim-result-na{font-size:12px;color:var(--text3);font-style:italic}
+.sim-hint{font-size:10px;color:var(--text3);margin-top:8px;line-height:1.6}
+.sim-example{font-size:10px;color:#185fa5;margin-top:6px;cursor:pointer;text-decoration:underline}
+
+/* FOOTER INFO */
+.footer-info{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin:0 16px 14px;display:flex;flex-direction:column;gap:10px;font-size:10px;line-height:1.7;color:var(--text2)}
+.footer-update{color:var(--text2);border-bottom:1px solid var(--border);padding-bottom:8px}
+.footer-disclaimer{background:#fff8e1;border:1px solid #ffc107;border-radius:var(--rsm);padding:10px 12px;color:#5a4000;line-height:1.8}
+.footer-disclaimer strong{color:#3a2800}
+.footer-note{background:#e8f0fb;border:1px solid #b3cff0;border-radius:var(--rsm);padding:10px 12px;color:#1a3a6a;line-height:1.8}
+.footer-note strong{color:#0d2a4e}
 </style>
 </head>
 <body>
 <div class="hdr">
   <h1>🗾 ポイント・マイル交換レート一覧</h1>
-  <button class="upd-btn" id="updBtn" onclick="doRefresh()">🔄 最新レートをAI検索</button>
-  <span class="hdr-sub" id="updAt">データ基準: 2026年4月 ／ 交換前に各社公式サイトで必ずご確認を</span>
+  <span class="hdr-sub">レート最終更新: 2026年4月30日 ／ 交換前に必ず各社公式サイトをご確認ください</span>
 </div>
 
 <div class="filter">
@@ -202,10 +209,7 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
 </div>
 
 <div class="main">
-  <div class="upd-banner" id="updBanner">
-    <span class="upd-close" onclick="this.parentElement.className='upd-banner'">✕閉</span>
-    <span id="updBannerText"></span>
-  </div>
+
   <div class="mtx-wrap">
     <div class="mtx-scroll" id="mtxScroll">
       <table id="tbl"></table>
@@ -220,20 +224,60 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
       <span class="li"><span class="ld" style="background:var(--na-bg)"></span>交換不可</span>
       <span class="li"><span class="ld" style="background:var(--rise-bg)"></span>最近有利改定↑</span>
       <span class="li"><span class="ld" style="background:var(--fall-bg)"></span>最近不利改定↓</span>
-      <span style="margin-left:auto;font-size:9px;color:var(--text3)">上段=直接, 下段=ベスト間接。右下↻=間接あり。クリックで詳細</span>
+      <span style="margin-left:auto;font-size:9px;color:var(--text3)">上段=直接交換レート, 下段=最良間接ルートレート。<strong style="color:#185fa5">セルをクリック → ルート詳細・根拠・注意事項を確認できます</strong></span>
     </div>
   </div>
 </div>
 
-<div class="sim">
-  <span class="slbl">シミュレーター:</span>
-  <select class="ssel" id="simF"></select>
-  <button class="swbtn" onclick="swapSim()">⇄</button>
-  <select class="ssel" id="simT"></select>
-  <input class="sinp" type="number" id="simA" value="10000" min="1">
-  <span class="slbl">pt →</span>
-  <span class="sres" id="simR">— <span>換算後</span></span>
-  <span class="sdis">※参考値。現金購入欄は1円/1ドルあたりの取得pt数。実際は公式サイトでご確認を</span>
+<div class="simcard">
+  <div class="simcard-title">
+    🔢 換算シミュレーター
+    <span>— 持っているポイント数を入力して交換後の数を確認できます</span>
+  </div>
+  <div class="sim-row">
+    <div class="sim-col">
+      <label>持っているポイント/マイル（FROM）</label>
+      <select class="ssel" id="simF" onchange="calcSim()"></select>
+    </div>
+    <div class="sim-col" style="max-width:130px">
+      <label>保有数量</label>
+      <input class="sinp" type="number" id="simA" value="10000" min="1" oninput="calcSim()">
+    </div>
+    <button class="swbtn" onclick="swapSim()" title="FROMとTOを入れ替え">⇄</button>
+    <div class="sim-col">
+      <label>交換したいポイント/マイル（TO）</label>
+      <select class="ssel" id="simT" onchange="calcSim()"></select>
+    </div>
+  </div>
+  <div class="sim-result" id="simR">
+    <div class="sim-result-na">↑ FROMとTOに異なるポイントを選択すると換算結果が表示されます</div>
+  </div>
+  <div class="sim-hint">
+    ※ 表示レートは参考値です。交換前に各社公式サイトで最新レートをご確認ください。<br>
+    ※ 「直接」= 一段階で交換できる公式ルートのレート。「最良間接」= 複数のポイントを経由する最高レートのルート（例: モッピー→Vポイント→JRキューポ→永久不滅P→ANAマイル のみずほルート等）。<br>
+    ※ <strong>各セルをクリック</strong>すると、具体的なルート名・各ステップのレート・所要日数・注意事項・交換上限などの詳細が確認できます。
+  </div>
+  <div class="sim-example" onclick="setExample()">
+    📌 例を試す: 14万モッピーポイント → KrisFlyer は?
+  </div>
+</div>
+
+<div class="footer-info">
+  <div class="footer-update">
+    📅 本ツールのレートデータ最終更新日: <strong>2026年4月30日</strong>
+    &emsp;|&emsp;
+    表示レートは調査時点のものであり、予告なく変更される場合があります。
+  </div>
+  <div class="footer-disclaimer">
+    ⚠️ <strong>免責事項:</strong>
+    本ツールの計算結果により生じたいかなる不利益（交換機会の損失・ポイント失効・レート相違による損害等）について、当ブログおよびツール制作者は一切の責任を負いません。
+    ポイント・マイルの交換は、必ず事前に<strong>各社公式サイトにて最新レート・交換条件・上限・所要日数</strong>をご確認のうえ、自己責任にてお手続きください。
+  </div>
+  <div class="footer-note">
+    💡 <strong>ツールの見方:</strong>
+    マトリクス表の<strong>各セルをクリック</strong>すると、直接・間接の各ルート名（みずほルート・nimocaルート等）、ステップごとのレート、交換上限・所要日数・注意事項、公式サイト検索リンクが表示されます。
+    数値だけでなく必ずクリックして詳細をご確認ください。
+  </div>
 </div>
 
 <div class="overlay" id="ov" onclick="maybeClose(event)">
@@ -628,48 +672,118 @@ function buildMatrix(){
 // ════════════════════════════════
 function buildSim(){
   const vis=getVis();
-  ['simF','simT'].forEach(id=>{
-    const s=document.getElementById(id);const fv=s.value;
-    s.innerHTML='';vis.forEach(p=>{s.innerHTML+=`<option value="${p.id}">${p.name}</option>`;});
-    if(vis.find(p=>p.id===fv))s.value=fv;
+  ['simF','simT'].forEach((id,idx)=>{
+    const s=document.getElementById(id);
+    const fv=s.value;
+    s.innerHTML='';
+    // カテゴリ別にoptgroupで分類
+    const catOrder=Object.keys(CATS);
+    const grouped={};
+    catOrder.forEach(c=>grouped[c]=[]);
+    vis.forEach(p=>{if(grouped[p.cat])grouped[p.cat].push(p);});
+    catOrder.forEach(cat=>{
+      if(!grouped[cat].length)return;
+      const og=document.createElement('optgroup');
+      og.label=CATS[cat].label;
+      grouped[cat].forEach(p=>{
+        const o=document.createElement('option');
+        o.value=p.id;o.textContent=p.name;
+        og.appendChild(o);
+      });
+      s.appendChild(og);
+    });
+    // デフォルト: FROM=モッピー, TO=ANAマイル
+    if(!fv){
+      s.value=idx===0?'moppy':'ana';
+    } else if(vis.find(p=>p.id===fv)){
+      s.value=fv;
+    }
   });
   calcSim();
 }
+
 function calcSim(){
   const f=document.getElementById('simF').value;
   const t=document.getElementById('simT').value;
   const amt=parseFloat(document.getElementById('simA').value)||0;
   const el=document.getElementById('simR');
-  if(f===t){el.innerHTML=`${amt.toLocaleString()} <span>(同一)</span>`;return;}
-  const rd=RD[`${f}->${t}`];
-  if(!rd){el.innerHTML='<span>交換ルートなし</span>';return;}
-  const dr=rd.direct;const ir=rd.indirect;
-  const hasD=dr&&dr.rate!=null;const hasI=ir&&ir.rate!=null;
-  if(!hasD&&!hasI){el.innerHTML='<span>交換ルートなし</span>';return;}
-  const tn=PTS.find(p=>p.id===t)?.name||t;
   const fn=PTS.find(p=>p.id===f)?.name||f;
-  // 現金購入の場合は単位を明示
+  const tn=PTS.find(p=>p.id===t)?.name||t;
   const isCashFrom=(f==='jpy'||f==='usd');
   const fromUnit=f==='jpy'?'円':f==='usd'?'ドル':'pt';
-  // USD→マリオットは「1ドルで80pt」なので整数表示が自然
-  let txt='';
+
+  if(f===t){
+    el.innerHTML=`<div class="sim-result-na">FROMとTOに同じポイントが選ばれています。異なるポイントを選択してください。</div>`;
+    return;
+  }
+  if(!amt||amt<=0){
+    el.innerHTML=`<div class="sim-result-na">保有数量を入力してください。</div>`;
+    return;
+  }
+
+  const rd=RD[\`\${f}->\${t}\`];
+  const dr=rd?.direct;
+  const ir=rd?.indirect;
+  const hasD=dr&&dr.rate!=null;
+  const hasI=ir&&ir.rate!=null;
+
+  if(!hasD&&!hasI){
+    el.innerHTML=`<div class="sim-result-na">⚠ ${fn}から${tn}への交換ルートは登録されていません。<br>マトリクス表のセルをクリックすると間接ルートを含む詳細を確認できます。</div>`;
+    return;
+  }
+
+  let rows='';
+
   if(hasD){
-    const res=f==='usd'?Math.round(amt*dr.rate).toLocaleString()+'pt':
-              f==='jpy'?Math.round(amt*dr.rate).toLocaleString()+'pt':
-              Math.round(amt*dr.rate).toLocaleString();
-    const pct=isCashFrom?`1${fromUnit}→${Math.round(dr.rate)}pt`:`${(dr.rate*100).toFixed(1)}%`;
-    txt+=`直接: ${res} ${tn} (${pct})  `;
+    const resNum=Math.round(amt*dr.rate);
+    const pctTxt=isCashFrom
+      ?`1${fromUnit}あたり約${Math.round(dr.rate)}pt`
+      :`交換レート ${(dr.rate*100).toFixed(1)}%`;
+    rows+=`<div class="sim-result-row">
+      <span class="sim-result-label">直接交換</span>
+      <span class="sim-result-val">${resNum.toLocaleString()}</span>
+      <span class="sim-result-sub">${tn} （${pctTxt}）</span>
+    </div>`;
   }
+
   if(hasI){
-    const res2=Math.round(amt*ir.rate).toLocaleString();
-    const pct2=isCashFrom?`1${fromUnit}→${Math.round(ir.rate)}pt`:`${(ir.rate*100).toFixed(1)}%`;
-    txt+=`<span style="opacity:.8">最良間接: ${res2} ${tn} (${pct2})</span>`;
+    const resNum2=Math.round(amt*ir.rate);
+    const pctTxt2=isCashFrom
+      ?`1${fromUnit}あたり約${Math.round(ir.rate)}pt`
+      :`交換レート ${(ir.rate*100).toFixed(1)}%`;
+    const badge=ir.rate>(dr?.rate||0)
+      ?'<span style="font-size:9px;background:#e8f5e9;color:#2e7d32;border:1px solid #81c784;border-radius:99px;padding:1px 6px;margin-left:4px">お得↑</span>'
+      :'';
+    rows+=`<div class="sim-result-row" style="margin-top:6px">
+      <span class="sim-result-label">最良間接${badge}</span>
+      <span class="sim-result-val" style="font-size:16px;opacity:.85">${resNum2.toLocaleString()}</span>
+      <span class="sim-result-sub">${tn} （${pctTxt2}）</span>
+    </div>`;
   }
-  el.innerHTML=txt||'<span>ルートなし</span>';
+
+  // 差分表示
+  if(hasD&&hasI&&ir.rate>dr.rate){
+    const diff=Math.round(amt*ir.rate)-Math.round(amt*dr.rate);
+    rows+=`<div style="font-size:10px;color:#2e7d32;margin-top:4px">
+      💡 間接ルートを使うと直接交換より <strong>${diff.toLocaleString()} ${tn}</strong> 多く得られます
+    </div>`;
+  }
+
+  el.innerHTML=rows;
 }
+
 function swapSim(){
   const sf=document.getElementById('simF'),st=document.getElementById('simT');
   const tmp=sf.value;sf.value=st.value;st.value=tmp;calcSim();
+}
+
+function setExample(){
+  // 14万モッピー→KrisFlyer の例
+  document.getElementById('simF').value='moppy';
+  document.getElementById('simT').value='kris';
+  document.getElementById('simA').value='140000';
+  calcSim();
+  document.getElementById('simF').scrollIntoView({behavior:'smooth',block:'center'});
 }
 
 // ════════════════════════════════
@@ -806,64 +920,12 @@ function closeMod(){document.getElementById('ov').classList.remove('open');if(ch
 function maybeClose(e){if(e.target===document.getElementById('ov'))closeMod();}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMod();});
 
-// ════════════════════════════════
-// AI REFRESH — 軽量化版
-// ════════════════════════════════
-// ⑭ 対策: 主要な固定ルートだけ短いプロンプトで問い合わせ、タイムアウト30秒
-async function doRefresh(){
-  const btn=document.getElementById('updBtn');
-  if(btn.disabled)return;
-  btn.disabled=true;btn.textContent='⏳ 検索中(最大30秒)…';
-  const banner=document.getElementById('updBanner');
-  const txt=document.getElementById('updBannerText');
-  banner.className='upd-banner show';
-  txt.innerHTML='<strong>🔍 AIが主要レートを検索中です…</strong> (最大30秒)';
 
-  const prompt=`以下の日本のポイント・マイル交換レートについて、2025〜2026年の最新情報をウェブ検索で確認し、変更があれば変更前後のレートと日付を含め簡潔に答えてください（各項目1〜2行）:
-1. モッピー→ANAマイル直接(2026年2月開始の3P→1マイル=33.3%は継続中か)
-2. モッピー→マリオットBonvoy(現在: 1,300P→1,000pt=76.9%)
-3. ハピタス→マリオットBonvoy(2025年4月改悪: 500P→330pt=66%)
-4. マリオットBonvoy→ANAマイル(60,000pt→25,000マイル=41.7%は継続中か)
-5. dポイント/楽天/Ponta→ANAマイル(50%は継続中か)
-6. 最近(2025〜2026)改悪・改善されたレートがあれば追加で`;
-
-  const controller=new AbortController();
-  const timeout=setTimeout(()=>controller.abort(),30000);
-
-  try{
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',signal:controller.signal,
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',max_tokens:800,
-        tools:[{type:'web_search_20250305',name:'web_search'}],
-        system:'ポイント・マイル交換の専門家。最新の公式情報を検索し、日本語で簡潔に回答。変更があった場合は変更前後と日付を明記。',
-        messages:[{role:'user',content:prompt}]
-      })
-    });
-    clearTimeout(timeout);
-    const data=await resp.json();
-    const text=data.content?.filter(b=>b.type==='text').map(b=>b.text).join('\n')||'取得できませんでした。';
-    txt.innerHTML=`<strong>✅ AI検索結果</strong><pre>${text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre><div style="font-size:9px;margin-top:4px">※参考情報。交換前に各社公式サイトでご確認ください。</div>`;
-    document.getElementById('updAt').textContent=`最終AI確認: ${new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'})}`;
-  }catch(e){
-    clearTimeout(timeout);
-    if(e.name==='AbortError'){
-      txt.innerHTML='<strong>⏱ タイムアウト</strong>: 30秒以内に応答がありませんでした。しばらく後にもう一度お試しください。<br>または各社公式サイトを直接ご確認ください: <a href="https://www.google.com/search?q=モッピー+ポイント交換+公式" target="_blank" style="color:#185fa5">モッピー交換ページ</a>';
-    }else{
-      txt.innerHTML=`<strong>⚠ エラー</strong>: ${e.message}<br>各社公式サイトを直接ご確認ください。`;
-    }
-  }
-  btn.disabled=false;btn.textContent='🔄 最新レートをAI検索';
-  banner.scrollIntoView({behavior:'smooth',block:'start'});
-}
 
 // ════════════════════════════════
 // INIT
 // ════════════════════════════════
-document.getElementById('simF').onchange=calcSim;
-document.getElementById('simT').onchange=calcSim;
-document.getElementById('simA').oninput=calcSim;
+// simF/simT/simAのイベントはHTML側onchange/oninputで登録済み
 buildChips();
 setLevel('major');
 </script>
