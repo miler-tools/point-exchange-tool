@@ -680,7 +680,7 @@ function rateDisp(r,fromId,toId){
 // MATRIX
 // ════════════════════════════════
 // TO列に表示しないカテゴリ（FROM行には引き続き表示）
-const FROM_EXCLUDE = new Set(['site','cash']);
+const FROM_EXCLUDE = new Set(['site','cash','mile','coin']);
 
 function buildMatrix(){
   const vis=getVis();const tbl=document.getElementById('tbl');
