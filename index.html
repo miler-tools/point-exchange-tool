@@ -679,8 +679,9 @@ function rateDisp(r,fromId,toId){
 // ════════════════════════════════
 // MATRIX
 // ════════════════════════════════
-// FROM行に表示しないカテゴリ（TO列には全種表示）
-const ROW_EXCLUDE = new Set(['site','cash','mile','coin']);
+// FROM行に表示しないカテゴリ: マイル・SKYコインのみ
+// （ポイントサイト・共通ポイント・ホテル・現金はFROM行に表示）
+const ROW_EXCLUDE = new Set(['mile','coin']);
 
 function buildMatrix(){
   const vis=getVis();const tbl=document.getElementById('tbl');
@@ -690,7 +691,7 @@ function buildMatrix(){
   const grouped={};catOrder.forEach(c=>grouped[c]=[]);
   vis.forEach(p=>grouped[p.cat].push(p));
 
-  // TO列ヘッダー = 全種表示（site/cashは除く）
+  // TO列ヘッダー = 共通ポイント・ホテル・マイル・SKYコインのみ
   const toVis=vis.filter(p=>!new Set(['site','cash']).has(p.cat));
 
   let h='<thead><tr><th class="corner">FROM \\ TO</th>';
