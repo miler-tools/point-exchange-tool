@@ -679,8 +679,8 @@ function rateDisp(r,fromId,toId){
 // ════════════════════════════════
 // MATRIX
 // ════════════════════════════════
-// TO列に表示しないカテゴリ（FROM行には引き続き表示）
-const FROM_EXCLUDE = new Set(['site','cash','mile','coin']);
+// FROM行に表示しないカテゴリ（TO列には全種表示）
+const ROW_EXCLUDE = new Set(['site','cash','mile','coin']);
 
 function buildMatrix(){
   const vis=getVis();const tbl=document.getElementById('tbl');
@@ -690,15 +690,16 @@ function buildMatrix(){
   const grouped={};catOrder.forEach(c=>grouped[c]=[]);
   vis.forEach(p=>grouped[p.cat].push(p));
 
-  // TO列ヘッダー = site/cash を除外
-  const toVis=vis.filter(p=>!FROM_EXCLUDE.has(p.cat));
+  // TO列ヘッダー = 全種表示（site/cashは除く）
+  const toVis=vis.filter(p=>!new Set(['site','cash']).has(p.cat));
 
   let h='<thead><tr><th class="corner">FROM \\ TO</th>';
   toVis.forEach(p=>{h+=`<th>${p.name}<span class="tc">${CATS[p.cat].label}</span></th>`;});
   h+='</tr></thead><tbody>';
 
   catOrder.forEach(cat=>{
-    if(!grouped[cat].length)return; // FROM行は全カテゴリ表示
+    if(ROW_EXCLUDE.has(cat))return; // site/cash/mile/coin はFROM行に出さない
+    if(!grouped[cat].length)return;
     h+=`<tr class="cath"><td class="rh">${CATS[cat].label}</td>${toVis.map(()=>'<td></td>').join('')}</tr>`;
     grouped[cat].forEach(row=>{
       h+=`<tr><td class="rh">${row.name}<span class="tc">${CATS[row.cat].label}</span></td>`;
