@@ -33,9 +33,9 @@ body{font-family:'Hiragino Kaku Gothic ProN','Hiragino Sans','Noto Sans JP',sans
 .hdr{background:var(--bg);border-bottom:1px solid var(--border);padding:10px 16px;position:sticky;top:0;z-index:300;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .hdr h1{font-size:14px;font-weight:700}
 .hdr-sub{font-size:10px;color:var(--text3)}
-/* ── 2カラムレイアウト ── */
+/* ── PC: 2カラムレイアウト ── */
 .layout{display:flex;gap:0;min-height:calc(100vh - 44px)}
-/* 左サイドパネル */
+/* 左サイドパネル（PC） */
 .sidebar{width:220px;flex-shrink:0;background:var(--bg);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;position:sticky;top:44px;height:calc(100vh - 44px)}
 .sidebar-inner{padding:12px 10px;flex:1;overflow-y:auto}
 .sb-section{margin-bottom:14px}
@@ -59,10 +59,77 @@ body{font-family:'Hiragino Kaku Gothic ProN','Hiragino Sans','Noto Sans JP',sans
 .lv-btn .lv-desc{font-size:8px;opacity:.7;display:block;margin-top:1px}
 /* 右メインエリア */
 .main{flex:1;min-width:0;padding:12px 14px;overflow:hidden;display:flex;flex-direction:column}
-/* フッターは main 内下部 */
 /* MATRIX */
 .mtx-wrap{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:10px;flex:1;display:flex;flex-direction:column}
 .mtx-scroll{overflow:auto;max-height:calc(100vh - 160px);position:relative;flex:1}
+
+/* ── スマホ用トグルボタン（PC時は非表示） ── */
+.sp-filter-toggle{display:none}
+
+/* ══ スマホレスポンシブ (767px以下) ══ */
+@media(max-width:767px){
+  /* ヘッダー */
+  .hdr{padding:8px 12px;position:sticky;top:0;z-index:300}
+  .hdr h1{font-size:13px}
+  .hdr-sub{display:none} /* スペース節約のためヘッダー副題を非表示 */
+
+  /* レイアウトを縦積みに */
+  .layout{flex-direction:column;min-height:auto}
+
+  /* サイドバーをトップの折りたたみパネルに変更 */
+  .sidebar{
+    width:100%;height:auto;position:static;
+    border-right:none;border-bottom:1px solid var(--border);
+    overflow:visible;
+  }
+  .sidebar-inner{
+    padding:8px 12px;
+    display:none; /* 初期は折りたたみ */
+  }
+  .sidebar-inner.sp-open{display:block}
+
+  /* スマホ用トグルボタン表示 */
+  .sp-filter-toggle{
+    display:flex;align-items:center;justify-content:space-between;
+    width:100%;padding:8px 12px;
+    background:var(--bg);border:none;border-bottom:1px solid var(--border);
+    font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;
+    text-align:left;
+  }
+  .sp-filter-toggle .sp-arrow{font-size:10px;transition:transform .2s}
+  .sp-filter-toggle.open .sp-arrow{transform:rotate(180deg)}
+  .sp-filter-selected{font-size:10px;color:#185fa5;font-weight:400;margin-left:6px}
+
+  /* サイドバー内のチップを横並びに（スマホでは省スペース） */
+  .sb-chips{flex-direction:row;flex-wrap:wrap;padding-left:0}
+  .chip{width:auto;font-size:11px;padding:4px 9px}
+  .lv-wrap{flex-direction:row;flex-wrap:wrap}
+  .lv-btn{width:auto;font-size:11px}
+  .lv-btn .lv-desc{display:none} /* スマホでは補足説明を非表示 */
+  .sb-section{margin-bottom:10px}
+  .sb-cat-label{font-size:11px}
+
+  /* メインエリア: 全幅・コンパクト余白 */
+  .main{padding:8px;overflow-x:auto}
+
+  /* マトリクスのスクロール高さをスマホ画面に合わせる */
+  .mtx-scroll{max-height:55vh}
+
+  /* セル幅を少し狭く（スマホでより多く見える） */
+  .cell{width:70px}
+  .cr{font-size:11px;height:22px}
+  .cb{font-size:10px;height:20px}
+  thead tr th.corner{min-width:90px}
+  tbody tr td.rh{min-width:90px;font-size:9px}
+  tbody tr td.rh .tc{display:none}
+
+  /* フッターをコンパクトに */
+  .footer-info{padding:8px 10px;font-size:9px}
+  .footer-disclaimer,.footer-note{padding:7px 9px}
+
+  /* モーダル */
+  .modal{padding:14px;width:96vw}
+}
 table{border-collapse:collapse;width:max-content}
 
 /* sticky col header (TO) */
@@ -92,21 +159,19 @@ tbody tr td.rh .tc{font-size:8px;display:block;color:var(--text3);font-weight:40
 tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
 
 /* ─── two-row cell ─── */
-.cell{width:78px;cursor:pointer;position:relative;overflow:hidden}
+.cell{width:84px;cursor:pointer;position:relative;overflow:hidden}
 .cell:hover .cr,.cell:hover .cb{filter:brightness(.88)}
-.cell.selfcell{background:var(--self-bg);display:flex;align-items:center;justify-content:center;height:48px;color:var(--self-fg);font-size:14px;cursor:default}
+.cell.selfcell{background:var(--self-bg);display:flex;align-items:center;justify-content:center;height:48px;color:var(--self-fg);font-size:16px;cursor:default}
 .cell.selfcell:hover .cr,.cell.selfcell:hover .cb{filter:none}
 /* top row = direct rate */
-.cr{display:flex;align-items:center;justify-content:center;height:24px;font-size:10px;font-weight:700;position:relative}
+.cr{display:flex;align-items:center;justify-content:center;height:26px;font-size:13px;font-weight:700;position:relative}
 /* bottom row = best indirect rate */
-.cb{display:flex;align-items:center;justify-content:center;height:24px;font-size:9px;font-weight:600;border-top:1px solid rgba(255,255,255,.25);opacity:.88}
+.cb{display:flex;align-items:center;justify-content:center;height:22px;font-size:11px;font-weight:600;border-top:1px solid rgba(255,255,255,.25);opacity:.88}
 /* na cell */
-.cell.nacell .cr{background:var(--na-bg);color:var(--na-fg);height:48px;font-size:12px;font-weight:400}
+.cell.nacell .cr{background:var(--na-bg);color:var(--na-fg);height:48px;font-size:13px;font-weight:400}
 /* change arrows */
 .chup{font-size:9px;position:absolute;bottom:1px;right:2px;color:rgba(255,255,255,.9)}
 .chdn{font-size:9px;position:absolute;bottom:1px;right:2px;color:rgba(255,255,255,.9)}
-/* indirect mark */
-.imark{font-size:7px;position:absolute;top:2px;right:2px;opacity:.7}
 
 /* color by rate % */
 .r100{background:var(--c100);color:var(--c100f)}
@@ -186,7 +251,11 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
 
 <!-- 左サイドパネル -->
 <div class="sidebar">
-<div class="sidebar-inner">
+<button class="sp-filter-toggle" id="spToggle" onclick="toggleSpFilter()">
+  <span>⚙️ 表示設定（ポイント選択）<span class="sp-filter-selected" id="spSelected"></span></span>
+  <span class="sp-arrow">▼</span>
+</button>
+<div class="sidebar-inner" id="sidebarInner">
 
   <div class="sb-section">
     <div class="sb-section-title">表示レベル</div>
@@ -231,7 +300,7 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
       <span class="li"><span class="ld" style="background:var(--na-bg)"></span>交換不可</span>
       <span class="li"><span class="ld" style="background:var(--rise-bg)"></span>有利改定▲</span>
       <span class="li"><span class="ld" style="background:var(--fall-bg)"></span>不利改定▼</span>
-      <span style="font-size:9px;color:var(--text3);margin-left:auto">上段=直接, 下段=間接最良。<strong style="color:#185fa5">セルクリックで詳細</strong></span>
+      <span style="font-size:9px;color:var(--text3);margin-left:auto">上段=直接交換レート　下段=間接最良レート　<strong style="color:#185fa5">▲▼=最近改定　セルクリックで詳細</strong></span>
     </div>
   </div>
 
@@ -610,6 +679,9 @@ function rateDisp(r,fromId,toId){
 // ════════════════════════════════
 // MATRIX
 // ════════════════════════════════
+// FROM行に表示しないカテゴリ（TO列には引き続き表示）
+const FROM_EXCLUDE = new Set(['site','cash']);
+
 function buildMatrix(){
   const vis=getVis();const tbl=document.getElementById('tbl');
   if(!vis.length){tbl.innerHTML='<tr><td style="padding:20px;color:var(--text3)">ポイントを選択してください</td></tr>';return;}
@@ -618,11 +690,13 @@ function buildMatrix(){
   const grouped={};catOrder.forEach(c=>grouped[c]=[]);
   vis.forEach(p=>grouped[p.cat].push(p));
 
+  // TO列ヘッダー = 全種表示
   let h='<thead><tr><th class="corner">FROM \\ TO</th>';
   vis.forEach(p=>{h+=`<th>${p.name}<span class="tc">${CATS[p.cat].label}</span></th>`;});
   h+='</tr></thead><tbody>';
 
   catOrder.forEach(cat=>{
+    if(FROM_EXCLUDE.has(cat))return; // site/cash はFROM行に出さない
     if(!grouped[cat].length)return;
     h+=`<tr class="cath"><td class="rh">${CATS[cat].label}</td>${vis.map(()=>'<td></td>').join('')}</tr>`;
     grouped[cat].forEach(row=>{
@@ -638,7 +712,7 @@ function buildMatrix(){
         const hasI=ir&&ir.rate!==null&&ir.rate!==undefined;
 
         let topCls=hasD?rateClass(dr.rate,row.id):'rna';
-        let topTxt=hasD?rateDisp(dr.rate):'—';
+        let topTxt=hasD?rateDisp(dr.rate,row.id,col.id):'—';
         let topChange=hasD?dr.change:null;
         if(topChange==='up')topCls='rise';
         else if(topChange==='down')topCls='fall';
@@ -654,13 +728,12 @@ function buildMatrix(){
 
         // top = direct
         const topArrow=topChange==='up'?chUp:topChange==='down'?chDn:'';
-        // bot = indirect
-        const imark=hasI?'<span class="imark">↻</span>':'';
+        // bot = indirect (↻マークは廃止)
         const botArrow=botChange==='up'?chUp:botChange==='down'?chDn:'';
 
         h+=`<td><div class="cell" onclick="openMod('${row.id}','${col.id}')">
           <div class="cr ${topCls}">${topTxt}${topArrow}</div>
-          <div class="cb ${botCls}">${imark}${botTxt}${botArrow}</div>
+          <div class="cb ${botCls}">${botTxt}${botArrow}</div>
         </div></td>`;
       });
       h+='</tr>';
@@ -668,6 +741,7 @@ function buildMatrix(){
   });
   h+='</tbody>';
   tbl.innerHTML=h;
+  updateSpSelected();
 }
 
 // ════════════════════════════════
@@ -803,6 +877,23 @@ function setHR(r){
 function closeMod(){document.getElementById('ov').classList.remove('open');if(chartInst){chartInst.destroy();chartInst=null;}}
 function maybeClose(e){if(e.target===document.getElementById('ov'))closeMod();}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMod();});
+
+// ════════════════════════════════
+// MOBILE TOGGLE
+// ════════════════════════════════
+function toggleSpFilter(){
+  const inner=document.getElementById('sidebarInner');
+  const btn=document.getElementById('spToggle');
+  const isOpen=inner.classList.toggle('sp-open');
+  btn.classList.toggle('open',isOpen);
+}
+
+function updateSpSelected(){
+  const el=document.getElementById('spSelected');
+  if(!el)return;
+  const count=PTS.filter(p=>ptSt[p.id]).length;
+  el.textContent=`${count}件選択中`;
+}
 
 // ════════════════════════════════
 // INIT
