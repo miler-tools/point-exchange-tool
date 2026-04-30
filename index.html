@@ -33,24 +33,36 @@ body{font-family:'Hiragino Kaku Gothic ProN','Hiragino Sans','Noto Sans JP',sans
 .hdr{background:var(--bg);border-bottom:1px solid var(--border);padding:10px 16px;position:sticky;top:0;z-index:300;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .hdr h1{font-size:14px;font-weight:700}
 .hdr-sub{font-size:10px;color:var(--text3)}
-/* FILTER */
-.filter{background:var(--bg);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.flbl{font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
-.chip-group{display:flex;flex-wrap:wrap;gap:3px}
-.chip{font-size:10px;padding:3px 8px;border-radius:99px;border:1px solid var(--border2);cursor:pointer;user-select:none;background:var(--bg);white-space:nowrap;transition:background .1s}
-.chip.active{background:var(--text);color:#fff;border-color:var(--text)}
-.vdiv{width:1px;height:16px;background:var(--border2);margin:0 3px}
-.btn-xs{font-size:9px;padding:3px 7px;border:1px solid var(--border2);border-radius:4px;cursor:pointer;background:var(--bg)}
+/* ── 2カラムレイアウト ── */
+.layout{display:flex;gap:0;min-height:calc(100vh - 44px)}
+/* 左サイドパネル */
+.sidebar{width:220px;flex-shrink:0;background:var(--bg);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;position:sticky;top:44px;height:calc(100vh - 44px)}
+.sidebar-inner{padding:12px 10px;flex:1;overflow-y:auto}
+.sb-section{margin-bottom:14px}
+.sb-section-title{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.sb-cat-block{margin-bottom:10px}
+.sb-cat-label{font-size:10px;font-weight:700;color:var(--text2);margin-bottom:4px;display:flex;align-items:center;gap:4px;cursor:pointer}
+.sb-cat-label:hover{color:var(--text)}
+.sb-cat-toggle{font-size:9px;color:var(--text3);margin-left:auto}
+.sb-chips{display:flex;flex-direction:column;gap:2px;padding-left:4px}
+.chip{font-size:10px;padding:3px 7px;border-radius:4px;border:1px solid var(--border);cursor:pointer;user-select:none;background:var(--bg2);white-space:nowrap;transition:background .1s;display:flex;align-items:center;gap:4px;width:100%}
+.chip.active{background:#185fa5;color:#fff;border-color:#185fa5}
+.chip:hover:not(.active){background:var(--bg3)}
+.chip .cat-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.sb-actions{display:flex;gap:4px;margin-top:4px}
+.btn-xs{font-size:9px;padding:3px 7px;border:1px solid var(--border2);border-radius:4px;cursor:pointer;background:var(--bg);flex:1;text-align:center}
 .btn-xs:hover{background:var(--bg2)}
-.lv-wrap{display:flex;gap:3px}
-.lv-btn{font-size:9px;padding:3px 8px;border:1px solid var(--border2);border-radius:99px;cursor:pointer;background:var(--bg);white-space:nowrap}
+/* レベルボタン */
+.lv-wrap{display:flex;flex-direction:column;gap:3px}
+.lv-btn{font-size:10px;padding:4px 8px;border:1px solid var(--border2);border-radius:4px;cursor:pointer;background:var(--bg);text-align:left;width:100%}
 .lv-btn.active{background:#185fa5;color:#fff;border-color:#185fa5}
-
-/* MAIN */
-.main{padding:12px 16px;max-width:2000px;margin:0 auto}
+.lv-btn .lv-desc{font-size:8px;opacity:.7;display:block;margin-top:1px}
+/* 右メインエリア */
+.main{flex:1;min-width:0;padding:12px 14px;overflow:hidden;display:flex;flex-direction:column}
+/* フッターは main 内下部 */
 /* MATRIX */
-.mtx-wrap{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:12px}
-.mtx-scroll{overflow:auto;max-height:calc(100vh - 210px);position:relative}
+.mtx-wrap{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:10px;flex:1;display:flex;flex-direction:column}
+.mtx-scroll{overflow:auto;max-height:calc(100vh - 160px);position:relative;flex:1}
 table{border-collapse:collapse;width:max-content}
 
 /* sticky col header (TO) */
@@ -156,7 +168,7 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
 .vtag.warn{background:#fff3cd;color:#c17d00;border:1px solid #ffc107}
 
 /* FOOTER INFO */
-.footer-info{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin:0 16px 14px;display:flex;flex-direction:column;gap:10px;font-size:10px;line-height:1.7;color:var(--text2)}
+.footer-info{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin:0 0 0;display:flex;flex-direction:column;gap:8px;font-size:10px;line-height:1.6;color:var(--text2);flex-shrink:0}
 .footer-update{color:var(--text2);border-bottom:1px solid var(--border);padding-bottom:8px}
 .footer-disclaimer{background:#fff8e1;border:1px solid #ffc107;border-radius:var(--rsm);padding:10px 12px;color:#5a4000;line-height:1.8}
 .footer-disclaimer strong{color:#3a2800}
@@ -170,26 +182,41 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
   <span class="hdr-sub">レート最終更新: 2026年4月30日 ／ 交換前に必ず各社公式サイトをご確認ください</span>
 </div>
 
-<div class="filter">
-  <span class="flbl">レベル:</span>
-  <div class="lv-wrap" id="lvBtns">
-    <button class="lv-btn active" data-lv="major" onclick="setLevel('major')">主要のみ</button>
-    <button class="lv-btn" data-lv="standard" onclick="setLevel('standard')">標準</button>
-    <button class="lv-btn" data-lv="all" onclick="setLevel('all')">全て(ニッチ含)</button>
+<div class="layout">
+
+<!-- 左サイドパネル -->
+<div class="sidebar">
+<div class="sidebar-inner">
+
+  <div class="sb-section">
+    <div class="sb-section-title">表示レベル</div>
+    <div class="lv-wrap" id="lvBtns">
+      <button class="lv-btn active" data-lv="major" onclick="setLevel('major')">主要のみ
+        <span class="lv-desc">よく使う6〜8種</span>
+      </button>
+      <button class="lv-btn" data-lv="standard" onclick="setLevel('standard')">標準
+        <span class="lv-desc">主要+準主要</span>
+      </button>
+      <button class="lv-btn" data-lv="all" onclick="setLevel('all')">全て
+        <span class="lv-desc">ニッチ含む全種</span>
+      </button>
+    </div>
   </div>
-  <div class="vdiv"></div>
-  <span class="flbl">カテゴリ:</span>
-  <div class="chip-group" id="catChips"></div>
-  <div class="vdiv"></div>
-  <span class="flbl">個別:</span>
-  <div class="chip-group" id="ptChips"></div>
-  <div class="vdiv"></div>
-  <button class="btn-xs" onclick="selAll()">全選択</button>
-  <button class="btn-xs" onclick="selNone()">全解除</button>
+
+  <div class="sb-section">
+    <div class="sb-section-title">表示するポイント選択</div>
+    <div id="sidebarPts"></div>
+    <div class="sb-actions">
+      <button class="btn-xs" onclick="selAll()">全選択</button>
+      <button class="btn-xs" onclick="selNone()">全解除</button>
+    </div>
+  </div>
+
+</div>
 </div>
 
+<!-- 右メインエリア -->
 <div class="main">
-
   <div class="mtx-wrap">
     <div class="mtx-scroll" id="mtxScroll">
       <table id="tbl"></table>
@@ -202,17 +229,13 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
       <span class="li"><span class="ld" style="background:var(--c20)"></span>20–39%</span>
       <span class="li"><span class="ld" style="background:var(--c00)"></span>&lt;20%</span>
       <span class="li"><span class="ld" style="background:var(--na-bg)"></span>交換不可</span>
-      <span class="li"><span class="ld" style="background:var(--rise-bg)"></span>最近有利改定↑</span>
-      <span class="li"><span class="ld" style="background:var(--fall-bg)"></span>最近不利改定↓</span>
-      <span style="margin-left:auto;font-size:9px;color:var(--text3)">上段=直接交換レート, 下段=最良間接ルートレート。<strong style="color:#185fa5">セルをクリック → ルート詳細・根拠・注意事項を確認できます</strong></span>
+      <span class="li"><span class="ld" style="background:var(--rise-bg)"></span>有利改定▲</span>
+      <span class="li"><span class="ld" style="background:var(--fall-bg)"></span>不利改定▼</span>
+      <span style="font-size:9px;color:var(--text3);margin-left:auto">上段=直接, 下段=間接最良。<strong style="color:#185fa5">セルクリックで詳細</strong></span>
     </div>
   </div>
-</div>
 
-
-</div>
-
-<div class="footer-info">
+  <div class="footer-info">
   <div class="footer-update">
     📅 本ツールのレートデータ最終更新日: <strong>2026年4月30日</strong>
     &emsp;|&emsp;
@@ -228,7 +251,9 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
     マトリクス表の<strong>各セルをクリック</strong>すると、直接・間接の各ルート名（みずほルート・nimocaルート等）、ステップごとのレート、交換上限・所要日数・注意事項、公式サイト検索リンクが表示されます。
     数値だけでなく必ずクリックして詳細をご確認ください。
   </div>
-</div>
+</div><!-- footer-info -->
+</div><!-- main -->
+</div><!-- layout -->
 
 <div class="overlay" id="ov" onclick="maybeClose(event)">
   <div class="modal" id="mod">
@@ -499,27 +524,55 @@ function getVis(){return PTS.filter(p=>ptSt[p.id]);}
 // ════════════════════════════════
 // CHIPS
 // ════════════════════════════════
+// カテゴリカラー
+const CAT_COLORS={
+  site:'#5c4ab8',common:'#0a7070',hotel:'#7a2a60',mile:'#1a6a1a',coin:'#555',cash:'#8a5500'
+};
+
 function buildChips(){
-  const cc=document.getElementById('catChips');cc.innerHTML='';
-  Object.entries(CATS).forEach(([k,v])=>{
-    const e=document.createElement('span');e.className='chip active';e.dataset.cat=k;
-    e.textContent=v.label;e.onclick=()=>togCat(k,e);cc.appendChild(e);
-  });
-  const pc=document.getElementById('ptChips');pc.innerHTML='';
-  PTS.forEach(p=>{
-    const e=document.createElement('span');e.className='chip active';e.dataset.pt=p.id;
-    e.textContent=p.name;e.onclick=()=>togPt(p.id,e);pc.appendChild(e);
+  const sb=document.getElementById('sidebarPts');
+  if(!sb)return;
+  sb.innerHTML='';
+  const catOrder=Object.keys(CATS);
+  catOrder.forEach(cat=>{
+    const pts=PTS.filter(p=>p.cat===cat);
+    if(!pts.length)return;
+    const block=document.createElement('div');
+    block.className='sb-cat-block';
+    // カテゴリラベル（クリックで全ON/OFF）
+    const lbl=document.createElement('div');
+    lbl.className='sb-cat-label';
+    lbl.innerHTML=`<span style="width:8px;height:8px;border-radius:50%;background:${CAT_COLORS[cat]||'#888'};display:inline-block"></span><span>${CATS[cat].label}</span><span class="sb-cat-toggle" data-cat="${cat}">▲</span>`;
+    lbl.onclick=()=>togCatAll(cat);
+    block.appendChild(lbl);
+    // 各ポイントチップ
+    const chips=document.createElement('div');
+    chips.className='sb-chips';
+    pts.forEach(p=>{
+      const e=document.createElement('span');
+      e.className='chip'+(ptSt[p.id]?' active':'');
+      e.dataset.pt=p.id;
+      e.innerHTML=`<span class="cat-dot" style="background:${CAT_COLORS[cat]||'#888'}"></span>${p.name}`;
+      e.onclick=()=>togPt(p.id,e);
+      chips.appendChild(e);
+    });
+    block.appendChild(chips);
+    sb.appendChild(block);
   });
 }
-function togCat(cat,el){
-  catSt[cat]=!catSt[cat];el.classList.toggle('active',catSt[cat]);
-  PTS.filter(p=>p.cat===cat).forEach(p=>{
-    ptSt[p.id]=catSt[cat];
-    document.querySelector(`[data-pt="${p.id}"]`)?.classList.toggle('active',catSt[cat]);
+
+function togCatAll(cat){
+  // そのカテゴリに属するポイントが全ON→全OFF、それ以外→全ON
+  const pts=PTS.filter(p=>p.cat===cat);
+  const allOn=pts.every(p=>ptSt[p.id]);
+  pts.forEach(p=>{
+    ptSt[p.id]=!allOn;
+    document.querySelectorAll(`[data-pt="${p.id}"]`).forEach(e=>e.classList.toggle('active',ptSt[p.id]));
   });
   buildMatrix();
 }
-function togPt(id,el){ptSt[id]=!ptSt[id];el.classList.toggle('active',ptSt[id]);buildMatrix();}
+function togCat(cat,el){/* legacy - unused */}
+function togPt(id,el){ptSt[id]=!ptSt[id];document.querySelectorAll(`[data-pt='${id}']`).forEach(e=>e.classList.toggle('active',ptSt[id]));buildMatrix();}
 function selAll(){PTS.forEach(p=>ptSt[p.id]=true);Object.keys(catSt).forEach(k=>catSt[k]=true);document.querySelectorAll('.chip').forEach(c=>c.classList.add('active'));buildMatrix();}
 function selNone(){PTS.forEach(p=>ptSt[p.id]=false);Object.keys(catSt).forEach(k=>catSt[k]=false);document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));buildMatrix();}
 function setLevel(lv){
@@ -528,7 +581,7 @@ function setLevel(lv){
   const allowed=lvAllow(lv);
   PTS.forEach(p=>{
     ptSt[p.id]=allowed.includes(p.lv);
-    document.querySelector(`[data-pt="${p.id}"]`)?.classList.toggle('active',ptSt[p.id]);
+    document.querySelectorAll(`[data-pt="${p.id}"]`).forEach(e=>e.classList.toggle('active',ptSt[p.id]));
   });
   buildMatrix();
 }
@@ -755,7 +808,12 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMod();});
 // INIT
 // ════════════════════════════════
 buildChips();
-setLevel('major');
+// 初期表示: 主要6項目のみ選択
+PTS.forEach(p=>{ptSt[p.id]=false;});
+const INIT_6=['moppy','hapitas','marriott','ana','jal','kris'];
+INIT_6.forEach(id=>{ptSt[id]=true;});
+buildChips(); // チップ再描画でactive状態を反映
+buildMatrix();
 </script>
 </body>
 </html>
