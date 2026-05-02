@@ -239,6 +239,92 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
 .footer-disclaimer strong{color:#3a2800}
 .footer-note{background:#e8f0fb;border:1px solid #b3cff0;border-radius:var(--rsm);padding:10px 12px;color:#1a3a6a;line-height:1.8}
 .footer-note strong{color:#0d2a4e}
+
+/* ════ ポイント電卓 ════ */
+.calc-panel{
+  background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow);overflow:hidden;margin-bottom:10px;flex-shrink:0;
+}
+.calc-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 12px;background:var(--bg2);border-bottom:1px solid var(--border);
+  cursor:pointer;user-select:none;
+}
+.calc-header-left{display:flex;align-items:center;gap:7px}
+.calc-header-title{font-size:12px;font-weight:700;color:var(--text)}
+.calc-badge{font-size:9px;padding:2px 7px;background:#185fa5;color:#fff;border-radius:99px;font-weight:600}
+.calc-toggle-arrow{font-size:10px;color:var(--text3);transition:transform .2s}
+.calc-toggle-arrow.open{transform:rotate(180deg)}
+.calc-body{padding:12px 14px;display:none}
+.calc-body.open{display:block}
+
+/* 入力行 */
+.calc-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.calc-label{font-size:10px;font-weight:600;color:var(--text2);white-space:nowrap;min-width:50px}
+.calc-select{
+  font-size:11px;padding:5px 7px;border:1px solid var(--border2);border-radius:var(--rsm);
+  background:var(--bg);color:var(--text);flex:1;min-width:120px;max-width:200px;cursor:pointer;
+}
+.calc-input{
+  font-size:13px;font-weight:700;padding:5px 9px;border:1px solid var(--border2);border-radius:var(--rsm);
+  background:var(--bg);color:var(--text);width:130px;text-align:right;
+  -moz-appearance:textfield;
+}
+.calc-input::-webkit-outer-spin-button,.calc-input::-webkit-inner-spin-button{-webkit-appearance:none}
+.calc-unit{font-size:10px;color:var(--text3);white-space:nowrap}
+.calc-arrow{font-size:16px;color:#185fa5;font-weight:700;padding:0 2px}
+
+/* 結果エリア */
+.calc-results{
+  background:var(--bg2);border-radius:var(--rsm);padding:10px 12px;
+  display:flex;flex-direction:column;gap:6px;
+}
+.calc-results-empty{font-size:11px;color:var(--text3);text-align:center;padding:8px 0}
+
+/* 結果カード */
+.calc-res-card{
+  display:flex;align-items:center;gap:0;border:1px solid var(--border);border-radius:var(--rsm);
+  background:var(--bg);overflow:hidden;cursor:pointer;transition:box-shadow .15s;
+}
+.calc-res-card:hover{box-shadow:0 2px 10px rgba(0,0,0,0.12)}
+.calc-res-to{
+  padding:7px 10px;font-size:11px;font-weight:600;flex:1;min-width:0;
+  border-right:1px solid var(--border);
+}
+.calc-res-to .calc-to-name{color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.calc-res-to .calc-to-cat{font-size:9px;color:var(--text3);font-weight:400}
+.calc-res-val{
+  padding:7px 10px;text-align:right;min-width:110px;
+}
+.calc-res-main{font-size:15px;font-weight:800;color:#185fa5;white-space:nowrap}
+.calc-res-main.rate-high{color:var(--c80)}
+.calc-res-main.rate-mid{color:var(--c60)}
+.calc-res-main.rate-low{color:var(--c40)}
+.calc-res-main.rate-vlow{color:var(--c20)}
+.calc-res-sub{font-size:9px;color:var(--text3);margin-top:1px;white-space:nowrap}
+.calc-res-badge{font-size:8px;padding:1px 5px;border-radius:99px;margin-left:4px;vertical-align:middle;font-weight:600}
+.calc-res-badge.indirect{background:#555;color:#fff}
+.calc-res-badge.best{background:#1a5c1a;color:#fff}
+.calc-res-badge.rise{background:var(--rise-bg);color:var(--rise-fg)}
+.calc-res-badge.fall{background:var(--fall-bg);color:var(--fall-fg)}
+.calc-res-route{font-size:8px;color:var(--text3);padding:3px 10px 5px;border-top:1px dashed var(--border);display:none}
+.calc-res-card:hover .calc-res-route{display:block}
+
+/* ソートタブ */
+.calc-sort-row{display:flex;align-items:center;gap:5px;margin-bottom:8px}
+.calc-sort-label{font-size:9px;color:var(--text3)}
+.calc-sort-btn{font-size:9px;padding:2px 8px;border:1px solid var(--border2);border-radius:99px;cursor:pointer;background:var(--bg)}
+.calc-sort-btn.active{background:#185fa5;color:#fff;border-color:#185fa5}
+.calc-no-result{font-size:10px;color:var(--text3);padding:10px 0;text-align:center}
+
+/* スマホ対応 */
+@media(max-width:767px){
+  .calc-row{gap:6px}
+  .calc-select{max-width:100%;flex:1 1 120px}
+  .calc-input{width:100px;font-size:12px}
+  .calc-res-main{font-size:13px}
+  .calc-res-val{min-width:90px}
+}
 </style>
 </head>
 <body>
@@ -286,6 +372,39 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
 
 <!-- 右メインエリア -->
 <div class="main">
+
+  <!-- ポイント電卓パネル -->
+  <div class="calc-panel">
+    <div class="calc-header" onclick="toggleCalc()">
+      <div class="calc-header-left">
+        <span style="font-size:16px">🧮</span>
+        <span class="calc-header-title">ポイント電卓</span>
+        <span class="calc-badge">NEW</span>
+        <span style="font-size:10px;color:var(--text3);margin-left:4px">手持ちポイントの交換後価値を一括計算</span>
+      </div>
+      <span class="calc-toggle-arrow open" id="calcArrow">▼</span>
+    </div>
+    <div class="calc-body open" id="calcBody">
+      <div class="calc-row">
+        <span class="calc-label">交換元</span>
+        <select class="calc-select" id="calcFrom" onchange="runCalc()">
+          <option value="">— 選択 —</option>
+        </select>
+        <span class="calc-arrow">→</span>
+        <input class="calc-input" id="calcAmt" type="number" min="0" step="1" placeholder="10000" value="10000" oninput="runCalc()">
+        <span class="calc-unit" id="calcUnit">ポイント</span>
+      </div>
+      <div class="calc-sort-row">
+        <span class="calc-sort-label">並び替え:</span>
+        <button class="calc-sort-btn active" data-sort="rate" onclick="setCalcSort('rate')">レート高い順</button>
+        <button class="calc-sort-btn" data-sort="cat" onclick="setCalcSort('cat')">カテゴリ順</button>
+      </div>
+      <div class="calc-results" id="calcResults">
+        <div class="calc-results-empty">⬆ 交換元ポイントを選択して入力してください</div>
+      </div>
+    </div>
+  </div>
+
   <div class="mtx-wrap">
     <div class="mtx-scroll" id="mtxScroll">
       <table id="tbl"></table>
@@ -899,6 +1018,170 @@ function updateSpSelected(){
 }
 
 // ════════════════════════════════
+// POINT CALCULATOR
+// ════════════════════════════════
+let calcSort = 'rate';
+
+function toggleCalc() {
+  const body = document.getElementById('calcBody');
+  const arrow = document.getElementById('calcArrow');
+  const isOpen = body.classList.toggle('open');
+  arrow.classList.toggle('open', isOpen);
+}
+
+function buildCalcSelect() {
+  const sel = document.getElementById('calcFrom');
+  if (!sel) return;
+  // カテゴリ順にポイントを追加（FROM行に表示できるもの = mile/coin以外）
+  const catOrder = Object.keys(CATS);
+  catOrder.forEach(cat => {
+    if (['mile','coin'].includes(cat)) return;
+    const pts = PTS.filter(p => p.cat === cat);
+    if (!pts.length) return;
+    const grp = document.createElement('optgroup');
+    grp.label = CATS[cat].label;
+    pts.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.name;
+      grp.appendChild(opt);
+    });
+    sel.appendChild(grp);
+  });
+}
+
+function setCalcSort(s) {
+  calcSort = s;
+  document.querySelectorAll('.calc-sort-btn').forEach(b => b.classList.toggle('active', b.dataset.sort === s));
+  runCalc();
+}
+
+function getCalcUnit(fromId) {
+  if (fromId === 'jpy') return '円';
+  if (fromId === 'usd') return 'ドル';
+  return 'ポイント';
+}
+
+function calcRateColor(r) {
+  if (!r || r === null) return '';
+  const pct = r * 100;
+  if (pct >= 80) return 'rate-high';
+  if (pct >= 60) return 'rate-mid';
+  if (pct >= 40) return 'rate-low';
+  return 'rate-vlow';
+}
+
+function formatResult(amt, toId, rate, fromId) {
+  const toP = PTS.find(p => p.id === toId);
+  if (toId === 'jpy') return Math.round(amt * rate).toLocaleString() + ' 円';
+  if (toId === 'usd') return (amt * rate).toFixed(0) + ' ドル';
+  if (toP?.cat === 'cash') return Math.round(amt * rate).toLocaleString();
+  // マイル/ホテル/共通ポイント
+  return Math.round(amt * rate).toLocaleString() + ' ' + (toP?.name || toId).replace(/マイル|ポイント|Honors|Bonvoy/g,'').trim().slice(0,4) + '…';
+}
+
+function buildRouteStr(route) {
+  if (!route || !route.length) return '';
+  let s = route[0].from;
+  route.forEach(step => { s += ' → ' + step.to + ' (×' + (step.rate * 100).toFixed(0) + '%)'; });
+  return s;
+}
+
+function runCalc() {
+  const fromId = document.getElementById('calcFrom').value;
+  const amtRaw = document.getElementById('calcAmt').value;
+  const amt = parseFloat(amtRaw);
+  const unitEl = document.getElementById('calcUnit');
+  const resEl = document.getElementById('calcResults');
+
+  if (unitEl) unitEl.textContent = getCalcUnit(fromId);
+
+  if (!fromId || isNaN(amt) || amt <= 0) {
+    resEl.innerHTML = '<div class="calc-results-empty">⬆ 交換元ポイントを選択して金額を入力してください</div>';
+    return;
+  }
+
+  // 全TO候補を集める（自分自身・現金購入除く）
+  const toList = PTS.filter(p => p.id !== fromId && !['cash'].includes(p.cat));
+  const results = [];
+
+  toList.forEach(toP => {
+    const k = `${fromId}->${toP.id}`;
+    const rd = RD[k];
+    if (!rd) return;
+
+    let best = null; // {rate, isIndirect, change, route}
+    if (rd.direct && rd.direct.rate != null) {
+      best = { rate: rd.direct.rate, isIndirect: false, change: rd.direct.change, route: null };
+    }
+    if (rd.indirect && rd.indirect.rate != null) {
+      if (!best || rd.indirect.rate > best.rate) {
+        best = { rate: rd.indirect.rate, isIndirect: true, change: rd.indirect.change, route: rd.indirect.route };
+      }
+    }
+    if (!best) return;
+
+    const got = Math.round(amt * best.rate);
+    results.push({ toP, rate: best.rate, got, isIndirect: best.isIndirect, change: best.change, route: best.route });
+  });
+
+  if (!results.length) {
+    resEl.innerHTML = '<div class="calc-no-result">このポイントの交換先データがありません</div>';
+    return;
+  }
+
+  // ソート
+  if (calcSort === 'rate') {
+    results.sort((a, b) => b.rate - a.rate);
+  } else {
+    const catOrd = Object.keys(CATS);
+    results.sort((a, b) => catOrd.indexOf(a.toP.cat) - catOrd.indexOf(b.toP.cat) || b.rate - a.rate);
+  }
+
+  const fromName = PTS.find(p => p.id === fromId)?.name || fromId;
+  const unit = getCalcUnit(fromId);
+  let html = '';
+
+  results.forEach((r, i) => {
+    const isBest = i === 0 && calcSort === 'rate';
+    const pct = (r.rate * 100).toFixed(1);
+    const colorCls = calcRateColor(r.rate);
+
+    let badges = '';
+    if (isBest) badges += '<span class="calc-res-badge best">🏆 最高</span>';
+    if (r.isIndirect) badges += '<span class="calc-res-badge indirect">↻ 間接</span>';
+    if (r.change === 'up') badges += '<span class="calc-res-badge rise">↑改定</span>';
+    if (r.change === 'down') badges += '<span class="calc-res-badge fall">↓改定</span>';
+
+    const routeStr = r.isIndirect && r.route ? buildRouteStr(r.route) : '';
+    const toName = r.toP.name;
+    const gotFmt = r.got.toLocaleString();
+
+    // 表示単位
+    let gotUnit = '';
+    if (r.toP.cat === 'mile') gotUnit = 'マイル';
+    else if (r.toP.cat === 'hotel') gotUnit = 'pt';
+    else if (r.toP.cat === 'common') gotUnit = 'ポイント';
+    else if (r.toP.cat === 'coin') gotUnit = 'コイン';
+
+    html += `
+      <div class="calc-res-card" onclick="openMod('${fromId}','${r.toP.id}')">
+        <div class="calc-res-to">
+          <div class="calc-to-name">${toName}${badges}</div>
+          <div class="calc-to-cat">${CATS[r.toP.cat]?.label || ''} ／ レート ${pct}%</div>
+        </div>
+        <div class="calc-res-val">
+          <div class="calc-res-main ${colorCls}">${gotFmt}<span style="font-size:10px;font-weight:500;margin-left:2px">${gotUnit}</span></div>
+          <div class="calc-res-sub">${amt.toLocaleString()} ${unit} → ${pct}%</div>
+        </div>
+        ${routeStr ? `<div class="calc-res-route">経路: ${routeStr}</div>` : ''}
+      </div>`;
+  });
+
+  resEl.innerHTML = html;
+}
+
+// ════════════════════════════════
 // INIT
 // ════════════════════════════════
 buildChips();
@@ -908,6 +1191,7 @@ const INIT_6=['moppy','hapitas','marriott','ana','jal','kris'];
 INIT_6.forEach(id=>{ptSt[id]=true;});
 buildChips(); // チップ再描画でactive状態を反映
 buildMatrix();
+buildCalcSelect();
 </script>
 </body>
 </html>
