@@ -343,7 +343,7 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
 <body>
 <div class="hdr">
   <h1>✈️ KFマイル集約電卓 ＆ ポイント・マイル交換レート一覧</h1>
-  <span class="hdr-sub">レート最終更新: 2026年5月4日 ／ 交換前に必ず各社公式サイトをご確認ください</span>
+  <span class="hdr-sub">レート最終更新: 2026年5月5日 ／ 交換前に必ず各社公式サイトをご確認ください</span>
 </div>
 
 <div class="layout">
@@ -528,7 +528,7 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
 
   <div class="footer-info">
   <div class="footer-update">
-    📅 本ツールのレートデータ最終更新日: <strong>2026年5月4日</strong>
+    📅 本ツールのレートデータ最終更新日: <strong>2026年5月5日</strong>
     &emsp;|&emsp;
     表示レートは調査時点のものであり、予告なく変更される場合があります。
   </div>
@@ -1359,7 +1359,8 @@ const AGG_RATES = {
   kris: [ // KrisFlyer(KF)マイル
     { id:'moppy',   name:'モッピー',         rate: (1000/1300)*(25000/60000), route:'マリオットBonvoy経由（60,000pt単位+ボーナス）', unit:'ポイント', default: 100000 },
     { id:'hapitas', name:'ハピタス',         rate: (330/500)*(25000/60000),   route:'マリオットBonvoy経由（500P→330pt換算）', unit:'ポイント', default: 0  },
-    { id:'fancrew', name:'ファンくる',       rate: 0.9*0.70, route:'Gポイント経由（ファンくる→G手数料無料、G内交換で10%手数料→nimoca→ANA70%）保守的計算', unit:'ポイント', default: 0 },
+    { id:'fancrew', name:'ファンくる',       rate: 0.9*0.70/10, route:'※10P=1円相当。Gポイント経由(G内10%手数料)→nimoca→ANA換算。実質6.3%/P', unit:'ポイント', default: 0 },
+    { id:'rakuten', name:'楽天ポイント',     rate: (1/3)*(25000/60000), route:'マリオット経由（3楽天P→1マリオットpt→KF 41.7%）約13.9%', unit:'ポイント', default: 0 },
     { id:'dmoney',  name:'ドットマネー',     rate: 0,                          route:'KFへの直接換算ルートなし', unit:'マネー', default: 0 },
     { id:'jpy',     name:'日本円（現金購入）', rate: (1/1875)*(25000/60000),   route:'マリオット公式購入→KF', unit:'円', default: 0 },
     { id:'usd',     name:'米ドル（現金購入）', rate: 80*(25000/60000),          route:'マリオット公式購入→KF', unit:'USD', default: 0 },
@@ -1367,7 +1368,8 @@ const AGG_RATES = {
   ana: [ // ANAマイル
     { id:'moppy',   name:'モッピー',         rate: 0.70, route:'みずほルート（Vポイント→JRキューポ→永久不滅P→ANA）', unit:'ポイント', default: 100000 },
     { id:'hapitas', name:'ハピタス',         rate: 0.70, route:'みずほルート（Vポイント→JRキューポ→永久不滅P→ANA）', unit:'ポイント', default: 0  },
-    { id:'fancrew', name:'ファンくる',       rate: 0.9*0.70, route:'Gポイント経由（10%手数料控除）→nimocaルート70%', unit:'ポイント', default: 0 },
+    { id:'fancrew', name:'ファンくる',       rate: 0.9*0.70/10, route:'※10P=1円相当。Gポイント経由(G内10%手数料)→nimocaルート70%。実質6.3%/P', unit:'ポイント', default: 0 },
+    { id:'rakuten', name:'楽天ポイント',     rate: 0.50, route:'直接交換50%（1,000P単位）', unit:'ポイント', default: 0 },
     { id:'yamada',  name:'ヤマダ電機P',     rate: 1000/4000, route:'ANA直接交換（4,000P→1,000マイル・25%）※楽天・dP等への交換は不可', unit:'ポイント', default: 0 },
     { id:'dmoney',  name:'ドットマネー',     rate: 85/300, route:'300マネー→85マイル（約28.3%）', unit:'マネー', default: 0 },
     { id:'jpy',     name:'日本円（現金購入）', rate: 0,    route:'直接購入ルートなし', unit:'円', default: 0 },
@@ -1376,7 +1378,8 @@ const AGG_RATES = {
   jal: [ // JALマイル
     { id:'moppy',   name:'モッピー',         rate: 0.50, route:'直接交換50%（ドリームキャンペーン時最大80%）', unit:'ポイント', default: 100000 },
     { id:'hapitas', name:'ハピタス',         rate: 0.50, route:'直接交換50%', unit:'ポイント', default: 0  },
-    { id:'fancrew', name:'ファンくる',       rate: 0.50, route:'ドットマネー経由（手数料無料→JAL50%）★Gポイント経由より有利', unit:'ポイント', default: 0 },
+    { id:'fancrew', name:'ファンくる',       rate: 0.50/10, route:'※10P=1円相当。ドットマネー経由（手数料無料→JAL50%）。実質5%/P', unit:'ポイント', default: 0 },
+    { id:'rakuten', name:'楽天ポイント',     rate: 0.50, route:'直接交換50%（1,000P単位）', unit:'ポイント', default: 0 },
     { id:'yamada',  name:'ヤマダ電機P',     rate: (1000/4000)*0.50, route:'ANA直接(25%)→JAL直接交換なし。実質12.5%と非常に低い', unit:'ポイント', default: 0 },
     { id:'dmoney',  name:'ドットマネー',     rate: 0.50, route:'直接交換（2マネー=1マイル・50%）/ キャンペーン時55%', unit:'マネー', default: 0 },
     { id:'jpy',     name:'日本円（現金購入）', rate: 0,    route:'直接購入ルートなし', unit:'円', default: 0 },
@@ -1385,7 +1388,8 @@ const AGG_RATES = {
   marriott: [ // マリオットBonvoyポイント
     { id:'moppy',   name:'モッピー',         rate: 1000/1300, route:'直接交換（1,300P→1,000pt ≈76.9%）', unit:'ポイント', default: 100000 },
     { id:'hapitas', name:'ハピタス',         rate: 330/500,   route:'直接交換（500P→330pt ≈66%・2025年4月改悪）', unit:'ポイント', default: 0  },
-    { id:'fancrew', name:'ファンくる',       rate: 0.9*(1000/1300), route:'Gポイント経由（G内交換10%手数料→マリオット）保守的計算', unit:'ポイント', default: 0 },
+    { id:'fancrew', name:'ファンくる',       rate: 0.9*(1000/1300)/10, route:'※10P=1円相当。Gポイント経由（G内10%手数料）→マリオット。実質約6.9%/P', unit:'ポイント', default: 0 },
+    { id:'rakuten', name:'楽天ポイント',     rate: 1/3, route:'直接交換（3楽天P→1マリオットpt ≈33.3%）最低3,000P単位', unit:'ポイント', default: 0 },
     { id:'yamada',  name:'ヤマダ電機P',     rate: 0,          route:'マリオット直接交換ルートなし（ANA経由も低レート）', unit:'ポイント', default: 0 },
     { id:'dmoney',  name:'ドットマネー',     rate: 0,          route:'マリオット直接交換ルートなし', unit:'マネー', default: 0 },
     { id:'jpy',     name:'日本円（現金購入）', rate: 1000/1875, route:'マリオット公式購入（1,000pt≈1,875円）', unit:'円', default: 0 },
