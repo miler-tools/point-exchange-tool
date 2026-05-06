@@ -625,7 +625,7 @@ function cardHTML(c,rank,t,man){
   if(miles<=0){famLine=`<span style="color:var(--text-dim)">このカードでは${t}マイルを直接獲得できません</span>`;barP=0;}
   else{const yrs=goal/miles;barP=Math.min(100,Math.round(100/yrs));const yStr=yrs<1?`<span class="famyr">${(yrs*12).toFixed(1)}ヶ月</span>`:`<span class="famyr">${yrs.toFixed(1)}年</span>`;famLine=`${yStr}で達成`;}
   const sq='https://www.google.com/search?q='+encodeURIComponent(c.sq);
-  const dktUrl='https://dokotoku.jp/cc/search?name='+encodeURIComponent(c.dkt||c.name);
+  const dktUrl='https://dokotoku.jp/cc/';
   // ① どこ得バナー（BEST MATCH のみ表示）
   const psLabel=c.psType==='referral'
     ? {tag:'💌 紹介特典が有利な傾向',col:'#7C3AED',bg:'#F5F3FF',
@@ -651,9 +651,9 @@ function cardHTML(c,rank,t,man){
       合計が1円でも多い方を選択。
     </div>
   </div>
-  <div class="dkt-desc">📌 現時点でどのポイントサイトが最高還元かは「どこ得」で一発確認できます。申込直前に必ず確認してください（還元額は日々変動）。</div>
+  <div class="dkt-desc">📌 現時点でどのポイントサイトが最高還元かは「どこ得」で一発確認できます。サイトを開いたら<strong>検索欄にカード名を入力</strong>してください（還元額は日々変動します）。</div>
   <a class="dkt-btn" href="${dktUrl}" target="_blank" rel="noopener">
-    🔍 どこ得でポイントサイト最高還元を確認する
+    🔍 どこ得でポイントサイト最高還元を確認する（カード名で検索）
   </a>
 </div>`:'';
   const alerts=c.alerts.map(a=>`<div class="abanner"><span class="adt">⚠ ${a.d}：</span>${a.t}</div>`).join('');
