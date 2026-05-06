@@ -1,0 +1,187 @@
+<!-- はてなブログ「HTML編集」タブに貼り付けてご使用ください -->
+<!-- ツールURL は実際の公開URLに差し替え済みです -->
+
+<style>
+.cc5{max-width:680px;margin:0 auto;font-family:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif}
+.cc5 .lead{font-size:15px;line-height:1.9;color:#333;margin-bottom:14px}
+.cc5 h2{font-size:18px;font-weight:700;padding:5px 0 5px 13px;border-left:4px solid #0EA5E9;margin:32px 0 14px;color:#0284C7}
+.cc5 h3{font-size:15px;font-weight:700;color:#0C2340;margin:22px 0 8px}
+.cc-cta{text-align:center;margin:28px 0}
+.cc-cta a{display:inline-block;background:linear-gradient(135deg,#0EA5E9,#2563EB,#7C3AED);color:#fff!important;font-size:17px;font-weight:700;padding:16px 42px;border-radius:10px;text-decoration:none!important;box-shadow:0 4px 18px rgba(37,99,235,.35);letter-spacing:.03em}
+.cc-cta p{font-size:11px;color:#888;margin-top:8px}
+.nb2{display:inline-block;background:#E0F2FE;color:#0369A1;font-size:11px;padding:2px 10px;border-radius:20px;font-weight:600;vertical-align:middle}
+.cc-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+@media(max-width:560px){.cc-grid{grid-template-columns:1fr}}
+.cc-fi{background:#F0F9FF;border:1px solid #BAE6FD;border-radius:8px;padding:12px 14px}
+.cc-fi .ico{font-size:20px;margin-bottom:5px}
+.cc-fi .tl{font-size:13px;font-weight:700;color:#0284C7;margin-bottom:4px}
+.cc-fi .de{font-size:12px;color:#1E4976;line-height:1.6}
+.cc-step{display:flex;gap:14px;margin-bottom:16px;align-items:flex-start}
+.cc-sn{width:28px;height:28px;background:linear-gradient(135deg,#0EA5E9,#2563EB);color:#fff;border-radius:50%;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.cc-sb{flex:1;font-size:13.5px;color:#333;line-height:1.75}
+.cc-sb strong{color:#0284C7}
+.cc-table{width:100%;border-collapse:collapse;font-size:12px;margin:14px 0}
+.cc-table th{background:linear-gradient(to right,#0EA5E9,#2563EB);color:#fff;padding:8px 10px;text-align:left;font-size:11px;font-weight:600}
+.cc-table td{padding:8px 10px;border-bottom:1px solid #BFDBFE;color:#333;vertical-align:top}
+.cc-table tr:nth-child(even) td{background:#F0F9FF}
+.rhi{color:#16A34A;font-weight:700}
+.rmd{color:#0284C7;font-weight:600}
+.rlo{color:#64748B}
+/* 選定・除外セクション */
+.sel-box{background:#F0F9FF;border:1.5px solid #7DD3FC;border-radius:10px;padding:16px 18px;margin:20px 0}
+.sel-box .sb-title{font-size:14px;font-weight:700;color:#0284C7;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.sel-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #BFDBFE;font-size:12.5px;color:#333;line-height:1.6}
+.sel-item:last-child{border-bottom:none}
+.sel-item .si-icon{flex-shrink:0;font-size:15px;margin-top:1px}
+.sel-item .si-body strong{color:#0284C7}
+.excl-box{background:#FFFBF5;border:1.5px solid #FDE68A;border-radius:10px;padding:16px 18px;margin:20px 0}
+.excl-box .eb-title{font-size:14px;font-weight:700;color:#92400E;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.excl-box .eb-note{font-size:11px;color:#78350F;margin-bottom:12px;padding:6px 10px;background:#FEF3C7;border-radius:6px;line-height:1.6}
+.excl-item{display:flex;gap:10px;padding:7px 0;border-bottom:1px dashed #FDE68A;font-size:12px;color:#333;line-height:1.6}
+.excl-item:last-child{border-bottom:none}
+.excl-item .ei-name{font-weight:700;color:#78350F;flex-shrink:0;min-width:180px}
+.notice-box{background:#FEF9ED;border:1px solid #FCD34D;border-radius:8px;padding:14px 16px;margin:20px 0;font-size:12px;color:#7C3A00;line-height:1.8}
+.notice-box .nb-t{font-weight:700;font-size:13px;margin-bottom:6px}
+.update-log{background:#F8FFFE;border:1px solid #BAE6FD;border-radius:8px;padding:12px 16px;margin:20px 0;font-size:12px;color:#1E4976;line-height:1.9}
+.update-log .ul-t{font-weight:700;color:#0284C7;margin-bottom:4px;font-size:13px}
+.cc-divider{border:none;border-top:1px solid #BFDBFE;margin:28px 0}
+.series-box{background:#0C2340;color:#BAE6FD;border-radius:8px;padding:14px 18px;margin:24px 0;font-size:13px;line-height:1.8}
+.series-box strong{color:#38BDF8}
+.series-box a{color:#38BDF8}
+.qbox{background:#F0F9FF;border-left:4px solid #0EA5E9;padding:12px 16px;margin:16px 0;border-radius:0 8px 8px 0;font-size:13px;color:#333;line-height:1.8}
+.qbox .q{font-weight:700;color:#0284C7;margin-bottom:4px}
+</style>
+
+<div class="cc5">
+
+<p class="lead">「年間200〜300万円の決済があるけど、どのクレジットカードが一番マイルを貯めやすいの？」——137件以上のカードが並ぶ比較サイトを見ても、自分の決済額で何マイル貯まるかは教えてくれません。そこで<strong>初〜中級陸マイラーに絞った17枚を厳選し、年間決済額を入力するだけで獲得マイル数・実質おトク額・目標到達年数を即計算してくれる</strong>無料ツールを公開しました。</p>
+
+<p class="lead">いずれのカード会社とも広告・提携関係はありません。<span class="nb2">✓ 広告・アフィリエイトなし</span></p>
+
+<div class="cc-cta">
+  <a href="https://miler-tools.github.io/point-exchange-tool/mile-card-tool-v5.html" target="_blank" rel="noopener">✈ マイル最強クレカ診断ツールを開く（無料）</a>
+  <p>※ 別タブで開きます。登録不要・完全無料</p>
+</div>
+
+<h2>ツールの主な機能</h2>
+
+<div class="cc-grid">
+  <div class="cc-fi"><div class="ico">💳</div><div class="tl">ブランド絞り込み</div><div class="de">AMEX/JCB/VISA/MC/Dinersを複数選択。申込できるブランドだけで比較できる。</div></div>
+  <div class="cc-fi"><div class="ico">📊</div><div class="tl">年間マイル数リアルタイム試算</div><div class="de">スライダーで決済額を動かすと全17枚の獲得マイル数が即座に更新される。</div></div>
+  <div class="cc-fi"><div class="ico">⭐</div><div class="tl">実質おトク額の自動計算</div><div class="de">獲得マイル×5円（ビジネスクラス換算）－年会費＝純粋な利得額をプラス・マイナスで表示。</div></div>
+  <div class="cc-fi"><div class="ico">✈</div><div class="tl">3人家族チェッカー</div><div class="de">東京-シンガポール ビジネスクラス3名分が何年で貯まるかをプログレスバーで表示。</div></div>
+  <div class="cc-fi"><div class="ico">📈</div><div class="tl">将来の改定見通し</div><div class="de">各カードの改悪リスク（低・中・高）と今後2〜3年の予測を編集部コメント付きで掲載。</div></div>
+  <div class="cc-fi"><div class="ico">🤝</div><div class="tl">紹介経由申込の特典情報</div><div class="de">紹介リンク経由で得られるボーナスの過去実績と探し方を各カードに記載。</div></div>
+</div>
+
+<h2>なぜこの17枚なのか――選定の考え方</h2>
+
+<p style="font-size:13.5px;color:#333;line-height:1.8">多くのカード比較サイトは100枚以上を並べますが、そのほとんどは広告出稿しているカード会社の商品です。本ツールは逆の発想で、<strong>「このユーザー像に本当に意味のあるカードだけを選ぶ」</strong>という基準を先に設定し、そこから逆算して選定しました。</p>
+
+<div class="sel-box">
+  <div class="sb-title">✅ 選定基準（すべてを満たすことが原則）</div>
+  <div class="sel-item"><span class="si-icon">👤</span><div class="si-body"><strong>対象ユーザー</strong>：年間200〜300万円の汎用決済を行う日本在住の初〜中級陸マイラー</div></div>
+  <div class="sel-item"><span class="si-icon">✈</span><div class="si-body"><strong>目標マイル</strong>：ANA・JAL・KrisFlyer（SQ）・マリオットBonvoy・ヒルトンHonorsのいずれか</div></div>
+  <div class="sel-item"><span class="si-icon">💴</span><div class="si-body"><strong>年会費の範囲</strong>：5,500円〜82,500円。超高額プレミアムカードは初中級者の年会費回収が現実的に困難なため対象外</div></div>
+  <div class="sel-item"><span class="si-icon">📊</span><div class="si-body"><strong>マイル換算率の基準</strong>：汎用決済での実質マイル還元率が0.3%以上、または「PP付帯の最安コスト」「プラチナ招待への登竜門」など特別な選択理由があるカード</div></div>
+  <div class="sel-item"><span class="si-icon">🇯🇵</span><div class="si-body"><strong>申込資格</strong>：日本在住者が通常の審査で申込可能なカードであること</div></div>
+</div>
+
+<h2>収録17枚と選定理由の早見表</h2>
+
+<table class="cc-table">
+  <thead><tr><th>カード</th><th>選定の主な理由</th><th>還元率</th><th>年会費</th></tr></thead>
+  <tbody>
+    <tr><td><strong>MBアメックスプレミアム</strong></td><td>40社以上マルチ対応・1.5%が唯一無二</td><td class="rhi">1.5%</td><td>82,500円</td></tr>
+    <tr><td><strong>セゾンプラチナ BizAMEX</strong></td><td>JAL最高水準1.125%＋PP無制限</td><td class="rhi">1.125%</td><td>33,000円＋</td></tr>
+    <tr><td><strong>AMEXゴールド・プリファード</strong></td><td>14社マルチ・PP年2回・入会ボーナス大</td><td class="rmd">ANA1.0%</td><td>39,600円＋</td></tr>
+    <tr><td><strong>ANAアメックスゴールド</strong></td><td>入会ボーナス最大70,000マイルの爆発力</td><td class="rmd">1.0%</td><td>34,100円＋</td></tr>
+    <tr><td><strong>ソラチカゴールド</strong></td><td>11,000円でPP無制限・最安コスト</td><td class="rmd">1.0%</td><td>11,000円</td></tr>
+    <tr><td><strong>ANAワイドゴールド</strong></td><td>ANA直接付与・無期限・3ブランド対応</td><td class="rmd">1.0%</td><td>15,400円</td></tr>
+    <tr><td><strong>三菱UFJプラチナアメックス</strong></td><td>PP付帯の最安プラチナ・家族分PP発行可</td><td class="rmd">0.8%</td><td>22,000円</td></tr>
+    <tr><td><strong>JALアメックスプラチナ</strong></td><td>JAL1.0%＋AMEXブランド希望者の選択肢</td><td class="rmd">1.0%</td><td>34,100円</td></tr>
+    <tr><td><strong>JAL CLUB-Aゴールド</strong></td><td>JAL1.0%・複数ブランド・シンプル設計</td><td class="rmd">1.0%</td><td>17,600円</td></tr>
+    <tr><td><strong>セゾンゴールドアメックス</strong></td><td>JALマイルを低コスト（11,000円）で始める入門</td><td class="rlo">0.75%</td><td>11,000円＋</td></tr>
+    <tr><td><strong>ダイナースクラブ</strong></td><td>マイル効率は低いがグルメ等ライフスタイル特典重視層向け</td><td class="rlo">0.4%</td><td>29,700円</td></tr>
+    <tr><td><strong>MBアメックス（一般）</strong></td><td>MBポイント入門・300万円決済でボーナス付き1.0%</td><td class="rlo">0.83〜1.0%</td><td>34,100円</td></tr>
+    <tr><td><strong>ヒルトンHonorsアメックス</strong></td><td>ヒルトンゴールド自動付帯・MBと対になる選択肢</td><td class="rlo">ホテル特化</td><td>17,600円</td></tr>
+    <tr><td><strong>楽天プレミアムカード</strong></td><td>楽天経済圏ユーザーが最初に検討するカード</td><td class="rlo">0.5%</td><td>11,000円</td></tr>
+    <tr><td><strong>三井住友ゴールドNL</strong></td><td>年100万円達成で永年無料・ANA派初心者向け</td><td class="rlo">0.3%</td><td>5,500円→0円</td></tr>
+    <tr><td><strong>JCBゴールド</strong></td><td>JCBプラチナ招待（PP無制限）への登竜門</td><td class="rlo">0.3%</td><td>11,000円</td></tr>
+    <tr><td><strong>アメックスグリーン</strong></td><td>AMEXをANA1.0%で最安値から始める入門</td><td class="rmd">ANA1.0%</td><td>13,200円＋</td></tr>
+  </tbody>
+</table>
+
+<h2>今回あえて収録しなかったカードと理由</h2>
+
+<div class="excl-box">
+  <div class="eb-title">⚠ 除外カードについての重要な前置き</div>
+  <div class="eb-note">以下の「除外理由」は、本ツールが想定するユーザー像（年間200〜300万円決済・初〜中級陸マイラー・マイル獲得目的）に照らした場合の話です。除外されたカードが「劣っている」という意味では一切ありません。利用スタイル・目的・収入水準が異なれば、以下のカードが最適解になるケースは十分にあります。カード選びは最終的にご自身の状況でご判断ください。</div>
+  <div class="excl-item"><span class="ei-name">アメックスプラチナ<br>（年会費165,000円）</span><span>年会費が本ツールの想定上限（約10万円）を大きく超えるため。コンシェルジュ・センチュリオンラウンジ等の特典はビジネス・富裕層向けで、初中級者が年会費を年間マイル価値で回収するのは困難なケースが多い。</span></div>
+  <div class="excl-item"><span class="ei-name">ANA一般カード<br>JAL普通カード<br>（年会費〜7,150円）</span><span>年間200〜300万円の決済前提では、同グループのゴールドカード（ソラチカゴールド11,000円、JAL CLUB-Aゴールド17,600円等）の方が還元率・特典が明確に優位。一般カードとゴールドカードの年会費差が小さい範囲に決済額がある場合は、ゴールドを選ぶ合理性が高い。</span></div>
+  <div class="excl-item"><span class="ei-name">ANAワイドカード<br>（年7,275円）</span><span>ANAワイドゴールド（15,400円）と還元率がほぼ同等の場合が多く、特典面でゴールドが上回る。200〜300万円の決済額であれば年会費差の7,000円程度はマイル・特典で十分に回収可能なため、本ツールではゴールドを選定。</span></div>
+  <div class="excl-item"><span class="ei-name">JALカードSuica<br>（年会費2,200円〜）</span><span>JAL CLUB-Aゴールドと機能が重複する。Suica機能が特に必要な方（JR東日本の利用が多い等）にとっては有力な選択肢だが、本ツールの汎用マイル比較では独自の優位性を示しにくいため除外。</span></div>
+  <div class="excl-item"><span class="ei-name">エポスゴールド<br>（実質年会費無料〜）</span><span>汎用決済でのマイル換算率が0.5%以下と低く、本ツール収録カードに対して劣位。ただし「選択制ポイントアップ」を活用した特定店舗での高還元（最大3倍）や、年間利用額に応じたボーナスポイントは魅力的で、ポイント投資スタイルの方には有力な選択肢。</span></div>
+  <div class="excl-item"><span class="ei-name">三井住友カードNL<br>（一般・年会費永年無料）</span><span>本ツール収録の「三井住友ゴールドNL」が年100万円決済で永年無料になる。200〜300万円/年の決済者は初年度の5,500円のみでゴールドを永年無料化できるため、一般カードを並べる実質的な意義がない。</span></div>
+  <div class="excl-item"><span class="ei-name">ヒルトンHonorsアメックス<br>プレミアム（66,000円）</span><span>一般カード（17,600円）を収録済みのため。プレミアム（66,000円）の年会費はヒルトンダイヤモンドステータスを目指す上級者向けで、初中級者の想定年会費範囲を超える。</span></div>
+  <div class="excl-item"><span class="ei-name">ダイナースクラブ<br>プレミアム（143,000円）</span><span>標準のダイナースクラブカード（29,700円）を収録済みのため。プレミアムは年会費143,000円と対象ユーザーの想定範囲を大きく超える。</span></div>
+  <div class="excl-item"><span class="ei-name">au PAYゴールドカード</span><span>auユーザー（au/UQ携帯料金10%還元等）には高い価値があるが、auユーザー以外には汎用マイル換算での優位性が薄い。通信キャリアに依存した特典が前提のカードは、本ツールの汎用比較には馴染みにくいと判断。</span></div>
+  <div class="excl-item"><span class="ei-name">PayPayカード</span><span>PayPayポイント→Vポイント→ANAマイルという間接ルートのマイル換算率が低く、かつPayPayから交換したVポイントはマイル交換に制限があるため（詳細はマイル集約電卓の注記参照）。PayPayポイントの活用はマイル集約電卓ツールのポイント交換レートセクションで取り上げています。</span></div>
+</div>
+
+<h2>使い方（4ステップ）</h2>
+
+<div class="cc-step"><div class="cc-sn">1</div><div class="cc-sb"><strong>目標マイル種別を選ぶ</strong><br>ANA・JAL・KF・マリオット・ALL（全比較）から選択。</div></div>
+<div class="cc-step"><div class="cc-sn">2</div><div class="cc-sb"><strong>国際ブランドと年間決済額を設定</strong><br>使えるブランド（AMEX等）をチップで選択し、スライダーで決済額を調整。</div></div>
+<div class="cc-step"><div class="cc-sn">3</div><div class="cc-sb"><strong>「実質おトク額」または「おすすめ順」で比較</strong><br>おすすめ順のスコア内訳はパネル内に常時表示。透明性を確保しています。</div></div>
+<div class="cc-step"><div class="cc-sn">4</div><div class="cc-sb"><strong>気になるカードの詳細を展開して公式サイトを検索</strong><br>「将来の改定見通し」「紹介特典」をクリックで展開。「公式を検索」ボタンで申込ページへ。</div></div>
+
+<h2>よくある疑問</h2>
+
+<div class="qbox">
+  <div class="q">Q. アメックスゴールドプリファードのJAL還元率が0.4%と低いのはなぜ？</div>
+  アメックスゴールドプリファードでJALマイルに移行する場合、2,500MRポイント→1,000JALマイルという換算レートが適用されます。これは1pt→0.4マイルに相当し、ANA移行（1pt→1マイル）と比べて大幅に低い換算率です。JALマイルを目的とするならセゾンプラチナBizAMEX（1.125%）またはJAL CLUB-Aゴールド（1.0%）が適切です。
+</div>
+
+<div class="qbox">
+  <div class="q">Q. 三井住友ゴールドNLとJCBゴールドは還元率0.3%で低いのになぜ収録？</div>
+  三井住友ゴールドNLは「年100万円決済で永年無料になる」という特性から、200〜300万円/年の決済者には実質コストゼロでANAマイルを積めます。JCBゴールドは「マイル目的で選ぶカードではない」と明記したうえで、2年以上の利用実績でJCBプラチナへの招待（PP無制限付帯・年27,500円）を狙える登竜門として収録しています。
+</div>
+
+<div class="qbox">
+  <div class="q">Q. 「実質おトク額」がマイナスのカードはダメなカード？</div>
+  必ずしもそうではありません。例えばMBアメックスプレミアム（年会費82,500円）は、入会ボーナス（最大95,000MBポイント≈47,500マイル）を加味すると初年度は実質黒字になります。また、PPなどのラウンジ特典・旅行保険・ホテル特典に価値を見出す方には、マイル価値だけでは測れない恩恵があります。試算値はあくまで「通常決済でのマイル価値」による参考値としてご活用ください。
+</div>
+
+<h2>姉妹ツール：マイル集約電卓・マイル交換レート一覧</h2>
+
+<div class="series-box">
+  ✈ <strong>Mile Tools シリーズ</strong> — 2本のツールを使い分けてください<br><br>
+  📌 <strong>カード選びに迷っている → このページのツール（クレカ診断・17枚比較）</strong><br>
+  📌 <strong>カードが決まってポイントを集計したい → <a href="https://miler-tools.github.io/point-exchange-tool/" target="_blank" rel="noopener">マイル集約電卓・マイル交換レート一覧</a></strong><br><br>
+  集約電卓では、モッピー・ハピタス・楽天ポイント・Vポイント・マリオットBonvoyなどの手持ちポイントを一括入力して、ANA・JAL・KrisFlyer各マイルへの換算合計と目標達成率を計算できます。
+</div>
+
+<hr class="cc-divider">
+
+<div class="notice-box">
+  <div class="nb-t">⚠ ご利用にあたっての注意事項</div>
+  ① マイル還元率・年会費・特典内容は予告なく変更されます。申込前に必ず各社公式サイトをご確認ください。<br>
+  ② 「実質おトク額」はマイル1マイル＝5円（ビジネスクラス換算の目安）で計算しています。マイルの実際の価値は利用方法により大きく異なります。<br>
+  ③ KrisFlyer 3名分目標: Saver枠54,500マイル/人×往復2×3名＝327,000マイル（東京-シンガポール ビジネスクラス）。<br>
+  ④ 将来の改定見通しは編集部の予測であり、確定情報ではありません。<br>
+  ⑤ 紹介特典情報は過去実績に基づく参考情報です。現在提供されていない場合があります。<br>
+  ⑥ 本ツール・本記事はいずれのカード会社とも広告・提携関係にありません。
+</div>
+
+<div class="update-log">
+  <div class="ul-t">📅 更新履歴</div>
+  2026年5月6日：v5公開。収録カードを7→17枚に拡充。スカイブルー×サンセットオレンジの明るいカラーテーマに刷新。アメックスゴールドプリファード・三菱UFJプラチナ・JALアメックスプラチナ・セゾンゴールド・ダイナースクラブ・ヒルトンHonors・楽天プレミアム・三井住友ゴールドNL・JCBゴールド・アメックスグリーンを新規追加。選定基準・除外理由を記事内で明示。
+</div>
+
+<div class="cc-cta">
+  <a href="https://miler-tools.github.io/point-exchange-tool/mile-card-tool-v5.html" target="_blank" rel="noopener">✈ ツールを開いてベストカードを診断する</a>
+  <p>※ 別タブで開きます。登録不要・完全無料</p>
+</div>
+
+</div>
