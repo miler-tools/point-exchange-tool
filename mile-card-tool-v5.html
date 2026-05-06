@@ -625,13 +625,12 @@ function cardHTML(c,rank,t,man){
   if(miles<=0){famLine=`<span style="color:var(--text-dim)">このカードでは${t}マイルを直接獲得できません</span>`;barP=0;}
   else{const yrs=goal/miles;barP=Math.min(100,Math.round(100/yrs));const yStr=yrs<1?`<span class="famyr">${(yrs*12).toFixed(1)}ヶ月</span>`:`<span class="famyr">${yrs.toFixed(1)}年</span>`;famLine=`${yStr}で達成`;}
   const sq='https://www.google.com/search?q='+encodeURIComponent(c.sq);
-  const dktUrl='https://dokotoku.jp/cc/';
-  // ① どこ得バナー（BEST MATCH のみ表示）
+  // ① ポイントサイト vs 紹介特典バナー（BEST MATCHのみ表示）
   const psLabel=c.psType==='referral'
     ? {tag:'💌 紹介特典が有利な傾向',col:'#7C3AED',bg:'#F5F3FF',
-       body:'このカードはAMEX等のステータス系カードのため、<strong>ポイントサイトより紹介リンク経由の上乗せボーナスが大きい傾向</strong>があります。まず下記で現在のポイントサイト還元額を確認し、知人の紹介特典と数字で比較してから申込先を決めてください。'}
+       body:'このカードはAMEX等のステータス系カードのため、<strong>ポイントサイトより紹介リンク経由の上乗せボーナスが大きい傾向</strong>があります。まず現在のポイントサイト還元額を確認し、知人の紹介特典と数字で比較してから申込先を決めてください。'}
     : {tag:'🏆 ポイントサイト経由が有利な傾向',col:'#0284C7',bg:'#EFF6FF',
-       body:'このカードは<strong>ポイントサイト（モッピー等）経由の申込が有利な傾向</strong>があります。ただし紹介特典と比較してから最終判断してください。必ず「どこ得」で現時点の最高還元額を確認するのが鉄則です。'};
+       body:'このカードは<strong>ポイントサイト（モッピー等）経由の申込が有利な傾向</strong>があります。ただし紹介特典と比較してから最終判断してください。必ずモッピー・ハピタス等で現時点の最高還元額を確認するのが鉄則です。'};
   const dktBanner=isBest?`
 <div class="dkt-banner">
   <div class="dkt-title">
@@ -651,10 +650,7 @@ function cardHTML(c,rank,t,man){
       合計が1円でも多い方を選択。
     </div>
   </div>
-  <div class="dkt-desc">📌 現時点でどのポイントサイトが最高還元かは「どこ得」で一発確認できます。サイトを開いたら<strong>検索欄にカード名を入力</strong>してください（還元額は日々変動します）。</div>
-  <a class="dkt-btn" href="${dktUrl}" target="_blank" rel="noopener">
-    🔍 どこ得でポイントサイト最高還元を確認する（カード名で検索）
-  </a>
+  <div class="dkt-desc">📌 モッピー・ハピタス・ポイントタウン等の主要ポイントサイトで「カード名」を検索して現在の還元額を確認してから申し込みましょう（還元額は日々変動します）。</div>
 </div>`:'';
   const alerts=c.alerts.map(a=>`<div class="abanner"><span class="adt">⚠ ${a.d}：</span>${a.t}</div>`).join('');
   const btags=c.brands.map(b=>`<span class="btag">${b}</span>`).join('');
