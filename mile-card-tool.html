@@ -151,6 +151,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 .ft.hotel{background:#FDF4FF;color:#7E22CE}
 .ft.night{background:#FEF9C3;color:#78350F}
 
+/* ── こだわり条件ツールチップ ── */
+.chip-wrap{display:inline-flex;align-items:center;gap:2px}
+.tip-btn{width:14px;height:14px;background:var(--border-dk);color:var(--sky-dk);border-radius:50%;font-size:9px;font-weight:700;border:none;cursor:pointer;padding:0;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s;font-family:'DM Mono',monospace;line-height:1}
+.tip-btn:hover{background:var(--sky);color:#fff}
+
 /* ── アコーディオン ── */
 .acc{border-top:1px solid var(--border)}
 .acc-h{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;cursor:pointer;user-select:none;transition:background .15s}
@@ -233,12 +238,30 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
     <div class="cs">
       <div class="ctrl-lbl"><span class="n">4</span>こだわり条件</div>
       <div class="chips">
-        <span class="chip" data-k="pp"        onclick="tgTag(this)">🛋 PP必須</span>
-        <span class="chip" data-k="no-exp"    onclick="tgTag(this)">⏳ マイル無期限</span>
-        <span class="chip" data-k="insurance" onclick="tgTag(this)">🛡 旅行保険充実</span>
-        <span class="chip" data-k="low-fee"   onclick="tgTag(this)">💴 年会費〜2万円</span>
-        <span class="chip" data-k="multi"     onclick="tgTag(this)">🔀 マルチ対応</span>
-        <span class="chip" data-k="free-night" onclick="tgTag(this)">🏨 無料宿泊あり</span>
+        <span class="chip-wrap" data-tip="プライオリティ・パス（世界1,300ヶ所以上の空港ラウンジ利用可）が付帯するカードのみ表示。無制限か年◯回かはカードにより異なります。">
+          <span class="chip" data-k="pp" onclick="tgTag(this)">🛋 PP必須</span>
+          <button class="tip-btn" type="button" onclick="void(0)">?</button>
+        </span>
+        <span class="chip-wrap" data-tip="獲得マイルに有効期限がないカードのみ表示。ANAは無期限、JAL・KFは36ヶ月（3年）で失効。このフィルターで有期限カードを除外できます。">
+          <span class="chip" data-k="no-exp" onclick="tgTag(this)">⏳ マイル無期限</span>
+          <button class="tip-btn" type="button" onclick="void(0)">?</button>
+        </span>
+        <span class="chip-wrap" data-tip="海外・国内旅行傷害保険が付帯するカードのみ表示。自動付帯か利用付帯か、補償額はカードにより大きく異なります。">
+          <span class="chip" data-k="insurance" onclick="tgTag(this)">🛡 旅行保険充実</span>
+          <button class="tip-btn" type="button" onclick="void(0)">?</button>
+        </span>
+        <span class="chip-wrap" data-tip="実質年会費20,000円以下のカードのみ表示。セゾン系はマイルクラブ月額費用を含む実質年会費で判定しています。">
+          <span class="chip" data-k="low-fee" onclick="tgTag(this)">💴 年会費〜2万円</span>
+          <button class="tip-btn" type="button" onclick="void(0)">?</button>
+        </span>
+        <span class="chip-wrap" data-tip="ANA・JAL・KF・MBなど複数航空会社マイルへ選択移行できるカードのみ表示。目標マイルを後から変えたい方に最適。">
+          <span class="chip" data-k="multi" onclick="tgTag(this)">🔀 マルチ対応</span>
+          <button class="tip-btn" type="button" onclick="void(0)">?</button>
+        </span>
+        <span class="chip-wrap" data-tip="ホテル無料宿泊特典があるカードのみ表示。MBプレミアム（年400万円達成・世界対象）、アメックスゴールドプリファード（年200万円達成・国内限定）が該当。">
+          <span class="chip" data-k="free-night" onclick="tgTag(this)">🏨 無料宿泊あり</span>
+          <button class="tip-btn" type="button" onclick="void(0)">?</button>
+        </span>
       </div>
     </div>
     <div class="cs">
@@ -809,6 +832,53 @@ function toggleAcc(h){
   const a=h.querySelector('.acc-a'),b=h.nextElementSibling;
   b.classList.toggle('op');a.classList.toggle('op');
 }
+// ━━━━━━━━ Tooltip（こだわり条件ヘルプ） ━━━━━━━━
+const gTip=(()=>{
+  const el=document.createElement('div');
+  el.style.cssText=[
+    'position:fixed','z-index:9000','background:#0C2340','color:#fff',
+    'font-size:11px','line-height:1.6','padding:8px 11px','border-radius:7px',
+    'max-width:220px','box-shadow:0 4px 16px rgba(0,0,0,.3)',
+    'pointer-events:none','opacity:0','transition:opacity .15s','display:none',
+    'white-space:normal','word-break:keep-all'
+  ].join(';');
+  document.body.appendChild(el);
+  return el;
+})();
+let _tipTimer=null;
+function _positionTip(anchor){
+  const r=anchor.getBoundingClientRect(),tw=Math.min(220,gTip.scrollWidth||220);
+  const th=gTip.scrollHeight||60;
+  let left=r.left,top=r.top-th-10;
+  if(left+tw>window.innerWidth-8)left=window.innerWidth-tw-8;
+  if(left<8)left=8;
+  if(top<8)top=r.bottom+8;
+  gTip.style.left=left+'px';gTip.style.top=top+'px';
+}
+function _showTip(wrap){
+  clearTimeout(_tipTimer);
+  gTip.textContent=wrap.dataset.tip||'';
+  gTip.style.display='block';gTip.style.opacity='0';
+  requestAnimationFrame(()=>{gTip.style.opacity='1';_positionTip(wrap);});
+}
+function _hideTip(){clearTimeout(_tipTimer);_tipTimer=setTimeout(()=>{gTip.style.opacity='0';setTimeout(()=>{if(gTip.style.opacity==='0')gTip.style.display='none';},150);},80);}
+// デスクトップ：ホバーで表示
+document.querySelectorAll('.chip-wrap[data-tip]').forEach(w=>{
+  w.addEventListener('mouseenter',()=>_showTip(w));
+  w.addEventListener('mouseleave',_hideTip);
+});
+// スマートフォン：?ボタンをタップで表示・非表示
+document.querySelectorAll('.tip-btn').forEach(btn=>{
+  btn.addEventListener('click',e=>{
+    e.stopPropagation();
+    const wrap=btn.closest('.chip-wrap');
+    if(gTip.style.display==='block'&&gTip.textContent===(wrap.dataset.tip||'')){_hideTip();}
+    else{_showTip(wrap);}
+  });
+});
+// 外側クリックで閉じる
+document.addEventListener('click',e=>{if(!e.target.closest('.chip-wrap'))_hideTip();});
+
 render();
 </script>
 </body>
