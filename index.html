@@ -833,12 +833,12 @@ d('yamada','ana',{rate:1000/4000,url:'https://www.yamada-denki.jp/point/',
     '【重要】楽天・dポイント・Pontaポイント等への交換は不可。マイル交換先はANAのみ。',
     'ANAマイル→ヤマダP（逆方向）: 10,000マイル→10,000P（100%）の相互交換あり。',
     'ポイント共通化（店舗・アプリ・ウェブ）が必要な場合は公式サイト参照。']});
-// ヤマダ→KF・JAL: 直接交換不可。ANAマイル経由も実質的に困難（ANAからKFへの直接換算なし）
-id('yamada','kris',{rate:(1000/4000)*(25000/60000),
-  route:[{from:'ヤマダ電機P',to:'ANAマイル',rate:1000/4000,url:'https://www.yamada-denki.jp/point/'},{from:'ANAマイル',to:'マリオットBonvoy',rate:1.0,url:'https://www.google.com/search?q=ANAマイル+マリオット+交換'},{from:'マリオットBonvoy',to:'KrisFlyer',rate:25000/60000,url:'https://www.google.com/search?q=マリオット+KrisFlyer+交換'}],
+// ヤマダ→KF・JAL: 直接交換不可。ANAマイル→マリオット逆方向交換は存在しないためKFルートなし
+// ※ANAマイル→マリオットBonvoyの直接交換は存在しない（逆方向のマリオット→ANAは可能）
+d('yamada','kris',{rate:0,
   url:'https://www.yamada-denki.jp/point/',
-  history:[{d:'2022-01',r:(1000/4000)*(25000/60000)},{d:'2026-01',r:(1000/4000)*(25000/60000)}],
-  notices:['ヤマダP→ANA(25%)→マリオット(1:1)→KF(41.7%)の多段ルート。レートは約10.4%と非常に低い。','実用的には店舗・ネットでの利用が最もお得。']});
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['ヤマダP→KFマイルの変換ルートなし。','ヤマダP→ANAマイル（4,000P→1,000マイル・25%）は可能。ANAからKFへの直接変換は存在しないためKFターゲットでは利用不可。','KFマイルを目指す場合はANA目標に切替えてヤマダポイントをANAマイルとして集計することを推奨。']});
 
 // ─── Vポイント→ANAマイル ───
 // 公式: 500Vポイント→250ANAマイル（50%）。ANAカード保有者は60%優遇。
@@ -1406,8 +1406,12 @@ const AGG_RATES = {
     { id:'moppy',   name:'モッピー',         rate: (1000/1300)*(25000/60000), route:'マリオットBonvoy経由（60,000pt単位+ボーナス）', unit:'ポイント', default: 100000 },
     { id:'hapitas', name:'ハピタス',         rate: (330/500)*(25000/60000),   route:'マリオットBonvoy経由（500P→330pt換算）', unit:'ポイント', default: 0  },
     { id:'fancrew', name:'ファンくる',       rate: 0.9*0.70/10, route:'※10P=1円相当。Gポイント経由(G内10%手数料)→nimoca→ANA換算。実質6.3%/P', unit:'ポイント', default: 0 },
+    { id:'marriott', name:'マリオットBonvoy', rate: 25000/60000, route:'60,000pt単位でKF25,000マイル換算（+5,000ボーナス込み・≈41.7%）', unit:'ポイント', default: 0 },
     { id:'rakuten', name:'楽天ポイント',     rate: (1/3)*(25000/60000), route:'マリオット経由（3楽天P→1マリオットpt→KF 41.7%）約13.9%', unit:'ポイント', default: 0 },
+    { id:'vpoint',  name:'Vポイント(旧T)',  rate: 0,                   route:'KF直接換算ルートなし（Vポイント→KFの変換経路なし。ANA目標への切替を推奨）', unit:'ポイント', default: 0 },
+    { id:'paypay',  name:'PayPayポイント',  rate: 0,                   route:'⚠️ KFへの換算ルートなし（PayPay→V→KFは制限により不可）', unit:'ポイント', default: 0 },
     { id:'dmoney',  name:'ドットマネー',     rate: 0,                          route:'KFへの直接換算ルートなし', unit:'マネー', default: 0 },
+    { id:'yamada',  name:'ヤマダ電機P',     rate: 0,                          route:'KF直接換算ルートなし。ヤマダP→ANAマイル変換（4,000P→1,000マイル・25%）は可能だが、ANAマイルからKFへの変換ルートが存在しない。ANA目標に切替えてご利用ください', unit:'ポイント', default: 0 },
     { id:'jpy',     name:'日本円（現金購入）', rate: (1/1875)*(25000/60000),   route:'マリオット公式購入→KF', unit:'円', default: 0 },
     { id:'usd',     name:'米ドル（現金購入）', rate: 80*(25000/60000),          route:'マリオット公式購入→KF', unit:'USD', default: 0 },
   ],
@@ -1432,7 +1436,7 @@ const AGG_RATES = {
     { id:'paypay',   name:'PayPayポイント',   rate: 0,    route:'⚠️ PayPay→V交換後のVポイントはJALマイル交換不可（制限付き）。Vポイント運用の裏技あり', unit:'ポイント', default: 0 },
     { id:'rakuten',  name:'楽天ポイント',     rate: 0.50, route:'直接交換50%（1,000P単位）', unit:'ポイント', default: 0 },
     { id:'marriott', name:'マリオットBonvoy', rate: 25000/60000, route:'60,000pt単位でJAL25,000マイル換算（+5,000ボーナス込み・≈41.7%）', unit:'ポイント', default: 0 },
-    { id:'yamada',   name:'ヤマダ電機P',     rate: (1000/4000)*0.50, route:'ANA直接(25%)→JAL直接交換なし。実質12.5%と非常に低い', unit:'ポイント', default: 0 },
+    { id:'yamada',   name:'ヤマダ電機P',     rate: 0, route:'JAL直接換算ルートなし（ヤマダP→ANAマイル変換は可能だが、ANAマイルからJALへの変換ルートは存在しない）', unit:'ポイント', default: 0 },
     { id:'dmoney',   name:'ドットマネー',     rate: 0.50, route:'直接交換（2マネー=1マイル・50%）/ キャンペーン時55%', unit:'マネー', default: 0 },
     { id:'jpy',      name:'日本円（現金購入）', rate: 0,    route:'直接購入ルートなし', unit:'円', default: 0 },
     { id:'usd',      name:'米ドル（現金購入）', rate: 0,    route:'直接購入ルートなし', unit:'USD', default: 0 },
@@ -1441,6 +1445,8 @@ const AGG_RATES = {
     { id:'moppy',   name:'モッピー',         rate: 1000/1300, route:'直接交換（1,300P→1,000pt ≈76.9%）', unit:'ポイント', default: 100000 },
     { id:'hapitas', name:'ハピタス',         rate: 330/500,   route:'直接交換（500P→330pt ≈66%・2025年4月改悪）', unit:'ポイント', default: 0  },
     { id:'fancrew', name:'ファンくる',       rate: 0.9*(1000/1300)/10, route:'※10P=1円相当。Gポイント経由（G内10%手数料）→マリオット。実質約6.9%/P', unit:'ポイント', default: 0 },
+    { id:'vpoint',  name:'Vポイント(旧T)',  rate: 0,          route:'マリオット直接交換ルートなし（Vポイント→Marriottの換算経路なし）', unit:'ポイント', default: 0 },
+    { id:'paypay',  name:'PayPayポイント',  rate: 0,          route:'⚠️ マリオットへの換算ルートなし（PayPay→V→Marriottは制限により不可）', unit:'ポイント', default: 0 },
     { id:'rakuten', name:'楽天ポイント',     rate: 1/3, route:'直接交換（3楽天P→1マリオットpt ≈33.3%）最低3,000P単位', unit:'ポイント', default: 0 },
     { id:'yamada',  name:'ヤマダ電機P',     rate: 0,          route:'マリオット直接交換ルートなし（ANA経由も低レート）', unit:'ポイント', default: 0 },
     { id:'dmoney',  name:'ドットマネー',     rate: 0,          route:'マリオット直接交換ルートなし', unit:'マネー', default: 0 },
