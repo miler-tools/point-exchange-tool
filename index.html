@@ -1,14 +1,19 @@
 <!DOCTYPE html>
+<!--
+  ポイント・マイル交換レート一覧 & マイル集約電卓
+  Copyright (c) 2026 妻のため、マイル貯めてシンガポール旅行をたくらんでます
+  https://moppy-start-dash.hatenadiary.jp/
+
+  【利用条件】
+  - 個人の参考・閲覧目的での利用は自由です。
+  - 改変・複製・再配布（商用・非商用を問わず）は禁止します。
+  - データの正確性は保証しません。交換前に各社公式サイトをご確認ください。
+
+  All Rights Reserved.
+  Unauthorized reproduction, modification, or redistribution is prohibited.
+-->
 <html lang="ja">
 <head>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-89LJ02GSGS"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-89LJ02GSGS');
-</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>マイル集約電卓・マイル交換レート一覧</title>
@@ -343,6 +348,7 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
 
 <div class="layout">
 
+<!-- 左サイドパネル -->
 <div class="sidebar">
 <button class="sp-filter-toggle" id="spToggle" onclick="toggleSpFilter()">
   <span>⚙️ 表示設定（ポイント選択）<span class="sp-filter-selected" id="spSelected"></span></span>
@@ -377,8 +383,10 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
 </div>
 </div>
 
+<!-- 右メインエリア -->
 <div class="main">
 
+  <!-- ★ マイル集約電卓（主機能） -->
   <div class="calc-panel" style="border:2px solid #1a6a1a">
     <div class="calc-header" style="background:#e8f5e9" onclick="toggleAgg()">
       <div class="calc-header-left">
@@ -391,6 +399,7 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
     </div>
     <div class="calc-body open" id="aggBody">
 
+      <!-- 目標マイル種別 + 目標値設定 -->
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:8px 10px;background:#f1f8e9;border-radius:6px;border:1px solid #c5e1a5;flex-wrap:wrap">
         <span style="font-size:11px;font-weight:700;color:#2e7d32;white-space:nowrap">目標マイル種別</span>
         <select id="aggTarget" onchange="changeAggTarget()" style="font-size:12px;padding:4px 7px;border:1px solid #a5d6a7;border-radius:4px;background:#fff;font-weight:700;color:#1a3a1a">
@@ -405,6 +414,7 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
         <span style="font-size:10px;color:#4a7a4a" id="aggGoalNote">（例: ANAビジネスクラス特典航空券 目安）</span>
       </div>
 
+      <!-- 為替レート設定 -->
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:7px 10px;background:var(--bg2);border-radius:6px;border:0.5px solid var(--border2);flex-wrap:wrap">
         <span style="font-size:11px;font-weight:700;color:var(--text2);white-space:nowrap">為替レート</span>
         <span style="font-size:11px;color:var(--text2);white-space:nowrap">1 USD =</span>
@@ -413,6 +423,7 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
         <span style="font-size:10px;color:var(--text3);margin-left:4px">（不足分のマリオット購入に必要な円額の計算に使用）</span>
       </div>
 
+      <!-- 保有ポイント入力テーブル -->
       <div style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:6px">保有ポイント入力</div>
       <div id="aggRows" style="display:flex;flex-direction:column;gap:5px;margin-bottom:10px"></div>
 
@@ -421,6 +432,7 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
         <button class="btn-xs" onclick="resetAgg()" style="font-size:10px;padding:4px 10px">リセット</button>
       </div>
 
+      <!-- 合計・進捗表示 -->
       <div style="background:#f1f8e9;border:1px solid #a5d6a7;border-radius:8px;padding:12px 14px;margin-bottom:10px">
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
           <div style="flex:1;min-width:120px">
@@ -439,7 +451,9 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
             <div style="font-size:10px;color:#6a8a6a">進捗</div>
           </div>
         </div>
+        <!-- 不足分補填の現金参考額 -->
         <div id="aggCashHint" style="display:none;background:#fff8e1;border:1px solid #ffe082;border-radius:6px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:#5a3e00;line-height:1.8"></div>
+        <!-- 進捗バー -->
         <div style="background:#c8e6c9;border-radius:99px;height:16px;overflow:hidden;position:relative">
           <div id="aggBar" style="height:100%;border-radius:99px;background:#2e7d32;width:0%;transition:width 0.5s;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;min-width:0">
             <span id="aggBarLabel" style="font-size:9px;color:#fff;font-weight:700;white-space:nowrap"></span>
@@ -451,14 +465,1266 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
         </div>
       </div>
 
+      <!-- 内訳テーブル -->
       <div style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:5px">換算内訳</div>
       <div id="aggBreakdown" style="background:var(--bg2);border-radius:6px;padding:8px 10px;font-size:11px;color:var(--text2)">
         <div style="color:var(--text3);text-align:center;padding:6px 0">ポイントを入力してください</div>
       </div>
-
       <div style="font-size:9px;color:var(--text3);margin-top:6px;line-height:1.6" id="aggNote">
         ※ 換算レートは最高レート（間接経路含む）を使用。交換前に公式サイトをご確認ください。
       </div>
-
     </div>
   </div>
+
+  <!-- 従来の単一ポイント電卓パネル（補助機能） -->
+  <div class="calc-panel">
+    <div class="calc-header" onclick="toggleCalc()">
+      <div class="calc-header-left">
+        <span style="font-size:16px">🧮</span>
+        <span class="calc-header-title">ポイント電卓（1対1換算）</span>
+        <span class="calc-badge" style="background:#888">参考</span>
+        <span style="font-size:10px;color:var(--text3);margin-left:4px">1種類のポイントから各マイルへの換算を確認</span>
+      </div>
+      <span class="calc-toggle-arrow" id="calcArrow">▼</span>
+    </div>
+    <div class="calc-body" id="calcBody">
+      <div class="calc-row">
+        <span class="calc-label">交換元</span>
+        <select class="calc-select" id="calcFrom" onchange="runCalc()">
+          <option value="">— 選択 —</option>
+        </select>
+        <span class="calc-arrow">→</span>
+        <input class="calc-input" id="calcAmt" type="number" min="0" step="1" placeholder="10000" value="10000" oninput="runCalc()">
+        <span class="calc-unit" id="calcUnit">ポイント</span>
+      </div>
+      <div class="calc-sort-row">
+        <span class="calc-sort-label">並び替え:</span>
+        <button class="calc-sort-btn active" data-sort="rate" onclick="setCalcSort('rate')">レート高い順</button>
+        <button class="calc-sort-btn" data-sort="cat" onclick="setCalcSort('cat')">カテゴリ順</button>
+      </div>
+      <div class="calc-results" id="calcResults">
+        <div class="calc-results-empty">⬆ 交換元ポイントを選択して入力してください</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mtx-wrap">
+    <div class="mtx-scroll" id="mtxScroll">
+      <table id="tbl"></table>
+    </div>
+    <div class="legend">
+      <span class="li"><span class="ld" style="background:var(--c100)"></span>≥100%</span>
+      <span class="li"><span class="ld" style="background:var(--c80)"></span>80–99%</span>
+      <span class="li"><span class="ld" style="background:var(--c60)"></span>60–79%</span>
+      <span class="li"><span class="ld" style="background:var(--c40)"></span>40–59%</span>
+      <span class="li"><span class="ld" style="background:var(--c20)"></span>20–39%</span>
+      <span class="li"><span class="ld" style="background:var(--c00)"></span>&lt;20%</span>
+      <span class="li"><span class="ld" style="background:var(--na-bg)"></span>交換不可</span>
+      <span class="li"><span class="ld" style="background:var(--rise-bg)"></span>有利改定▲</span>
+      <span class="li"><span class="ld" style="background:var(--fall-bg)"></span>不利改定▼</span>
+      <span style="font-size:9px;color:var(--text3);margin-left:auto">上段=直接交換レート　下段=間接最良レート　<strong style="color:#185fa5">▲▼=最近改定　セルクリックで詳細</strong></span>
+    </div>
+  </div>
+
+  <div class="footer-info">
+  <div class="footer-update">
+    📅 本ツールのレートデータ最終更新日: <strong>2026年5月7日</strong>
+    &emsp;|&emsp;
+    表示レートは調査時点のものであり、予告なく変更される場合があります。
+  </div>
+  <div class="footer-disclaimer">
+    ⚠️ <strong>免責事項:</strong>
+    本ツールの計算結果により生じたいかなる不利益（交換機会の損失・ポイント失効・レート相違による損害等）について、当ブログおよびツール制作者は一切の責任を負いません。
+    ポイント・マイルの交換は、必ず事前に<strong>各社公式サイトにて最新レート・交換条件・上限・所要日数</strong>をご確認のうえ、自己責任にてお手続きください。
+  </div>
+  <div class="footer-note">
+    💡 <strong>ツールの見方:</strong>
+    マトリクス表の<strong>各セルをクリック</strong>すると、直接・間接の各ルート名（みずほルート・nimocaルート等）、ステップごとのレート、交換上限・所要日数・注意事項、公式サイト検索リンクが表示されます。
+    数値だけでなく必ずクリックして詳細をご確認ください。
+  </div>
+</div><!-- footer-info -->
+</div><!-- main -->
+</div><!-- layout -->
+
+<div class="overlay" id="ov" onclick="maybeClose(event)">
+  <div class="modal" id="mod">
+    <span class="mcl" onclick="closeMod()">✕</span>
+    <div id="mc"></div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════
+// DATA DEFINITIONS
+// ════════════════════════════════
+const CATS={
+  site:{label:'ポイントサイト'},
+  common:{label:'共通ポイント'},
+  hotel:{label:'ホテル'},
+  mile:{label:'航空マイル'},
+  coin:{label:'SKYコイン等'},
+  cash:{label:'現金購入'},
+};
+
+// lv: major=主要 standard=標準 niche=ニッチ
+const PTS=[
+  {id:'moppy',   name:'モッピー',         cat:'site',  lv:'major'},
+  {id:'hapitas', name:'ハピタス',         cat:'site',  lv:'major'},
+  {id:'fancrew', name:'ファンくる',       cat:'site',  lv:'major'},
+  {id:'dmoney',  name:'ドットマネー',     cat:'site',  lv:'major'},
+  {id:'gendama', name:'げん玉',           cat:'site',  lv:'standard'},
+  {id:'pincm',   name:'ポイントインカム', cat:'site',  lv:'standard'},
+  {id:'ecnavi',  name:'ECナビ',           cat:'site',  lv:'standard'},
+  {id:'ptown',   name:'ポイントタウン',   cat:'site',  lv:'niche'},
+  {id:'pex',     name:'PeX',             cat:'site',  lv:'niche'},
+  {id:'dpoint',  name:'dポイント',        cat:'common',lv:'major'},
+  {id:'rakuten', name:'楽天ポイント',     cat:'common',lv:'major'},
+  {id:'ponta',   name:'Pontaポイント',   cat:'common',lv:'major'},
+  {id:'vpoint',  name:'Vポイント(旧T)',   cat:'common',lv:'major'},
+  {id:'paypay',  name:'PayPayポイント',  cat:'common',lv:'standard'},
+  {id:'jre',     name:'JREポイント',     cat:'common',lv:'standard'},
+  {id:'nanaco',  name:'nanacoポイント',  cat:'common',lv:'standard'},
+  {id:'waon',    name:'WAONポイント',    cat:'common',lv:'standard'},
+  {id:'au',      name:'auポイント',      cat:'common',lv:'niche'},
+  {id:'gpoint',  name:'Gポイント',       cat:'common',lv:'niche'},
+  {id:'marriott',name:'マリオットBonvoy',cat:'hotel', lv:'major'},
+  {id:'hilton',  name:'ヒルトンHonors', cat:'hotel', lv:'major'},
+  {id:'ihg',     name:'IHGリワード',    cat:'hotel', lv:'standard'},
+  {id:'hyatt',   name:'World of Hyatt', cat:'hotel', lv:'standard'},
+  {id:'accor',   name:'Accorライブ',    cat:'hotel', lv:'niche'},
+  {id:'ana',     name:'ANAマイル',      cat:'mile',  lv:'major'},
+  {id:'jal',     name:'JALマイル',      cat:'mile',  lv:'major'},
+  {id:'delta',   name:'デルタSkyMiles', cat:'mile',  lv:'standard'},
+  {id:'kris',    name:'KrisFlyer(SQ)',  cat:'mile',  lv:'standard'},
+  {id:'avios',   name:'Avios(BA)',      cat:'mile',  lv:'standard'},
+  {id:'united',  name:'ユナイテッドMP', cat:'mile',  lv:'niche'},
+  {id:'anacoin', name:'ANA SKYコイン', cat:'coin',  lv:'major'},
+  {id:'yamada',  name:'ヤマダ電機P',   cat:'common',lv:'niche'},
+  {id:'jpy',     name:'日本円(現金)',  cat:'cash',  lv:'major'},
+  {id:'usd',     name:'米ドル(現金)', cat:'cash',  lv:'standard'},
+];
+
+// RD[from->to] = {
+//   direct: null | {rate, url, history, change, notices, verified}
+//   indirect: null | {rate, route:[{from,to,rate,url}], history, change, notices, url}
+// }
+const RD={};
+function d(f,t,o){
+  const k=`${f}->${t}`;
+  if(!RD[k])RD[k]={direct:null,indirect:null};
+  RD[k].direct=o;
+}
+function id(f,t,o){
+  const k=`${f}->${t}`;
+  if(!RD[k])RD[k]={direct:null,indirect:null};
+  RD[k].indirect=o;
+}
+
+// ─── ポイントサイト ───
+// モッピー 2026/02/02より直接ANA交換開始(3P→1マイル=33.3%)
+d('moppy','ana',{rate:1/3,url:'https://www.google.com/search?q=モッピー+ANAマイル+直接交換+2026年2月',
+  history:[{d:'2020-01',r:null},{d:'2026-02',r:1/3}],
+  change:'up',verified:true,
+  notices:['2026年2月2日より直接交換開始。3P→1マイル(33.3%)。','最低1,500P。手数料無料。1〜3日で反映。','みずほ/nimocaルート等の間接交換(70%)の方がレートは高い。']});
+id('moppy','ana',{rate:0.70,
+  route:[{from:'モッピー',to:'Vポイント',rate:1.0,url:'https://www.google.com/search?q=モッピー+ポイント交換+公式'},{from:'Vポイント',to:'JRキューポ',rate:1.0,url:'https://www.google.com/search?q=JRキューポ+永久不滅ポイント+交換+公式'},{from:'JRキューポ',to:'永久不滅P',rate:0.5,url:'https://www.google.com/search?q=セゾンカード+永久不滅ポイント+ANAマイル+交換'},{from:'永久不滅P',to:'ANAマイル',rate:1.25,url:'https://www.google.com/search?q=永久不滅ポイント+ANAマイル+交換レート+セゾンカード'}],
+  url:'https://www.google.com/search?q=モッピー+ポイント交換+公式',
+  history:[{d:'2020-01',r:0.70},{d:'2022-01',r:0.70},{d:'2024-01',r:0.70},{d:'2026-02',r:0.70}],
+  notices:['みずほルート(JQカードセゾン+みずほマイレージクラブカード/ANA)で70%。','カード2枚必要・全オンライン完結。所要約1ヶ月。','※ルート図の「×125%」はJRキューポ→永久不滅ポイント換算後の「永久不滅P→ANAマイル」単体レート(800P→1,000マイル)。トータルは各ステップの積算で70%になります。']});
+
+d('moppy','jal',{rate:0.50,url:'https://www.google.com/search?q=モッピー+ポイント交換+ANAマイル+JALマイル+公式',
+  history:[{d:'2017-01',r:0.333},{d:'2019-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-01',r:0.50}],
+  verified:true,
+  notices:['直接交換50%(2P→1マイル)。最低1,000P。所要4週間以内。','ドリームキャンペーン(ゴールド会員+条件達成)で実質最大80%に増量。キャンペーンは月1回限り。']});
+
+d('moppy','dpoint',{rate:1.0,url:'https://www.google.com/search?q=モッピー+ポイント交換+公式',
+  history:[{d:'2020-01',r:1},{d:'2023-01',r:1},{d:'2026-01',r:1}],
+  verified:true,notices:['リアルタイム交換。手数料無料。']});
+d('moppy','rakuten',{rate:1.0,url:'https://www.google.com/search?q=モッピー+ポイント交換+公式',
+  history:[{d:'2020-01',r:1},{d:'2023-01',r:1},{d:'2026-01',r:1}],
+  verified:true,notices:[]});
+d('moppy','ponta',{rate:1.0,url:'https://www.google.com/search?q=モッピー+ポイント交換+公式',
+  history:[{d:'2020-01',r:1},{d:'2023-01',r:1},{d:'2026-01',r:1}],
+  verified:true,notices:[]});
+d('moppy','vpoint',{rate:1.0,url:'https://www.google.com/search?q=モッピー+ポイント交換+公式',
+  history:[{d:'2022-01',r:1},{d:'2024-04',r:1},{d:'2026-01',r:1}],
+  verified:true,notices:['旧Tポイント。2024年4月Vポイントへ統合。']});
+d('moppy','nanaco',{rate:1.0,url:'https://www.google.com/search?q=モッピー+ポイント交換+公式',
+  history:[{d:'2020-01',r:1},{d:'2023-01',r:1},{d:'2026-01',r:1}],
+  verified:true,notices:['1,000P単位。']});
+// モッピー→マリオット 2023/10改悪: 1,300P→1,000pt
+d('moppy','marriott',{rate:1000/1300,url:'https://www.google.com/search?q=モッピー+マリオットBonvoy+交換レート+改定',
+  history:[{d:'2021-01',r:1.0},{d:'2022-01',r:1.0},{d:'2023-10',r:1000/1300},{d:'2026-01',r:1000/1300}],
+  change:'down',verified:true,
+  notices:['2023年10月改悪: 1,300モッピーP=1,000マリオットpt(≈76.9%)。','24時間交換上限50,000P。初回審査に約1週間。']});
+// モッピー→KrisFlyer (マリオット経由間接)
+id('moppy','kris',{rate:(1000/1300)*(25000/60000),
+  route:[{from:'モッピー',to:'マリオットBonvoy',rate:parseFloat((1000/1300).toFixed(4)),url:'https://www.google.com/search?q=モッピー+マリオットBonvoy+交換レート+改定'},{from:'マリオットBonvoy',to:'KrisFlyer',rate:parseFloat((25000/60000).toFixed(4)),url:'https://www.google.com/search?q=シンガポール航空+KrisFlyer+マイル+交換+公式'}],
+  url:'https://www.google.com/search?q=モッピー+ポイント交換+公式',
+  history:[{d:'2021-01',r:(1.0)*(25000/60000)},{d:'2023-10',r:(1000/1300)*(25000/60000)},{d:'2026-01',r:(1000/1300)*(25000/60000)}],
+  change:'down',
+  notices:['マリオット経由の間接ルート。','マリオット60,000pt単位で+5,000マイルボーナス（計25,000マイル）。','所要時間: 最大3週間程度。']});
+// モッピー→ANA SKYコイン(ANA直接交換→SKYコイン)
+id('moppy','anacoin',{rate:(1/3)*1.0,
+  route:[{from:'モッピー',to:'ANAマイル(直接)',rate:1/3,url:'https://www.google.com/search?q=モッピー+ポイント交換+ANAマイル+JALマイル+公式'},{from:'ANAマイル',to:'ANA SKYコイン',rate:1.0,url:'https://www.google.com/search?q=ANA+SKYコイン+マイル+交換+公式'}],
+  url:'https://www.google.com/search?q=モッピー+ポイント交換+公式',
+  history:[{d:'2026-02',r:(1/3)*1.0}],
+  notices:['2026年2月以降: モッピー→ANAマイル(直接33.3%)→SKYコイン(1:1)。','10,000マイル以上で1.2〜1.7倍レートになるためさらに向上可。SKYコイン有効期限12ヶ月。']});
+
+// ─── ハピタス ───
+d('hapitas','dpoint',{rate:1.0,url:'https://www.google.com/search?q=ハピタス+ポイント交換+公式',history:[{d:'2020-01',r:1},{d:'2024-01',r:1},{d:'2026-01',r:1}],verified:true,notices:[]});
+d('hapitas','rakuten',{rate:1.0,url:'https://www.google.com/search?q=ハピタス+ポイント交換+公式',history:[{d:'2020-01',r:1},{d:'2024-01',r:1},{d:'2026-01',r:1}],verified:true,notices:[]});
+d('hapitas','ponta',{rate:1.0,url:'https://www.google.com/search?q=ハピタス+ポイント交換+公式',history:[{d:'2020-01',r:1},{d:'2024-01',r:1},{d:'2026-01',r:1}],verified:true,notices:[]});
+d('hapitas','jal',{rate:0.50,url:'https://www.google.com/search?q=ハピタス+ポイント交換+公式',history:[{d:'2020-01',r:0.5},{d:'2024-01',r:0.5},{d:'2026-01',r:0.5}],verified:true,notices:['1,000P単位。']});
+id('hapitas','ana',{rate:0.70,
+  route:[{from:'ハピタス',to:'Vポイント',rate:1.0,url:'https://www.google.com/search?q=ハピタス+ポイント交換+公式'},{from:'Vポイント',to:'JRキューポ',rate:1.0,url:'https://www.google.com/search?q=JRキューポ+永久不滅ポイント+交換+公式'},{from:'JRキューポ',to:'永久不滅P',rate:0.5,url:'https://www.google.com/search?q=セゾンカード+永久不滅ポイント+ANAマイル+交換'},{from:'永久不滅P',to:'ANAマイル',rate:1.25,url:'https://www.google.com/search?q=永久不滅ポイント+ANAマイル+交換レート+セゾンカード'}],
+  url:'https://www.google.com/search?q=ハピタス+ポイント交換+公式',
+  history:[{d:'2020-01',r:0.70},{d:'2022-01',r:0.70},{d:'2026-01',r:0.70}],
+  notices:['直接ANAマイル交換不可。みずほルート経由で70%。']});
+// ハピタス→マリオット 2025/04改悪: 500P→330pt
+d('hapitas','marriott',{rate:330/500,url:'https://www.google.com/search?q=ハピタス+ポイント交換+公式',
+  history:[{d:'2022-01',r:1.0},{d:'2024-01',r:1.0},{d:'2025-04',r:330/500}],
+  change:'down',verified:true,
+  notices:['2025年4月に大幅改悪。旧: 500P=500マリオットpt(100%) → 新: 500P=330マリオットpt(66%)。','500P単位で交換。']});
+
+// ─── ファンくる ───
+// ファンくる: 10ポイント=1円 が単位。レートは1ファンくるポイントあたりの実際の交換率で表示（他サイトと同じ基準）
+// ※ファンくる→Gポイント: 10P→1G（手数料無料）
+// ※ファンくる→ドットマネー: 10P→1マネー（手数料無料）
+// ※Gポイント内での次ステップ（nimoca等への交換）時に手数料10%が発生
+// ※Gポイントの手数料還元サービス: 対象期間内に対象サービスで1件以上ポイント獲得で最大5%キャッシュバック
+// ※手数料還元適用時: 実質手数料5%（10%-5%還元）。条件次第で全額還元も（交換先による）
+id('fancrew','ana',{rate:0.9*0.70/10,
+  route:[{from:'ファンくる(10P→1G)',to:'Gポイント(手数料無料)',rate:0.10,url:'https://www.google.com/search?q=ファンくる+Gポイント+交換'},{from:'Gポイント',to:'nimocaポイント(10%手数料)',rate:0.90,url:'https://www.google.com/search?q=Gポイント+nimoca+交換+手数料'},{from:'nimocaポイント',to:'ANAマイル',rate:0.70,url:'https://www.google.com/search?q=nimocaポイント+ANAマイル+交換+公式'}],
+  url:'https://www.google.com/search?q=ファンくる+ポイント交換+ANAマイル+JALマイル',
+  history:[{d:'2020-01',r:0.70/10},{d:'2022-01',r:0.70/10},{d:'2026-01',r:0.9*0.70/10}],
+  verified:true,
+  notices:['【単位注意】ファンくるは10ポイント=1円相当（他サイトの1P=1円とは異なる）。このレートはファンくる1ポイントあたりの実際の交換率です（他サイトと同じ基準）。',
+    '【手数料の発生箇所】ファンくる→Gポイントは手数料無料（10P→1G）。Gポイント内での次の交換（nimoca等）時に10%手数料が発生します。',
+    '【手数料還元】Gポイントの対象サービスで期間内（交換申請前月〜4ヶ月後末日）に1件でもポイント獲得があれば最大5%キャッシュバック。還元適用時は実質5%手数料（ただし交換先によって全額還元の場合あり）。',
+    'nimocaルート(九州・函館在住者向け)経由でANA70%相当。Gポイント手数料10%控除後の実質レートは約6.3%/P（ファンくる1P基準）。手数料還元適用なら約6.65%/P。']});
+id('fancrew','jal',{rate:0.50/10,
+  route:[{from:'ファンくる(10P→1マネー)',to:'ドットマネー(手数料無料)',rate:0.10,url:'https://www.google.com/search?q=ファンくる+ドットマネー+交換'},{from:'ドットマネー',to:'JALマイル',rate:0.50,url:'https://d-money.jp/withdrawal/point/detail/1119'}],
+  url:'https://www.google.com/search?q=ファンくる+ポイント交換+JALマイル',
+  history:[{d:'2020-01',r:0.50/10},{d:'2022-01',r:0.50/10},{d:'2026-01',r:0.50/10}],
+  verified:true,
+  notices:['【単位注意】ファンくるは10ポイント=1円相当（他サイトの1P=1円とは異なる）。このレートはファンくる1ポイントあたりの実際の交換率です（他サイトと同じ基準）。',
+    '【推奨ルート★】ファンくる→ドットマネー（手数料無料・10P→1マネー）→JALマイル（50%）。実質5%/P。Gポイント経由より有利。',
+    'ドットマネー→JALは500マネー単位。申請月の下旬または翌月上旬に積算。',
+    '【Gポイント経由の場合】Gポイント内交換で10%手数料発生（実質4.5%/P）。Pontaキャンペーン時60%増量なら手数料引後5.4%/P。ただしドットマネー経由の5%/Pの方が通常は有利。']});
+
+// ─── げん玉・ポイントインカム・ECナビ ───
+d('gendama','dpoint',{rate:1.0,url:'https://www.google.com/search?q=げん玉+ポイント交換+公式',history:[{d:'2022-01',r:1},{d:'2026-01',r:1}],verified:true,notices:[]});
+d('gendama','rakuten',{rate:1.0,url:'https://www.google.com/search?q=げん玉+ポイント交換+公式',history:[{d:'2022-01',r:1},{d:'2026-01',r:1}],verified:true,notices:[]});
+d('gendama','jal',{rate:0.50,url:'https://www.google.com/search?q=げん玉+ポイント交換+公式',history:[{d:'2022-01',r:0.5},{d:'2026-01',r:0.5}],verified:true,notices:[]});
+id('gendama','ana',{rate:0.70,route:[{from:'げん玉',to:'Vポイント',rate:1,url:'https://www.google.com/search?q=げん玉+ポイント交換+公式'},{from:'Vポイント',to:'ANAマイル(みずほ)',rate:0.70,url:'https://www.google.com/search?q=ANAマイル+みずほルート+交換+公式'}],url:'https://www.google.com/search?q=げん玉+ポイント交換+公式',history:[{d:'2022-01',r:0.50},{d:'2024-01',r:0.70}],notices:[]});
+d('pincm','dpoint',{rate:1.0,url:'https://www.google.com/search?q=ポイントインカム+ポイント交換+公式',history:[{d:'2022-01',r:1},{d:'2026-01',r:1}],verified:true,notices:[]});
+d('pincm','jal',{rate:0.50,url:'https://www.google.com/search?q=ポイントインカム+ポイント交換+公式',history:[{d:'2022-01',r:0.5},{d:'2026-01',r:0.5}],verified:true,notices:[]});
+id('pincm','ana',{rate:0.70,route:[{from:'ポイントインカム',to:'Vポイント',rate:1,url:'https://www.google.com/search?q=ポイントインカム+ポイント交換+公式'},{from:'Vポイント',to:'ANAマイル(みずほ)',rate:0.70,url:'https://www.google.com/search?q=ANAマイル+みずほルート+交換+公式'}],url:'https://www.google.com/search?q=ポイントインカム+ポイント交換+公式',history:[{d:'2022-01',r:0.50},{d:'2024-01',r:0.70}],notices:[]});
+d('ecnavi','dpoint',{rate:1.0,url:'https://www.google.com/search?q=ECナビ+ポイント交換+公式',history:[{d:'2022-01',r:1},{d:'2026-01',r:1}],verified:true,notices:[]});
+d('ecnavi','jal',{rate:0.50,url:'https://www.google.com/search?q=ECナビ+ポイント交換+公式',history:[{d:'2022-01',r:0.5},{d:'2026-01',r:0.5}],verified:true,notices:[]});
+
+// ─── 共通ポイント相互 ───
+d('dpoint','ponta',{rate:1.0,url:'https://www.google.com/search?q=dポイント+Pontaポイント+交換+公式',history:[{d:'2020-01',r:1},{d:'2024-01',r:1},{d:'2026-01',r:1}],verified:true,notices:['100P単位。リアルタイム。']});
+d('ponta','dpoint',{rate:1.0,url:'https://www.google.com/search?q=Pontaポイント+dポイント+交換+公式',history:[{d:'2020-01',r:1},{d:'2024-01',r:1},{d:'2026-01',r:1}],verified:true,notices:['100P単位。']});
+d('au','ponta',{rate:1.0,url:'https://www.google.com/search?q=auポイント+Pontaポイント+交換+公式',history:[{d:'2022-01',r:1},{d:'2026-01',r:1}],verified:true,notices:['auポイント⇔Ponta互換。']});
+
+// ─── 共通ポイント→マイル ───
+d('dpoint','ana',{rate:0.50,url:'https://www.google.com/search?q=ANAマイル+dポイント+交換+公式',history:[{d:'2019-01',r:0.50},{d:'2022-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-01',r:0.50}],verified:true,notices:['1,000P単位。年数回10〜15%増量キャンペーンあり。']});
+d('dpoint','jal',{rate:0.50,url:'https://www.google.com/search?q=JALマイル+dポイント+交換+公式',history:[{d:'2019-01',r:0.50},{d:'2022-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-01',r:0.50}],verified:true,notices:['500P単位。']});
+d('dpoint','delta',{rate:1.0,url:'https://www.google.com/search?q=dポイント+デルタマイル+交換+公式',history:[{d:'2022-01',r:1},{d:'2026-01',r:1}],verified:true,notices:['500P単位。1dP=1デルタマイル。']});
+d('rakuten','ana',{rate:0.50,url:'https://www.google.com/search?q=ANAマイル+楽天ポイント+交換+公式',history:[{d:'2019-01',r:0.50},{d:'2022-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-01',r:0.50}],verified:true,notices:['1,000P単位。']});
+d('rakuten','jal',{rate:0.50,url:'https://www.google.com/search?q=JALマイル+楽天ポイント+交換+公式',history:[{d:'2019-01',r:0.50},{d:'2022-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-01',r:0.50}],verified:true,notices:['1,000P単位。']});
+d('rakuten','marriott',{rate:1/3,url:'https://point.rakuten.co.jp/exchange/',history:[{d:'2024-01',r:1/3},{d:'2026-01',r:1/3}],verified:true,notices:['楽天ポイント3P→マリオットBonvoy1pt（約33.3%）。最低3,000P単位（3P単位）。24時間につき1回まで。反映まで最大約2週間。']});
+// ─── PayPayポイント → Vポイント経由でANA/JAL ───
+// ⚠️ 2026年3月24日から正式相互交換開始。ただしPayPay由来VポイントはANA/JALマイル交換に制限あり。
+// 「Vポイント運用」を経由で通常Vポイント化する裏技あり（運用リスク・手数料1%）
+id('paypay','ana',{rate:1.0*0.50,
+  route:[{from:'PayPayポイント',to:'Vポイント(制限あり)',rate:1.0,url:'https://www.google.com/search?q=PayPayポイント+Vポイント+相互交換+2026'},{from:'Vポイント運用経由',to:'通常Vポイント',rate:0.99,url:'https://www.google.com/search?q=Vポイント運用+PayPay+マイル交換'},{from:'Vポイント',to:'ANAマイル',rate:0.50,url:'https://t-point.tsite.jp/store/list/ana/'}],
+  url:'https://www.google.com/search?q=PayPayポイント+ANAマイル+交換+Vポイント+2026',
+  history:[{d:'2024-01',r:0.50},{d:'2026-03',r:0.50}],verified:true,
+  notices:['2026年3月24日よりPayPay→Vポイント等価交換が正式開始（月上限30,000P・1日20,000P）。',
+    '⚠️【重要】PayPayから交換したVポイントは「制限付き」でANAマイル等への交換が直接不可。',
+    '裏技: 制限付きVポイント→「Vポイント運用」に追加→引き出すと通常Vポイントになりマイル交換可（スポット追加時1%手数料。自動追加なら無料）。',
+    '運用中のポイント価値変動リスクあり。公式ルートではなく変更の可能性あり。要最新情報確認。']});
+id('paypay','jal',{rate:1.0*0.50,
+  route:[{from:'PayPayポイント',to:'Vポイント(制限あり)',rate:1.0,url:'https://www.google.com/search?q=PayPayポイント+Vポイント+相互交換+2026'},{from:'Vポイント運用経由',to:'通常Vポイント',rate:0.99,url:'https://www.google.com/search?q=Vポイント運用+PayPay+マイル交換'},{from:'Vポイント',to:'JALマイル',rate:0.50,url:'https://www.google.com/search?q=JALマイル+Vポイント+交換+公式'}],
+  url:'https://www.google.com/search?q=PayPayポイント+JALマイル+交換+Vポイント+2026',
+  history:[{d:'2024-01',r:0.50},{d:'2026-03',r:0.50}],verified:true,
+  notices:['2026年3月24日よりPayPay→Vポイント等価交換が正式開始（月上限30,000P）。',
+    '⚠️【重要】PayPayから交換したVポイントは「制限付き」でJALマイル等への交換が直接不可。',
+    '裏技: 制限付きVポイント→「Vポイント運用」に追加→引き出すと通常Vポイントになりマイル交換可（スポット追加時1%手数料。自動追加なら無料）。',
+    'JRキューポ→永久不滅P→JALマイル経由50%（キャンペーン時最大60%）、またはWAON POINT→JALマイル経由も可。']});
+d('ponta','ana',{rate:0.50,url:'https://www.google.com/search?q=ANAマイル+Pontaポイント+交換+公式',history:[{d:'2019-01',r:0.50},{d:'2022-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-01',r:0.50}],verified:true,notices:['1,000P単位。増量キャンペーンあり。']});
+d('ponta','jal',{rate:0.50,url:'https://www.google.com/search?q=JALマイル+Pontaポイント+交換+公式',history:[{d:'2019-01',r:0.50},{d:'2022-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-01',r:0.50}],verified:true,notices:['1,000P単位。']});
+d('ponta','delta',{rate:1.0,url:'https://www.google.com/search?q=Pontaポイント+デルタマイル+交換+公式',history:[{d:'2022-01',r:1},{d:'2026-01',r:1}],verified:true,notices:['500P単位。']});
+d('vpoint','ana',{rate:0.50,url:'https://www.google.com/search?q=ANAマイル+Vポイント+交換+公式',history:[{d:'2022-01',r:0.50},{d:'2024-04',r:0.50},{d:'2026-01',r:0.50}],verified:true,notices:['2,000P単位。三井住友ANAカード保有者は0.6倍も可。']});
+d('vpoint','jal',{rate:0.50,url:'https://www.google.com/search?q=JALマイル+Vポイント+交換+公式',
+  history:[{d:'2022-01',r:0.50},{d:'2024-04',r:0.50},{d:'2026-01',r:0.50}],verified:true,
+  notices:['1,000Vポイント→500JALマイル（50%）。1,000P単位。',
+    '間接ルート①: Vポイント→JRキューポ(1:1)→永久不滅P(50%)→JALマイル(50%)。通常50%・キャンペーン時最大60%。',
+    '間接ルート②: Vポイント→WAON POINT(1:1)→JALマイル(50%)。イオンカード必須。所要1〜2ヶ月。',
+    '2025年8月31日にJRキューポ→Ponta直接交換は終了（Gポイント経由に変更）。',
+    '2024年4月22日にTポイントがVポイントに統合。']});
+id('vpoint','jal',{rate:0.50,
+  route:[{from:'Vポイント',to:'JRキューポ',rate:1.0,url:'https://www.google.com/search?q=JRキューポ+Vポイント+交換+公式'},{from:'JRキューポ',to:'永久不滅P',rate:0.5,url:'https://www.google.com/search?q=JRキューポ+永久不滅ポイント+交換+セゾン'},{from:'永久不滅P',to:'JALマイル',rate:1.0,url:'https://www.google.com/search?q=永久不滅ポイント+JALマイル+交換+セゾン'}],
+  url:'https://www.google.com/search?q=Vポイント+JALマイル+交換ルート',
+  history:[{d:'2024-04',r:0.50},{d:'2026-01',r:0.50}],
+  notices:['JRキューポ→永久不滅P経由ルート（50%）。定期的に永久不滅P→JALマイル20%増量キャンペーンあり（その際60%）。',
+    'Vポイント→WAON POINTへの等価交換→JALマイル50%（イオンカード必須・所要1〜2ヶ月）も可。',
+    '所要時間: 複数のポイントを経由するため合計3〜8週間程度。']});
+d('nanaco','ana',{rate:0.50,url:'https://www.google.com/search?q=nanacoポイント+ANAマイル+交換+公式',history:[{d:'2020-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-01',r:0.50}],verified:true,notices:['1,000P単位。不定期増量キャンペーンあり。']});
+d('waon','ana',{rate:0.50,url:'https://www.google.com/search?q=WAONポイント+ANAマイル+JALマイル+交換+公式',history:[{d:'2020-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-01',r:0.50}],verified:true,notices:['200P単位。']});
+d('waon','jal',{rate:0.50,url:'https://www.google.com/search?q=JALマイル+WAONポイント+交換+公式',history:[{d:'2020-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-01',r:0.50}],verified:true,notices:['200P単位。']});
+d('jre','ana',{rate:0.50,url:'https://www.google.com/search?q=JREポイント+ANAマイル+JALマイル+交換+公式',history:[{d:'2022-01',r:0.50},{d:'2026-01',r:0.50}],verified:true,notices:['500P単位。']});
+d('jre','jal',{rate:0.50,url:'https://www.google.com/search?q=JREポイント+ANAマイル+JALマイル+交換+公式',history:[{d:'2022-01',r:0.50},{d:'2026-01',r:0.50}],verified:true,notices:['500P単位。']});
+d('gpoint','ana',{rate:0.50,url:'https://www.google.com/search?q=Gポイント+ANAマイル+JALマイル+交換+公式',history:[{d:'2022-01',r:0.50},{d:'2026-01',r:0.50}],verified:true,notices:[]});
+d('gpoint','jal',{rate:0.50,url:'https://www.google.com/search?q=Gポイント+ANAマイル+JALマイル+交換+公式',history:[{d:'2022-01',r:0.50},{d:'2026-01',r:0.50}],verified:true,notices:[]});
+
+// ─── ホテル→マイル ───
+d('marriott','ana',{rate:25000/60000,url:'https://www.google.com/search?q=ANAマイル+マリオットBonvoy+交換+公式',
+  history:[{d:'2018-01',r:20000/60000},{d:'2019-01',r:25000/60000},{d:'2024-01',r:25000/60000},{d:'2026-01',r:25000/60000}],
+  change:'up',verified:true,
+  notices:['60,000pt単位で+5,000マイルボーナス → 合計25,000マイル(41.7%)。','60,000pt未満は3:1(33.3%)。','交換上限240,000pt/回。申請間隔48時間以上。','マイル反映まで1〜2週間。']});
+d('marriott','jal',{rate:25000/60000,url:'https://www.google.com/search?q=JALマイル+マリオットBonvoy+交換+公式',
+  history:[{d:'2018-01',r:20000/60000},{d:'2019-01',r:25000/60000},{d:'2024-01',r:25000/60000},{d:'2026-01',r:25000/60000}],
+  change:'up',verified:true,notices:['60,000pt単位で合計25,000マイル。1〜2週間。']});
+d('marriott','kris',{rate:25000/60000,url:'https://www.google.com/search?q=KrisFlyer+マリオット+ホテル+マイル+交換+公式',
+  history:[{d:'2018-01',r:20000/60000},{d:'2019-01',r:25000/60000},{d:'2024-01',r:25000/60000}],
+  verified:true,notices:['60,000pt単位。ボーナス込み25,000KrisFlyer。']});
+d('marriott','avios',{rate:25000/60000,url:'https://www.google.com/search?q=マリオットBonvoy+ポイント+マイル+交換+公式',
+  history:[{d:'2019-01',r:25000/60000},{d:'2024-01',r:25000/60000}],
+  verified:true,notices:['60,000pt単位。ボーナス込み25,000Avios。']});
+d('marriott','delta',{rate:20000/60000,url:'https://www.google.com/search?q=マリオットBonvoy+ポイント+マイル+交換+公式',
+  history:[{d:'2019-01',r:20000/60000},{d:'2024-01',r:20000/60000}],
+  verified:true,notices:['デルタはボーナス対象外。60,000pt=20,000マイル(33.3%)。']});
+d('marriott','united',{rate:30000/60000,url:'https://www.google.com/search?q=マリオットBonvoy+ポイント+マイル+交換+公式',
+  history:[{d:'2019-01',r:25000/60000},{d:'2022-01',r:30000/60000},{d:'2024-01',r:30000/60000}],
+  change:'up',verified:true,notices:['ユナイテッドはボーナスが5,000多い。60,000pt=30,000マイル(50%)。']});
+d('marriott','dpoint',{rate:0.27,url:'https://www.google.com/search?q=マリオットBonvoy+ポイント+マイル+交換+公式',
+  history:[{d:'2019-01',r:0.25},{d:'2021-01',r:0.27},{d:'2024-01',r:0.27}],change:'up',verified:true,notices:[]});
+d('marriott','rakuten',{rate:0.27,url:'https://www.google.com/search?q=マリオットBonvoy+ポイント+マイル+交換+公式',
+  history:[{d:'2019-01',r:0.25},{d:'2021-01',r:0.27},{d:'2024-01',r:0.27}],change:'up',verified:true,notices:[]});
+d('hilton','ana',{rate:0.50,url:'https://www.google.com/search?q=ヒルトンHonors+ポイント+マイル+交換+公式',
+  history:[{d:'2019-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-01',r:0.50}],verified:true,notices:['2ヒルトン=1ANAマイル。1,000H単位。']});
+d('hilton','jal',{rate:0.25,url:'https://www.google.com/search?q=ヒルトンHonors+ポイント+マイル+交換+公式',
+  history:[{d:'2019-01',r:0.25},{d:'2024-01',r:0.25},{d:'2026-01',r:0.25}],verified:true,notices:['4ヒルトン=1JALマイル。レートは不利。']});
+d('hilton','kris',{rate:0.50,url:'https://www.google.com/search?q=ヒルトンHonors+ポイント+マイル+交換+公式',
+  history:[{d:'2019-01',r:0.50},{d:'2024-01',r:0.50}],verified:true,notices:[]});
+d('hilton','united',{rate:0.50,url:'https://www.google.com/search?q=ヒルトンHonors+ポイント+マイル+交換+公式',
+  history:[{d:'2019-01',r:0.50},{d:'2024-01',r:0.50}],verified:true,notices:[]});
+d('ihg','ana',{rate:0.50,url:'https://www.google.com/search?q=IHGリワード+ポイント+マイル+交換+公式',history:[{d:'2021-01',r:0.50},{d:'2024-01',r:0.50}],verified:true,notices:[]});
+d('ihg','jal',{rate:0.50,url:'https://www.google.com/search?q=IHGリワード+ポイント+マイル+交換+公式',history:[{d:'2021-01',r:0.50},{d:'2024-01',r:0.50}],verified:true,notices:[]});
+d('ihg','avios',{rate:0.50,url:'https://www.google.com/search?q=IHGリワード+ポイント+マイル+交換+公式',history:[{d:'2021-01',r:0.50},{d:'2024-01',r:0.50}],verified:true,notices:[]});
+d('hyatt','avios',{rate:1.0,url:'https://www.google.com/search?q=World+of+Hyatt+ポイント+Avios+交換+公式',history:[{d:'2021-01',r:1},{d:'2024-01',r:1},{d:'2026-01',r:1}],verified:true,notices:['1ハイアット=1Avios。']});
+d('hyatt','united',{rate:1.0,url:'https://www.google.com/search?q=World+of+Hyatt+ポイント+マイル+交換+公式',history:[{d:'2021-01',r:1},{d:'2024-01',r:1}],verified:true,notices:[]});
+d('accor','avios',{rate:0.50,url:'https://www.google.com/search?q=Accorライブ+ポイント+マイル+交換+公式',history:[{d:'2021-01',r:0.50},{d:'2024-01',r:0.50}],verified:false,notices:['公式サイトで要確認。']});
+d('accor','ana',{rate:0.50,url:'https://www.google.com/search?q=Accorライブ+ポイント+マイル+交換+公式',history:[{d:'2021-01',r:0.50},{d:'2024-01',r:0.50}],verified:false,notices:['公式サイトで要確認。']});
+
+// ─── ヤマダ電機ポイント ───
+// 公式確認済み情報（2026年5月時点）:
+// ・ヤマダP→ANAマイル: 4,000P→1,000マイル（25%）直接交換可
+// ・ANAマイル→ヤマダP: 10,000マイル→10,000P（100%・逆方向）
+// ・楽天P・dポイント・Ponta等への交換は【不可】
+// ・ヤマダポイントの提携先拡大サービスは2026年3月31日終了
+d('yamada','ana',{rate:1000/4000,url:'https://www.yamada-denki.jp/point/',
+  history:[{d:'2022-01',r:1000/4000},{d:'2026-01',r:1000/4000}],verified:true,
+  notices:['ヤマダポイント4,000P→ANAマイル1,000マイル（25%）。直接交換。',
+    '【重要】楽天・dポイント・Pontaポイント等への交換は不可。マイル交換先はANAのみ。',
+    'ANAマイル→ヤマダP（逆方向）: 10,000マイル→10,000P（100%）の相互交換あり。',
+    'ポイント共通化（店舗・アプリ・ウェブ）が必要な場合は公式サイト参照。']});
+// ヤマダ→KF・JAL: 直接交換不可。ANAマイル→マリオット逆方向交換は存在しないためKFルートなし
+// ※ANAマイル→マリオットBonvoyの直接交換は存在しない（逆方向のマリオット→ANAは可能）
+d('yamada','kris',{rate:0,
+  url:'https://www.yamada-denki.jp/point/',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['ヤマダP→KFマイルの変換ルートなし。','ヤマダP→ANAマイル（4,000P→1,000マイル・25%）は可能。ANAからKFへの直接変換は存在しないためKFターゲットでは利用不可。','KFマイルを目指す場合はANA目標に切替えてヤマダポイントをANAマイルとして集計することを推奨。']});
+
+// ─── Vポイント→ANAマイル ───
+// 公式: 500Vポイント→250ANAマイル（50%）。ANAカード保有者は60%優遇。
+// JQみずほルート（Vポイント→JRキューポ→永久不滅P→ANA）で70%も可能
+d('vpoint','ana',{rate:0.50,url:'https://t-point.tsite.jp/store/list/ana/',
+  history:[{d:'2024-04',r:0.50},{d:'2026-01',r:0.50}],verified:true,
+  notices:['500Vポイント→250ANAマイル（50%）。500P単位。約2〜3週間で反映。',
+    '三井住友カード発行のANAカード保有者は60%の優遇レート（1P→0.6マイル）が適用。',
+    'JQみずほルート経由なら70%も可能（下記「間接ルート」参照）。ただし2026年1月21日以降みずほルート対応カードは新規発行終了（既存保有者のみ継続可）。',
+    '2024年4月22日にTポイントがVポイントに統合。T-SITEサイトのANA交換ページで手続き可。']});
+id('vpoint','ana',{rate:0.70,
+  route:[{from:'Vポイント',to:'JRキューポ',rate:1.0,url:'https://www.google.com/search?q=JRキューポ+Vポイント+交換+公式'},{from:'JRキューポ',to:'永久不滅P',rate:0.5,url:'https://www.google.com/search?q=セゾンカード+永久不滅ポイント+JRキューポ+交換'},{from:'永久不滅P',to:'ANAマイル',rate:1.25,url:'https://www.google.com/search?q=永久不滅ポイント+ANAマイル+交換レート+セゾンカード'}],
+  url:'https://www.google.com/search?q=Vポイント+ANAマイル+JQみずほルート',
+  history:[{d:'2024-04',r:0.70},{d:'2026-01',r:0.70}],
+  notices:['JQみずほルート（Vポイント→JRキューポ→永久不滅P→ANAマイル）で70%。',
+    '2026年1月21日以降、みずほマイレージクラブカード/ANAの新規発行終了。既存カード保有者のみ継続利用可。',
+    '所要時間: 申請月末締め切り→翌月20日頃完了（最大約8週間）。']});
+
+// ─── PayPayポイント→Vポイント（2026年3月24日から相互交換開始） ───
+// ⚠ PayPayから交換したVポイントはANAマイル等への交換が不可（利用制限あり）
+d('paypay','vpoint',{rate:1.0,url:'https://www.google.com/search?q=PayPayポイント+Vポイント+相互交換+2026',
+  history:[{d:'2026-03',r:1.0}],change:'up',verified:true,
+  notices:['2026年3月24日から相互交換開始。1:1等価交換・手数料無料。',
+    '交換上限: 1日20,000P・月間30,000P（PayPay→V方向）。100P単位から。',
+    '⚠️【重要】PayPayポイントから交換したVポイントはANAマイル等への他ポイント・マイル交換が不可（利用制限付きVポイント）。マイル獲得目的には使えない。',
+    'VポイントをPayPayポイントへの逆方向交換（V→PayPay）は可能で、PayPay加盟店での決済に使用可能。']});
+// 各ポイントサイト→ドットマネーは1:1等価
+// ドットマネー→JAL: 2マネー=1マイル（50%）/ 500マネー最低 / キャンペーン時+10%増量（実質55%）
+d('dmoney','jal',{rate:0.50,url:'https://www.google.com/search?q=ドットマネー+JALマイル+交換+公式',
+  history:[{d:'2020-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-01',r:0.50}],verified:true,
+  notices:['2マネー→1JALマイル（50%）。最低500マネー単位。手数料無料。','申請後:1〜15日申請→申請月下旬、16〜末日申請→翌月上旬に積算。','キャンペーン時10%増量（2026年3月実績: 実質55%）。年1回程度。','複数ポイントサイトのポイントをドットマネーに集約後まとめてJAL交換が可能。']});
+// ドットマネー→ANA: 300マネー=85マイル(約28.3%)　※みずほルート経由なら70%も可
+d('dmoney','ana',{rate:85/300,url:'https://www.google.com/search?q=ドットマネー+ANAマイル+交換+公式',
+  history:[{d:'2020-01',r:85/300},{d:'2024-01',r:85/300},{d:'2026-01',r:85/300}],verified:true,
+  notices:['300マネー→85ANAマイル（≈28.3%）。直接交換は低レートのため非推奨。','みずほルート経由（ドットマネー→Vポイント→JRキューポ→永久不滅P→ANA）なら70%。ただしみずほカードは2026年1月21日以降新規発行終了。','nimocaルート（ドットマネー→Gポイント→nimoca→ANA）でも70%可（九州・函館限定）。']});
+// ドットマネー→共通ポイント（1:1等価）
+d('dmoney','dpoint',{rate:1.0,url:'https://www.google.com/search?q=ドットマネー+dポイント+交換+公式',
+  history:[{d:'2020-01',r:1},{d:'2026-01',r:1}],verified:true,notices:['等価交換。キャンペーン時dポイント10%増量対象。']});
+d('dmoney','ponta',{rate:1.0,url:'https://www.google.com/search?q=ドットマネー+Pontaポイント+交換+公式',
+  history:[{d:'2020-01',r:1},{d:'2026-01',r:1}],verified:true,notices:['等価交換。']});
+d('dmoney','rakuten',{rate:1.0,url:'https://www.google.com/search?q=ドットマネー+楽天ポイント+交換+公式',
+  history:[{d:'2020-01',r:1},{d:'2026-01',r:1}],verified:true,notices:['等価交換。']});
+// ドットマネー→KF: 直接交換なし。JAL経由も非対応。
+// ドットマネー←各ポイントサイト(間接: ポイントサイト→dmoney等価)
+id('moppy','dmoney',{rate:1.0,route:[{from:'モッピー',to:'ドットマネー',rate:1.0,url:'https://www.google.com/search?q=モッピー+ドットマネー+交換+公式'}],url:'https://www.google.com/search?q=モッピー+ドットマネー+交換+公式',history:[{d:'2020-01',r:1},{d:'2026-01',r:1}],notices:['等価交換。']});
+id('hapitas','dmoney',{rate:1.0,route:[{from:'ハピタス',to:'ドットマネー',rate:1.0,url:'https://www.google.com/search?q=ハピタス+ドットマネー+交換+公式'}],url:'https://www.google.com/search?q=ハピタス+ドットマネー+交換+公式',history:[{d:'2020-01',r:1},{d:'2026-01',r:1}],notices:['等価交換。300P以上から交換可。']});
+
+// ─── 現金購入レート ───
+// マリオット公式購入: 1,000pt=$12.50USD(セール以外)。通常時1pt≈1.875円(150円/ドル)→1円で約0.53pt
+d('jpy','marriott',{rate:1000/1875,url:'https://www.google.com/search?q=マリオットBonvoy+ポイント+購入+日本円+公式',
+  history:[{d:'2022-01',r:1000/1875},{d:'2024-01',r:1000/1875}],verified:true,
+  notices:['マリオット公式から購入可能。通常1,000pt=$12.50(≈1,875円/150円換算)。','定期的に30〜50%増量セールがあり、セール時は実質コスト大幅減。','購入は公式サイトで検索→「ポイントを購入」から。']});
+d('usd','marriott',{rate:80,url:'https://www.google.com/search?q=マリオットBonvoy+ポイント+購入+USD+公式',
+  history:[{d:'2022-01',r:80},{d:'2024-01',r:80}],verified:true,
+  notices:['1,000pt=$12.50USD → 1ドルで約80マリオットpt。','セール時(30〜50%増量)は最大116ptになることも。']});
+// ヒルトン公式購入: 10,000pts≈$95USD → 1USD≈105pt / 1円≈0.70pt(150円換算)
+d('jpy','hilton',{rate:1/142.5,url:'https://www.google.com/search?q=ヒルトンHonors+ポイント+購入+日本円+公式',
+  history:[{d:'2022-01',r:1/142.5},{d:'2024-01',r:1/142.5}],verified:false,
+  notices:['ヒルトン公式: 10,000pts≈$95USD(≈14,250円/150円換算)。','セール時は最大100%ボーナスあり。','公式サイトで要確認。']});
+d('usd','hilton',{rate:105,url:'https://www.google.com/search?q=ヒルトンHonors+ポイント+購入+USD+公式',
+  history:[{d:'2022-01',r:105},{d:'2024-01',r:105}],verified:false,
+  notices:['10,000pts≈$95USD → 1ドル≈105ヒルトンpt。','セール時2倍も。公式サイトで要確認。']});
+// ─── マイル間 / SKYコイン ───
+d('kris','avios',{rate:1.0,url:'https://www.google.com/search?q=KrisFlyer+Avios+マイル+交換+公式',history:[{d:'2020-01',r:1},{d:'2024-01',r:1},{d:'2026-01',r:1}],verified:true,notices:[]});
+d('avios','kris',{rate:1.0,url:'https://www.google.com/search?q=Avios+ブリティッシュエアウェイズ+KrisFlyer+交換+公式',history:[{d:'2020-01',r:1},{d:'2024-01',r:1},{d:'2026-01',r:1}],verified:true,notices:[]});
+d('kris','united',{rate:1.0,url:'https://www.google.com/search?q=シンガポール航空+KrisFlyer+マイル+交換+公式',history:[{d:'2020-01',r:1},{d:'2024-01',r:1}],verified:true,notices:[]});
+d('ana','anacoin',{rate:1.0,url:'https://www.google.com/search?q=ANA+SKYコイン+マイル+交換+公式',
+  history:[{d:'2020-01',r:1},{d:'2024-01',r:1},{d:'2026-01',r:1}],verified:true,
+  notices:['1マイル=1SKYコイン(基本)。','10,000マイル以上交換でステータス・カード種別に応じ1.2〜1.7倍。(例: 一般カード10,000マイル→12,000コイン)','最大200,000マイル/回。SKYコイン有効期限12ヶ月。ANA便・ツアー支払いに使用可。']});
+d('ana','marriott',{rate:1.0,url:'https://www.google.com/search?q=ANAマイル+マリオットポイント+交換+公式',
+  history:[{d:'2020-01',r:1},{d:'2024-01',r:1}],verified:true,
+  notices:['10,000マイル単位。3回目以降は2マイル:1ptに逓減。']});
+
+// ════════════════════════════════
+// STATE
+// ════════════════════════════════
+let curLv='major';
+const catSt={},ptSt={};
+PTS.forEach(p=>ptSt[p.id]=true);
+Object.keys(CATS).forEach(c=>catSt[c]=true);
+
+function lvAllow(lv){return lv==='major'?['major']:lv==='standard'?['major','standard']:['major','standard','niche'];}
+function getVis(){return PTS.filter(p=>ptSt[p.id]);}
+
+// ════════════════════════════════
+// CHIPS
+// ════════════════════════════════
+// カテゴリカラー
+const CAT_COLORS={
+  site:'#5c4ab8',common:'#0a7070',hotel:'#7a2a60',mile:'#1a6a1a',coin:'#555',cash:'#8a5500'
+};
+
+function buildChips(){
+  const sb=document.getElementById('sidebarPts');
+  if(!sb)return;
+  sb.innerHTML='';
+  const catOrder=Object.keys(CATS);
+  catOrder.forEach(cat=>{
+    const pts=PTS.filter(p=>p.cat===cat);
+    if(!pts.length)return;
+    const block=document.createElement('div');
+    block.className='sb-cat-block';
+    // カテゴリラベル（クリックで全ON/OFF）
+    const lbl=document.createElement('div');
+    lbl.className='sb-cat-label';
+    lbl.innerHTML=`<span style="width:8px;height:8px;border-radius:50%;background:${CAT_COLORS[cat]||'#888'};display:inline-block"></span><span>${CATS[cat].label}</span><span class="sb-cat-toggle" data-cat="${cat}">▲</span>`;
+    lbl.onclick=()=>togCatAll(cat);
+    block.appendChild(lbl);
+    // 各ポイントチップ
+    const chips=document.createElement('div');
+    chips.className='sb-chips';
+    pts.forEach(p=>{
+      const e=document.createElement('span');
+      e.className='chip'+(ptSt[p.id]?' active':'');
+      e.dataset.pt=p.id;
+      e.innerHTML=`<span class="cat-dot" style="background:${CAT_COLORS[cat]||'#888'}"></span>${p.name}`;
+      e.onclick=()=>togPt(p.id,e);
+      chips.appendChild(e);
+    });
+    block.appendChild(chips);
+    sb.appendChild(block);
+  });
+}
+
+function togCatAll(cat){
+  // そのカテゴリに属するポイントが全ON→全OFF、それ以外→全ON
+  const pts=PTS.filter(p=>p.cat===cat);
+  const allOn=pts.every(p=>ptSt[p.id]);
+  pts.forEach(p=>{
+    ptSt[p.id]=!allOn;
+    document.querySelectorAll(`[data-pt="${p.id}"]`).forEach(e=>e.classList.toggle('active',ptSt[p.id]));
+  });
+  buildMatrix();
+}
+function togCat(cat,el){/* legacy - unused */}
+function togPt(id,el){ptSt[id]=!ptSt[id];document.querySelectorAll(`[data-pt='${id}']`).forEach(e=>e.classList.toggle('active',ptSt[id]));buildMatrix();}
+function selAll(){PTS.forEach(p=>ptSt[p.id]=true);Object.keys(catSt).forEach(k=>catSt[k]=true);document.querySelectorAll('.chip').forEach(c=>c.classList.add('active'));buildMatrix();}
+function selNone(){PTS.forEach(p=>ptSt[p.id]=false);Object.keys(catSt).forEach(k=>catSt[k]=false);document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));buildMatrix();}
+function setLevel(lv){
+  curLv=lv;
+  document.querySelectorAll('.lv-btn').forEach(b=>b.classList.toggle('active',b.dataset.lv===lv));
+  const allowed=lvAllow(lv);
+  PTS.forEach(p=>{
+    ptSt[p.id]=allowed.includes(p.lv);
+    document.querySelectorAll(`[data-pt="${p.id}"]`).forEach(e=>e.classList.toggle('active',ptSt[p.id]));
+  });
+  buildMatrix();
+}
+
+// ════════════════════════════════
+// RATE CLASS
+// ════════════════════════════════
+function rateClass(r,fromId){
+  if(fromId==='jpy'||fromId==='usd') return 'r80'; // 現金購入は中立色
+  if(r===null||r===undefined)return 'rna';
+  const pct=r*100;
+  if(pct>=100)return 'r100';
+  if(pct>=80)return 'r80';
+  if(pct>=60)return 'r60';
+  if(pct>=40)return 'r40';
+  if(pct>=20)return 'r20';
+  return 'r00';
+}
+function rateDisp(r,fromId,toId){
+  if(r===null||r===undefined)return '—';
+  if(fromId==='usd') return Math.round(r)+'pt/$';
+  if(fromId==='jpy') return (r).toFixed(3)+'pt/円';
+  return (r*100).toFixed(1)+'%';
+}
+
+// ════════════════════════════════
+// MATRIX
+// ════════════════════════════════
+// FROM行に表示しないカテゴリ: マイル・SKYコインのみ
+// （ポイントサイト・共通ポイント・ホテル・現金はFROM行に表示）
+const ROW_EXCLUDE = new Set(['mile','coin']);
+
+function buildMatrix(){
+  const vis=getVis();const tbl=document.getElementById('tbl');
+  if(!vis.length){tbl.innerHTML='<tr><td style="padding:20px;color:var(--text3)">ポイントを選択してください</td></tr>';return;}
+
+  const catOrder=Object.keys(CATS);
+  const grouped={};catOrder.forEach(c=>grouped[c]=[]);
+  vis.forEach(p=>grouped[p.cat].push(p));
+
+  // TO列ヘッダー = 共通ポイント・ホテル・マイル・SKYコインのみ
+  const toVis=vis.filter(p=>!new Set(['site','cash']).has(p.cat));
+
+  let h='<thead><tr><th class="corner">FROM \\ TO</th>';
+  toVis.forEach(p=>{h+=`<th>${p.name}<span class="tc">${CATS[p.cat].label}</span></th>`;});
+  h+='</tr></thead><tbody>';
+
+  catOrder.forEach(cat=>{
+    if(ROW_EXCLUDE.has(cat))return; // site/cash/mile/coin はFROM行に出さない
+    if(!grouped[cat].length)return;
+    h+=`<tr class="cath"><td class="rh">${CATS[cat].label}</td>${toVis.map(()=>'<td></td>').join('')}</tr>`;
+    grouped[cat].forEach(row=>{
+      h+=`<tr><td class="rh">${row.name}<span class="tc">${CATS[row.cat].label}</span></td>`;
+      toVis.forEach(col=>{
+        if(row.id===col.id){h+=`<td><div class="cell selfcell">—</div></td>`;return;}
+        const k=`${row.id}->${col.id}`;
+        const rd=RD[k];
+        if(!rd||(!rd.direct&&!rd.indirect)){h+=`<td><div class="cell nacell"><div class="cr rna">—</div></div></td>`;return;}
+
+        const dr=rd.direct;const ir=rd.indirect;
+        const hasD=dr&&dr.rate!==null&&dr.rate!==undefined;
+        const hasI=ir&&ir.rate!==null&&ir.rate!==undefined;
+
+        let topCls=hasD?rateClass(dr.rate,row.id):'rna';
+        let topTxt=hasD?rateDisp(dr.rate,row.id,col.id):'—';
+        let topChange=hasD?dr.change:null;
+        if(topChange==='up')topCls='rise';
+        else if(topChange==='down')topCls='fall';
+
+        let botCls=hasI?rateClass(ir.rate,row.id):'rna';
+        let botTxt=hasI?rateDisp(ir.rate,row.id,col.id):'—';
+        let botChange=hasI?ir.change:null;
+        if(botChange==='up')botCls='rise';
+        else if(botChange==='down')botCls='fall';
+
+        const chUp='<span class="chup">▲</span>';
+        const chDn='<span class="chdn">▼</span>';
+
+        // top = direct
+        const topArrow=topChange==='up'?chUp:topChange==='down'?chDn:'';
+        // bot = indirect (↻マークは廃止)
+        const botArrow=botChange==='up'?chUp:botChange==='down'?chDn:'';
+
+        h+=`<td><div class="cell" onclick="openMod('${row.id}','${col.id}')">
+          <div class="cr ${topCls}">${topTxt}${topArrow}</div>
+          <div class="cb ${botCls}">${botTxt}${botArrow}</div>
+        </div></td>`;
+      });
+      h+='</tr>';
+    });
+  });
+  h+='</tbody>';
+  tbl.innerHTML=h;
+  updateSpSelected();
+}
+
+// ════════════════════════════════
+// MODAL
+// ════════════════════════════════
+let chartInst=null,curMod=null,histR='3y';
+
+function openMod(fid,tid){
+  const k=`${fid}->${tid}`;const rd=RD[k];if(!rd)return;
+  curMod={fid,tid,rd};histR='3y';
+  renderMod(fid,tid,rd);
+  document.getElementById('ov').classList.add('open');
+}
+
+function renderMod(fid,tid,rd){
+  const fn=PTS.find(p=>p.id===fid)?.name||fid;
+  const tn=PTS.find(p=>p.id===tid)?.name||tid;
+  const dr=rd.direct,ir=rd.indirect;
+  const hasD=dr&&dr.rate!=null,hasI=ir&&ir.rate!=null;
+
+  let html=`<div class="mtit">${fn} → ${tn}</div><div class="msub">交換レート詳細</div>`;
+
+  // direct rate
+  if(hasD){
+    let bg='';
+    if(dr.change==='up')bg='<span class="mbg up">↑ 有利改定</span>';
+    if(dr.change==='down')bg='<span class="mbg dn">↓ 不利改定</span>';
+    if(dr.verified===false)bg+='<span class="mbg nv">要確認</span>';
+    html+=`<div class="sh">直接交換レート</div>`;
+    html+=`<div class="mrate">${fid==='jpy'?Math.round(dr.rate)+'pt/円':fid==='usd'?Math.round(dr.rate)+'pt/ドル':(dr.rate*100).toFixed(2)+'%'}${bg}</div>`;
+    html+=`<div class="mrate-n">${fid==='jpy'?'1円 → 約'+dr.rate.toFixed(4)+' '+tn:fid==='usd'?'1ドル → 約'+Math.round(dr.rate)+' '+tn:'1 '+fn+' → '+dr.rate.toFixed(4)+' '+tn+' ／ 10,000pt → '+Math.round(10000*dr.rate).toLocaleString()+'pt'}</div>`;
+    if(dr.notices?.length){
+      dr.notices.forEach(n=>{html+=`<div class="nbox">⚠ ${n}</div>`;});
+    }
+    if(dr.url){
+      html+=`<div class="sh">公式情報源（直接）</div><div class="srcl">`;
+      html+=`<div class="srci" onclick="window.open('${dr.url}','_blank')"><span>🔗</span><span style="flex:1">${fn} 公式交換ページを検索</span><span class="sarr">↗</span></div>`;
+      html+=`</div>`;
+    }
+  }
+
+  // indirect rate
+  if(hasI){
+    let ibg='<span class="mbg ind">↻ 間接</span>';
+    if(ir.change==='up')ibg+='<span class="mbg up">↑ 有利改定</span>';
+    if(ir.change==='down')ibg+='<span class="mbg dn">↓ 不利改定</span>';
+    html+=`<div class="sh">ベスト間接交換ルート</div>`;
+    html+=`<div class="mrate" style="font-size:22px">${fid==='jpy'?Math.round(ir.rate)+'pt/円':fid==='usd'?Math.round(ir.rate)+'pt/ドル':(ir.rate*100).toFixed(2)+'%'}${ibg}</div>`;
+    html+=`<div class="mrate-n">${fid==='jpy'?'1円で → 約'+ir.rate.toFixed(4)+' '+tn:fid==='usd'?'1ドルで → 約'+Math.round(ir.rate)+' '+tn:'間接経由: 10,000pt → 約'+Math.round(10000*ir.rate).toLocaleString()+'pt相当'}</div>`;
+    html+=`<div class="routebox">`;
+    ir.route.forEach((step,i)=>{
+      html+=`<div class="rrow">`;
+      if(i===0)html+=`<span class="rnode">${step.from}</span><span class="rarr">→</span>`;
+      html+=`<span class="rnode">${step.to}</span><span class="rrate">×${(step.rate*100).toFixed(1)}%</span>`;
+      if(step.url)html+=`<a class="rlink" href="${step.url}" target="_blank">検索↗</a>`;
+      html+=`</div>`;
+    });
+    html+=`</div>`;
+    if(ir.notices?.length){
+      ir.notices.forEach(n=>{html+=`<div class="nbox">⚠ ${n}</div>`;});
+    }
+    if(ir.url||ir.route?.some(s=>s.url)){
+      html+=`<div class="sh">公式情報源（間接）</div><div class="srcl">`;
+      if(ir.url)html+=`<div class="srci" onclick="window.open('${ir.url}','_blank')"><span>🔗</span><span style="flex:1">${fn} 交換ページ</span><span class="sarr">↗</span></div>`;
+      ir.route?.forEach(step=>{
+        if(step.url)html+=`<div class="srci" onclick="window.open('${step.url}','_blank')"><span>🔗</span><span style="flex:1">${step.from}→${step.to}</span><span class="sarr">↗</span></div>`;
+      });
+      html+=`</div>`;
+    }
+  }
+
+  if(!hasD&&!hasI){html+=`<div class="mrate">交換不可</div>`;}
+
+  // history
+  const histSrc=hasD?dr:ir;
+  if(histSrc?.history?.length){
+    html+=`<div class="sh">レート履歴</div>`;
+    html+=`<div class="hbtns">
+      <button class="hbtn ${histR==='1y'?'active':''}" data-r="1y" onclick="setHR('1y')">1年</button>
+      <button class="hbtn ${histR==='3y'?'active':''}" data-r="3y" onclick="setHR('3y')">3年</button>
+      <button class="hbtn ${histR==='5y'?'active':''}" data-r="5y" onclick="setHR('5y')">5年</button>
+      <button class="hbtn ${histR==='all'?'active':''}" data-r="all" onclick="setHR('all')">全期間</button>
+    </div>
+    <div class="chwrap"><canvas id="hc" role="img" aria-label="${fn}→${tn}のレート履歴"></canvas></div>
+    <div class="hcap" id="hcap"></div>`;
+  }
+
+  html+=`<div style="font-size:9px;color:var(--text3);margin-top:12px;line-height:1.6">※ リンクはGoogle検索ページが開きます。「公式サイト」等で検索結果から最新ページにアクセスしてください。レートは改定される場合があるため、交換前に各社公式サイトで必ずご確認ください。</div>`;
+
+  document.getElementById('mc').innerHTML=html;
+  document.getElementById('ov').classList.add('open');
+  if(chartInst){chartInst.destroy();chartInst=null;}
+  if(histSrc?.history?.length)drawChart(histSrc,histR);
+}
+
+function drawChart(src,range){
+  const now=new Date();
+  let cut=new Date(now);
+  if(range==='1y')cut.setFullYear(now.getFullYear()-1);
+  else if(range==='3y')cut.setFullYear(now.getFullYear()-3);
+  else if(range==='5y')cut.setFullYear(now.getFullYear()-5);
+  else cut=new Date('2000-01-01');
+  const pts=src.history.filter(h=>h.r!=null&&new Date(h.d+'-01')>=cut);
+  if(!pts.length){document.getElementById('hcap').textContent='この期間のデータなし';return;}
+  const labels=pts.map(h=>h.d);
+  const data=pts.map(h=>parseFloat((h.r*100).toFixed(2)));
+  const ctx=document.getElementById('hc').getContext('2d');
+  chartInst=new Chart(ctx,{
+    type:'line',
+    data:{labels,datasets:[{label:'交換率(%)',data,borderColor:'#185fa5',backgroundColor:'rgba(24,95,165,.1)',tension:.3,pointRadius:5,pointBackgroundColor:'#185fa5',fill:true}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{y:{min:0,max:Math.min(110,Math.max(...data)+10),ticks:{callback:v=>v+'%'}},x:{ticks:{maxRotation:45}}}}
+  });
+  const last=pts[pts.length-1],prev=pts.length>1?pts[pts.length-2]:null;
+  let cap=prev&&last.r!==prev.r
+    ?(last.r>prev.r?`↑ ${prev.d}: ${(prev.r*100).toFixed(1)}% → ${last.d}: ${(last.r*100).toFixed(1)}% (有利改定)`:`↓ ${prev.d}: ${(prev.r*100).toFixed(1)}% → ${last.d}: ${(last.r*100).toFixed(1)}% (不利改定)`)
+    :`直近レート安定 (${last.d}: ${(last.r*100).toFixed(1)}%)`;
+  document.getElementById('hcap').textContent=cap;
+}
+
+function setHR(r){
+  histR=r;
+  document.querySelectorAll('.hbtn').forEach(b=>b.classList.toggle('active',b.dataset.r===r));
+  if(chartInst){chartInst.destroy();chartInst=null;}
+  if(curMod){
+    const rd=curMod.rd;
+    const src=rd.direct?.history?.length?rd.direct:rd.indirect;
+    if(src)drawChart(src,r);
+  }
+}
+
+function closeMod(){document.getElementById('ov').classList.remove('open');if(chartInst){chartInst.destroy();chartInst=null;}}
+function maybeClose(e){if(e.target===document.getElementById('ov'))closeMod();}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMod();});
+
+// ════════════════════════════════
+// MOBILE TOGGLE
+// ════════════════════════════════
+function toggleSpFilter(){
+  const inner=document.getElementById('sidebarInner');
+  const btn=document.getElementById('spToggle');
+  const isOpen=inner.classList.toggle('sp-open');
+  btn.classList.toggle('open',isOpen);
+}
+
+function updateSpSelected(){
+  const el=document.getElementById('spSelected');
+  if(!el)return;
+  const count=PTS.filter(p=>ptSt[p.id]).length;
+  el.textContent=`${count}件選択中`;
+}
+
+// ════════════════════════════════
+// POINT CALCULATOR
+// ════════════════════════════════
+let calcSort = 'rate';
+
+function toggleCalc() {
+  const body = document.getElementById('calcBody');
+  const arrow = document.getElementById('calcArrow');
+  const isOpen = body.classList.toggle('open');
+  arrow.classList.toggle('open', isOpen);
+}
+
+function buildCalcSelect() {
+  const sel = document.getElementById('calcFrom');
+  if (!sel) return;
+  // カテゴリ順にポイントを追加（FROM行に表示できるもの = mile/coin以外）
+  const catOrder = Object.keys(CATS);
+  catOrder.forEach(cat => {
+    if (['mile','coin'].includes(cat)) return;
+    const pts = PTS.filter(p => p.cat === cat);
+    if (!pts.length) return;
+    const grp = document.createElement('optgroup');
+    grp.label = CATS[cat].label;
+    pts.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = p.name;
+      grp.appendChild(opt);
+    });
+    sel.appendChild(grp);
+  });
+}
+
+function setCalcSort(s) {
+  calcSort = s;
+  document.querySelectorAll('.calc-sort-btn').forEach(b => b.classList.toggle('active', b.dataset.sort === s));
+  runCalc();
+}
+
+function getCalcUnit(fromId) {
+  if (fromId === 'jpy') return '円';
+  if (fromId === 'usd') return 'ドル';
+  return 'ポイント';
+}
+
+function calcRateColor(r) {
+  if (!r || r === null) return '';
+  const pct = r * 100;
+  if (pct >= 80) return 'rate-high';
+  if (pct >= 60) return 'rate-mid';
+  if (pct >= 40) return 'rate-low';
+  return 'rate-vlow';
+}
+
+function formatResult(amt, toId, rate, fromId) {
+  const toP = PTS.find(p => p.id === toId);
+  if (toId === 'jpy') return Math.round(amt * rate).toLocaleString() + ' 円';
+  if (toId === 'usd') return (amt * rate).toFixed(0) + ' ドル';
+  if (toP?.cat === 'cash') return Math.round(amt * rate).toLocaleString();
+  // マイル/ホテル/共通ポイント
+  return Math.round(amt * rate).toLocaleString() + ' ' + (toP?.name || toId).replace(/マイル|ポイント|Honors|Bonvoy/g,'').trim().slice(0,4) + '…';
+}
+
+function buildRouteStr(route) {
+  if (!route || !route.length) return '';
+  let s = route[0].from;
+  route.forEach(step => { s += ' → ' + step.to + ' (×' + (step.rate * 100).toFixed(0) + '%)'; });
+  return s;
+}
+
+function runCalc() {
+  const fromId = document.getElementById('calcFrom').value;
+  const amtRaw = document.getElementById('calcAmt').value;
+  const amt = parseFloat(amtRaw);
+  const unitEl = document.getElementById('calcUnit');
+  const resEl = document.getElementById('calcResults');
+
+  if (unitEl) unitEl.textContent = getCalcUnit(fromId);
+
+  if (!fromId || isNaN(amt) || amt <= 0) {
+    resEl.innerHTML = '<div class="calc-results-empty">⬆ 交換元ポイントを選択して金額を入力してください</div>';
+    return;
+  }
+
+  // 全TO候補を集める（自分自身・現金購入除く）
+  const toList = PTS.filter(p => p.id !== fromId && !['cash'].includes(p.cat));
+  const results = [];
+
+  toList.forEach(toP => {
+    const k = `${fromId}->${toP.id}`;
+    const rd = RD[k];
+    if (!rd) return;
+
+    let best = null; // {rate, isIndirect, change, route}
+    if (rd.direct && rd.direct.rate != null) {
+      best = { rate: rd.direct.rate, isIndirect: false, change: rd.direct.change, route: null };
+    }
+    if (rd.indirect && rd.indirect.rate != null) {
+      if (!best || rd.indirect.rate > best.rate) {
+        best = { rate: rd.indirect.rate, isIndirect: true, change: rd.indirect.change, route: rd.indirect.route };
+      }
+    }
+    if (!best) return;
+
+    const got = Math.round(amt * best.rate);
+    results.push({ toP, rate: best.rate, got, isIndirect: best.isIndirect, change: best.change, route: best.route });
+  });
+
+  if (!results.length) {
+    resEl.innerHTML = '<div class="calc-no-result">このポイントの交換先データがありません</div>';
+    return;
+  }
+
+  // ソート
+  if (calcSort === 'rate') {
+    results.sort((a, b) => b.rate - a.rate);
+  } else {
+    const catOrd = Object.keys(CATS);
+    results.sort((a, b) => catOrd.indexOf(a.toP.cat) - catOrd.indexOf(b.toP.cat) || b.rate - a.rate);
+  }
+
+  const fromName = PTS.find(p => p.id === fromId)?.name || fromId;
+  const unit = getCalcUnit(fromId);
+  let html = '';
+
+  results.forEach((r, i) => {
+    const isBest = i === 0 && calcSort === 'rate';
+    const pct = (r.rate * 100).toFixed(1);
+    const colorCls = calcRateColor(r.rate);
+
+    let badges = '';
+    if (isBest) badges += '<span class="calc-res-badge best">🏆 最高</span>';
+    if (r.isIndirect) badges += '<span class="calc-res-badge indirect">↻ 間接</span>';
+    if (r.change === 'up') badges += '<span class="calc-res-badge rise">↑改定</span>';
+    if (r.change === 'down') badges += '<span class="calc-res-badge fall">↓改定</span>';
+
+    const routeStr = r.isIndirect && r.route ? buildRouteStr(r.route) : '';
+    const toName = r.toP.name;
+    const gotFmt = r.got.toLocaleString();
+
+    // 表示単位
+    let gotUnit = '';
+    if (r.toP.cat === 'mile') gotUnit = 'マイル';
+    else if (r.toP.cat === 'hotel') gotUnit = 'pt';
+    else if (r.toP.cat === 'common') gotUnit = 'ポイント';
+    else if (r.toP.cat === 'coin') gotUnit = 'コイン';
+
+    html += `
+      <div class="calc-res-card" onclick="openMod('${fromId}','${r.toP.id}')">
+        <div class="calc-res-to">
+          <div class="calc-to-name">${toName}${badges}</div>
+          <div class="calc-to-cat">${CATS[r.toP.cat]?.label || ''} ／ レート ${pct}%</div>
+        </div>
+        <div class="calc-res-val">
+          <div class="calc-res-main ${colorCls}">${gotFmt}<span style="font-size:10px;font-weight:500;margin-left:2px">${gotUnit}</span></div>
+          <div class="calc-res-sub">${amt.toLocaleString()} ${unit} → ${pct}%</div>
+        </div>
+        ${routeStr ? `<div class="calc-res-route">経路: ${routeStr}</div>` : ''}
+      </div>`;
+  });
+
+  resEl.innerHTML = html;
+}
+
+// ════════════════════════════════
+// マイル集約電卓 (主機能) - 多目標対応版
+// ════════════════════════════════
+
+// 目標マイル種別ごとの換算レート定義
+// ファンくる: Gポイント交換時10%手数料控除（保守的に0.9掛け）
+const AGG_RATES = {
+  kris: [ // KrisFlyer(KF)マイル
+    { id:'moppy',   name:'モッピー',         rate: (1000/1300)*(25000/60000), route:'マリオットBonvoy経由（60,000pt単位+ボーナス）', unit:'ポイント', default: 100000 },
+    { id:'hapitas', name:'ハピタス',         rate: (330/500)*(25000/60000),   route:'マリオットBonvoy経由（500P→330pt換算）', unit:'ポイント', default: 0  },
+    { id:'fancrew', name:'ファンくる',       rate: 0.9*0.70/10, route:'※10P=1円相当。Gポイント経由(G内10%手数料)→nimoca→ANA換算。実質6.3%/P', unit:'ポイント', default: 0 },
+    { id:'marriott', name:'マリオットBonvoy', rate: 25000/60000, route:'60,000pt単位でKF25,000マイル換算（+5,000ボーナス込み・≈41.7%）', unit:'ポイント', default: 0 },
+    { id:'rakuten', name:'楽天ポイント',     rate: (1/3)*(25000/60000), route:'マリオット経由（3楽天P→1マリオットpt→KF 41.7%）約13.9%', unit:'ポイント', default: 0 },
+    { id:'vpoint',  name:'Vポイント(旧T)',  rate: 0,                   route:'KF直接換算ルートなし（Vポイント→KFの変換経路なし。ANA目標への切替を推奨）', unit:'ポイント', default: 0 },
+    { id:'paypay',  name:'PayPayポイント',  rate: 0,                   route:'⚠️ KFへの換算ルートなし（PayPay→V→KFは制限により不可）', unit:'ポイント', default: 0 },
+    { id:'dmoney',  name:'ドットマネー',     rate: 0,                          route:'KFへの直接換算ルートなし', unit:'マネー', default: 0 },
+    { id:'yamada',  name:'ヤマダ電機P',     rate: 0,                          route:'KF直接換算ルートなし。ヤマダP→ANAマイル変換（4,000P→1,000マイル・25%）は可能だが、ANAマイルからKFへの変換ルートが存在しない。ANA目標に切替えてご利用ください', unit:'ポイント', default: 0 },
+    { id:'jpy',     name:'日本円（現金購入）', rate: (1/1875)*(25000/60000),   route:'マリオット公式購入→KF', unit:'円', default: 0 },
+    { id:'usd',     name:'米ドル（現金購入）', rate: 80*(25000/60000),          route:'マリオット公式購入→KF', unit:'USD', default: 0 },
+  ],
+  ana: [ // ANAマイル
+    { id:'moppy',   name:'モッピー',         rate: 0.70, route:'みずほルート（Vポイント→JRキューポ→永久不滅P→ANA）', unit:'ポイント', default: 100000 },
+    { id:'hapitas', name:'ハピタス',         rate: 0.70, route:'みずほルート（Vポイント→JRキューポ→永久不滅P→ANA）', unit:'ポイント', default: 0  },
+    { id:'fancrew', name:'ファンくる',       rate: 0.9*0.70/10, route:'※10P=1円相当。Gポイント経由(G内10%手数料)→nimocaルート70%。実質6.3%/P', unit:'ポイント', default: 0 },
+    { id:'vpoint',   name:'Vポイント(旧T)',   rate: 0.70, route:'JQみずほルート（Vポイント→JRキューポ→永久不滅P→ANA）最大70%。直接交換50〜60%', unit:'ポイント', default: 0 },
+    { id:'paypay',   name:'PayPayポイント',   rate: 0,    route:'⚠️ PayPay→V経由でのマイル交換は不可（制限付きVポイント）。Vポイント運用の裏技あり', unit:'ポイント', default: 0 },
+    { id:'marriott', name:'マリオットBonvoy', rate: 25000/60000, route:'60,000pt単位でANA25,000マイル換算（+5,000ボーナス込み・≈41.7%）', unit:'ポイント', default: 0 },
+    { id:'rakuten', name:'楽天ポイント',     rate: 0.50, route:'直接交換50%（1,000P単位）', unit:'ポイント', default: 0 },
+    { id:'yamada',  name:'ヤマダ電機P',     rate: 1000/4000, route:'ANA直接交換（4,000P→1,000マイル・25%）※楽天・dP等への交換は不可', unit:'ポイント', default: 0 },
+    { id:'dmoney',  name:'ドットマネー',     rate: 85/300, route:'300マネー→85マイル（約28.3%）', unit:'マネー', default: 0 },
+    { id:'jpy',     name:'日本円（現金購入）', rate: 0,    route:'直接購入ルートなし', unit:'円', default: 0 },
+    { id:'usd',     name:'米ドル（現金購入）', rate: 0,    route:'直接購入ルートなし', unit:'USD', default: 0 },
+  ],
+  jal: [ // JALマイル
+    { id:'moppy',    name:'モッピー',         rate: 0.50, route:'直接交換50%（ドリームキャンペーン時最大80%）', unit:'ポイント', default: 100000 },
+    { id:'hapitas',  name:'ハピタス',         rate: 0.50, route:'直接交換50%', unit:'ポイント', default: 0  },
+    { id:'fancrew',  name:'ファンくる',       rate: 0.50/10, route:'※10P=1円相当。ドットマネー経由（手数料無料→JAL50%）。実質5%/P', unit:'ポイント', default: 0 },
+    { id:'vpoint',   name:'Vポイント(旧T)',   rate: 0.50, route:'JRキューポ→永久不滅P経由またはWAON POINT経由（50%）。キャンペーン時最大60%', unit:'ポイント', default: 0 },
+    { id:'paypay',   name:'PayPayポイント',   rate: 0,    route:'⚠️ PayPay→V交換後のVポイントはJALマイル交換不可（制限付き）。Vポイント運用の裏技あり', unit:'ポイント', default: 0 },
+    { id:'rakuten',  name:'楽天ポイント',     rate: 0.50, route:'直接交換50%（1,000P単位）', unit:'ポイント', default: 0 },
+    { id:'marriott', name:'マリオットBonvoy', rate: 25000/60000, route:'60,000pt単位でJAL25,000マイル換算（+5,000ボーナス込み・≈41.7%）', unit:'ポイント', default: 0 },
+    { id:'yamada',   name:'ヤマダ電機P',     rate: 0, route:'JAL直接換算ルートなし（ヤマダP→ANAマイル変換は可能だが、ANAマイルからJALへの変換ルートは存在しない）', unit:'ポイント', default: 0 },
+    { id:'dmoney',   name:'ドットマネー',     rate: 0.50, route:'直接交換（2マネー=1マイル・50%）/ キャンペーン時55%', unit:'マネー', default: 0 },
+    { id:'jpy',      name:'日本円（現金購入）', rate: 0,    route:'直接購入ルートなし', unit:'円', default: 0 },
+    { id:'usd',      name:'米ドル（現金購入）', rate: 0,    route:'直接購入ルートなし', unit:'USD', default: 0 },
+  ],
+  marriott: [ // マリオットBonvoyポイント
+    { id:'moppy',   name:'モッピー',         rate: 1000/1300, route:'直接交換（1,300P→1,000pt ≈76.9%）', unit:'ポイント', default: 100000 },
+    { id:'hapitas', name:'ハピタス',         rate: 330/500,   route:'直接交換（500P→330pt ≈66%・2025年4月改悪）', unit:'ポイント', default: 0  },
+    { id:'fancrew', name:'ファンくる',       rate: 0.9*(1000/1300)/10, route:'※10P=1円相当。Gポイント経由（G内10%手数料）→マリオット。実質約6.9%/P', unit:'ポイント', default: 0 },
+    { id:'vpoint',  name:'Vポイント(旧T)',  rate: 0,          route:'マリオット直接交換ルートなし（Vポイント→Marriottの換算経路なし）', unit:'ポイント', default: 0 },
+    { id:'paypay',  name:'PayPayポイント',  rate: 0,          route:'⚠️ マリオットへの換算ルートなし（PayPay→V→Marriottは制限により不可）', unit:'ポイント', default: 0 },
+    { id:'rakuten', name:'楽天ポイント',     rate: 1/3, route:'直接交換（3楽天P→1マリオットpt ≈33.3%）最低3,000P単位', unit:'ポイント', default: 0 },
+    { id:'yamada',  name:'ヤマダ電機P',     rate: 0,          route:'マリオット直接交換ルートなし（ANA経由も低レート）', unit:'ポイント', default: 0 },
+    { id:'dmoney',  name:'ドットマネー',     rate: 0,          route:'マリオット直接交換ルートなし', unit:'マネー', default: 0 },
+    { id:'jpy',     name:'日本円（現金購入）', rate: 1000/1875, route:'マリオット公式購入（1,000pt≈1,875円）', unit:'円', default: 0 },
+    { id:'usd',     name:'米ドル（現金購入）', rate: 80,         route:'マリオット公式購入（$12.5→1,000pt）', unit:'USD', default: 0 },
+  ],
+};
+
+const AGG_TARGET_META = {
+  kris:     { label:'KFマイル',        unit:'マイル', color:'#1a5c1a', bg:'#e8f5e9', border:'#a5d6a7', note:'KrisFlyer(SQ)マイル — KF直接ルートなし項目はゼロ計上' },
+  ana:      { label:'ANAマイル',       unit:'マイル', color:'#185fa5', bg:'#e3f2fd', border:'#90caf9', note:'ANAマイル — みずほルートは2026年1月以降新規発行終了（既存保有者のみ継続可）' },
+  jal:      { label:'JALマイル',       unit:'マイル', color:'#c62828', bg:'#ffebee', border:'#ef9a9a', note:'JALマイル — ドリームキャンペーン時モッピーは実質80%も' },
+  marriott: { label:'マリオットBonvoy', unit:'ポイント', color:'#7a2a60', bg:'#fce4ec', border:'#f48fb1', note:'マリオットBonvoy — 60,000pt単位でKF等に換算時ボーナス+5,000マイル' },
+};
+
+let aggRowData = [];
+let aggTarget = 'ana';
+
+function changeAggTarget() {
+  aggTarget = document.getElementById('aggTarget').value;
+  const meta = AGG_TARGET_META[aggTarget];
+  // UIカラー更新
+  document.querySelector('#aggBody').closest('.calc-panel').style.borderColor = meta.color;
+  document.querySelector('.calc-header[onclick="toggleAgg()"]').style.background = meta.bg;
+  document.getElementById('aggGoalUnit').textContent = meta.unit;
+  document.getElementById('aggTotalSub').textContent = meta.unit;
+  document.getElementById('aggNote').textContent = '※ ' + meta.note + '。換算前に公式サイトをご確認ください。';
+  // ⚠ 保有ポイント量は保持（種別切替でもリセットしない）
+  // 換算率は選択中のaggTargetのAGG_RATESに基づき自動更新される
+  renderAggRows();
+  runAgg();
+}
+
+// 初期表示に含めるID（ヤマダ・現金・dmoneyは除外）
+const AGG_DEFAULT_IDS = ['moppy','hapitas','fancrew'];
+
+function initAgg() {
+  aggTarget = 'ana';
+  const rates = AGG_RATES[aggTarget];
+  aggRowData = AGG_DEFAULT_IDS.map(id => {
+    const def = rates.find(r => r.id === id);
+    return { id, amount: def ? def.default : 0 };
+  });
+  // 初期UIカラーをANA用に設定
+  const meta = AGG_TARGET_META[aggTarget];
+  const panel = document.querySelector('#aggBody')?.closest('.calc-panel');
+  if (panel) panel.style.borderColor = meta.color;
+  const hdr = document.querySelector('.calc-header[onclick="toggleAgg()"]');
+  if (hdr) hdr.style.background = meta.bg;
+  const goalUnit = document.getElementById('aggGoalUnit');
+  if (goalUnit) goalUnit.textContent = meta.unit;
+  const totalSub = document.getElementById('aggTotalSub');
+  if (totalSub) totalSub.textContent = meta.unit;
+  const note = document.getElementById('aggNote');
+  if (note) note.textContent = '※ ' + meta.note + '。換算前に公式サイトをご確認ください。';
+  renderAggRows();
+  runAgg();
+}
+
+function renderAggRows() {
+  const container = document.getElementById('aggRows');
+  if (!container) return;
+  const rates = AGG_RATES[aggTarget];
+  const meta = AGG_TARGET_META[aggTarget];
+  container.innerHTML = '';
+  aggRowData.forEach((row, idx) => {
+    // AGG_RATESにあればそこから、なければPTSから名前を取得しrate:0
+    const def = rates.find(r => r.id === row.id);
+    const ptsDef = PTS.find(p => p.id === row.id);
+    const unit = def ? def.unit : (ptsDef ? 'ポイント' : 'ポイント');
+    const rate = def ? def.rate : 0;
+    const pctStr = rate > 0 ? '→' + meta.label + '換算: ' + (rate * 100).toFixed(1) + '%' : '→換算ルートなし（ゼロ計上）';
+    const pctColor = rate > 0 ? meta.color : '#aaa';
+    // selectはPTS全体から生成
+    const options = PTS.map(p => `<option value="${p.id}"${p.id===row.id?' selected':''}>${p.name}</option>`).join('');
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex;align-items:center;gap:6px;background:var(--bg2);border-radius:5px;padding:6px 8px;flex-wrap:wrap';
+    div.innerHTML = `
+      <select style="font-size:11px;padding:3px 5px;border:1px solid var(--border2);border-radius:4px;background:var(--bg);color:var(--text);flex:0 0 130px;max-width:140px" onchange="changeAggId(${idx},this.value)">${options}</select>
+      <input type="number" min="0" step="1000" value="${row.amount}" style="width:110px;font-size:12px;font-weight:700;padding:4px 7px;border:1px solid var(--border2);border-radius:4px;background:var(--bg);color:var(--text);text-align:right" oninput="changeAggAmt(${idx},this.value)">
+      <span style="font-size:10px;color:var(--text3);white-space:nowrap">${unit}</span>
+      <span style="font-size:10px;color:${pctColor};white-space:nowrap">${pctStr}</span>
+      <button onclick="removeAggRow(${idx})" style="margin-left:auto;font-size:10px;padding:2px 7px;border:1px solid var(--border2);border-radius:4px;background:var(--bg);cursor:pointer;color:var(--text3)">✕</button>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function changeAggId(idx, newId) {
+  aggRowData[idx].id = newId;
+  renderAggRows();
+  runAgg();
+}
+function changeAggAmt(idx, val) {
+  aggRowData[idx].amount = parseFloat(val) || 0;
+  runAgg();
+}
+function removeAggRow(idx) {
+  aggRowData.splice(idx, 1);
+  renderAggRows();
+  runAgg();
+}
+function addAggRow() {
+  aggRowData.push({ id: PTS[0].id, amount: 0 });
+  renderAggRows();
+  runAgg();
+}
+function resetAgg() {
+  initAgg();
+}
+function toggleAgg() {
+  const body = document.getElementById('aggBody');
+  const arrow = document.getElementById('aggArrow');
+  const isOpen = body.classList.toggle('open');
+  arrow.classList.toggle('open', isOpen);
+}
+
+function runAgg() {
+  const rates = AGG_RATES[aggTarget];
+  const meta = AGG_TARGET_META[aggTarget];
+  const goal = parseFloat(document.getElementById('aggGoal')?.value) || 0;
+  const usdJpy = parseFloat(document.getElementById('usdJpyRate')?.value) || 160;
+  let total = 0;
+  const breakdown = [];
+
+  aggRowData.forEach(row => {
+    const def = rates.find(r => r.id === row.id);
+    const ptsDef = PTS.find(p => p.id === row.id);
+    if (!row.amount) return;
+    const rate = def ? def.rate : 0;
+    const converted = Math.round(row.amount * rate);
+    total += converted;
+    if (row.amount > 0) {
+      const name = def ? def.name : (ptsDef ? ptsDef.name : row.id);
+      const unit = def ? def.unit : 'ポイント';
+      const route = def ? def.route : '換算ルートなし（AGG_RATESに未登録）';
+      breakdown.push({ name, amount: row.amount, unit, converted, route, rate });
+    }
+  });
+
+  const totalEl = document.getElementById('aggTotal');
+  const remainEl = document.getElementById('aggRemain');
+  const pctEl = document.getElementById('aggPct');
+  const barEl = document.getElementById('aggBar');
+  const barLabelEl = document.getElementById('aggBarLabel');
+  const goalLabelEl = document.getElementById('aggGoalLabel');
+  const bdEl = document.getElementById('aggBreakdown');
+  const totalLabelEl = document.getElementById('aggTotalLabel');
+  const cashHintEl = document.getElementById('aggCashHint');
+
+  if (totalLabelEl) totalLabelEl.textContent = '合計' + meta.label + '換算値';
+  if (totalEl) { totalEl.textContent = total.toLocaleString(); totalEl.style.color = meta.color; }
+  if (goalLabelEl) goalLabelEl.textContent = goal > 0 ? goal.toLocaleString() + ' ' + meta.unit : '（目標未設定）';
+
+  const remain = goal > 0 ? Math.max(0, goal - total) : null;
+  const pct = goal > 0 ? Math.min(100, (total / goal) * 100) : 0;
+  const pctRound = Math.round(pct * 10) / 10;
+
+  if (remainEl) {
+    if (goal <= 0) { remainEl.textContent = '—'; remainEl.style.color = '#888'; }
+    else if (total >= goal) { remainEl.textContent = '達成！'; remainEl.style.color = '#2e7d32'; }
+    else { remainEl.textContent = remain.toLocaleString(); remainEl.style.color = '#c62828'; }
+  }
+  if (pctEl) { pctEl.textContent = goal > 0 ? pctRound.toFixed(1) + '%' : '—'; pctEl.style.color = meta.color; }
+  if (barEl) {
+    barEl.style.width = pctRound + '%';
+    barEl.style.background = pct >= 100 ? '#1a5c1a' : meta.color;
+  }
+  if (barLabelEl) barLabelEl.textContent = pctRound >= 10 ? pctRound.toFixed(1) + '%' : '';
+
+  // 現金購入参考額（不足分を補うのに必要な額）
+  if (cashHintEl) {
+    if (goal > 0 && total < goal && remain > 0) {
+      let hints = [];
+      // KF/ANA/JAL目標: マリオット購入→マイル換算で補填する場合
+      // KF: マリオット60,000pt単位で25,000KFマイル
+      // ANA: マリオット60,000pt単位で25,000ANAマイル
+      // JAL: マリオット60,000pt単位で25,000JALマイル
+      // marriott: 直接購入
+      if (aggTarget === 'kris' || aggTarget === 'ana' || aggTarget === 'jal') {
+        // マリオット経由: 60,000pt→25,000マイル。1口(60,000pt)=$750USD
+        const milePerLot = 25000;
+        const usdPerLot = 750;
+        const jpyPerLot = Math.round(usdPerLot * usdJpy);
+        const lotsNeeded = Math.ceil(remain / milePerLot);
+        const totalUsd = lotsNeeded * usdPerLot;
+        const totalJpy = lotsNeeded * jpyPerLot;
+        const totalMilesIfBuy = lotsNeeded * milePerLot;
+        // セール時（30%・50%増量）の必要口数と必要額
+        const milePerLot30 = Math.floor(milePerLot * 1.3); // 30%増量: 32,500マイル/口
+        const milePerLot50 = Math.floor(milePerLot * 1.5); // 50%増量: 37,500マイル/口
+        const lots30 = Math.ceil(remain / milePerLot30);
+        const lots50 = Math.ceil(remain / milePerLot50);
+        const jpy30 = lots30 * jpyPerLot;
+        const jpy50 = lots50 * jpyPerLot;
+        hints.push(`<b>マリオット購入→${meta.label}換算（最低60,000pt単位）</b>`);
+        hints.push(`不足 ${remain.toLocaleString()} ${meta.unit} に対して必要口数と参考額:`);
+        hints.push(`・通常時: ${lotsNeeded}口（${(lotsNeeded*60000).toLocaleString()}pt）≈ <b>$${totalUsd.toLocaleString()}（${totalJpy.toLocaleString()}円）</b> → +${totalMilesIfBuy.toLocaleString()} ${meta.unit}`);
+        hints.push(`・30%増量セール時: ${lots30}口（${(lots30*60000).toLocaleString()}pt）≈ <b>$${(lots30*usdPerLot).toLocaleString()}（${jpy30.toLocaleString()}円）</b> → +${(lots30*milePerLot30).toLocaleString()} ${meta.unit}`);
+        hints.push(`・50%増量セール時: ${lots50}口（${(lots50*60000).toLocaleString()}pt）≈ <b>$${(lots50*usdPerLot).toLocaleString()}（${jpy50.toLocaleString()}円）</b> → +${(lots50*milePerLot50).toLocaleString()} ${meta.unit}`);
+        hints.push(`<span style="font-size:10px;color:#7a5500">※ 1USD=${usdJpy}円換算。増量セールは不定期開催。購入前に公式サイトで要確認。</span>`);
+      } else if (aggTarget === 'marriott') {
+        // マリオット直接購入: 1,000pt=$12.5USD
+        const ptNeeded = remain;
+        const usdNeeded = (ptNeeded / 1000) * 12.5;
+        const jpyNeeded = Math.round(usdNeeded * usdJpy);
+        hints.push(`<b>マリオット公式購入</b>`);
+        hints.push(`不足 ${ptNeeded.toLocaleString()} pt を補うには約 $${usdNeeded.toFixed(0)}（≈ <b>${jpyNeeded.toLocaleString()} 円</b>、1USD=${usdJpy}円換算）`);
+        hints.push(`定期的に30〜50%増量セールあり。セール時は必要額が大幅減。`);
+      }
+      if (hints.length) {
+        cashHintEl.style.display = 'block';
+        cashHintEl.innerHTML = '💴 <b>不足分の現金購入参考額</b><br>' + hints.join('<br>');
+      } else {
+        cashHintEl.style.display = 'none';
+      }
+    } else {
+      cashHintEl.style.display = 'none';
+    }
+  }
+
+  if (bdEl) {
+    if (!breakdown.length) {
+      bdEl.innerHTML = '<div style="color:var(--text3);text-align:center;padding:6px 0">ポイントを入力してください</div>';
+      return;
+    }
+    let html = `<table style="width:100%;border-collapse:collapse;font-size:11px">`;
+    html += `<tr style="border-bottom:1px solid var(--border2)"><th style="text-align:left;padding:3px 5px;color:var(--text2)">ポイント種別</th><th style="text-align:right;padding:3px 5px;color:var(--text2)">保有数</th><th style="text-align:right;padding:3px 5px;color:var(--text2)">換算率</th><th style="text-align:right;padding:3px 5px;color:var(--text2)">${meta.label}換算</th></tr>`;
+    breakdown.forEach(b => {
+      const rateStr = b.rate > 0 ? (b.rate * 100).toFixed(1) + '%' : '—';
+      html += `<tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:4px 5px;color:var(--text)">${b.name}<br><span style="font-size:9px;color:var(--text3)">${b.route}</span></td>
+        <td style="padding:4px 5px;text-align:right;color:var(--text)">${b.amount.toLocaleString()} ${b.unit}</td>
+        <td style="padding:4px 5px;text-align:right;color:var(--text)">${rateStr}</td>
+        <td style="padding:4px 5px;text-align:right;font-weight:700;color:${b.rate>0?meta.color:'#aaa'}">${b.converted > 0 ? b.converted.toLocaleString() + ' ' + meta.unit : '—'}</td>
+      </tr>`;
+    });
+    html += `<tr style="background:${meta.bg}"><td colspan="3" style="padding:5px 5px;font-weight:700;color:var(--text)">合計</td><td style="padding:5px 5px;text-align:right;font-weight:800;font-size:13px;color:${meta.color}">${total.toLocaleString()} ${meta.unit}</td></tr>`;
+    if (goal > 0) {
+      if (total < goal) {
+        html += `<tr style="background:#fce4ec"><td colspan="3" style="padding:5px 5px;font-weight:700;color:#7a1a1a">目標まであと</td><td style="padding:5px 5px;text-align:right;font-weight:800;font-size:13px;color:#c62828">${(goal - total).toLocaleString()} ${meta.unit}</td></tr>`;
+      } else {
+        html += `<tr style="background:#e8f5e9"><td colspan="3" style="padding:5px 5px;font-weight:700;color:#1a5c1a">目標達成！余剰</td><td style="padding:5px 5px;text-align:right;font-weight:800;font-size:13px;color:#1a5c1a">${(total - goal).toLocaleString()} ${meta.unit}</td></tr>`;
+      }
+    }
+    html += '</table>';
+    bdEl.innerHTML = html;
+  }
+}
+
+// ════════════════════════════════
+// INIT
+// ════════════════════════════════
+buildChips();
+// 初期表示: 主要6項目のみ選択
+PTS.forEach(p=>{ptSt[p.id]=false;});
+const INIT_6=['moppy','hapitas','fancrew','dmoney','marriott','ana','jal','kris'];
+INIT_6.forEach(id=>{ptSt[id]=true;});
+buildChips();
+buildMatrix();
+buildCalcSelect();
+initAgg();
+
+// ════════════════════════════════
+// IFRAME 高さ自動通知
+// ════════════════════════════════
+function notifyHeight(){
+  const h=document.body.scrollHeight;
+  window.parent.postMessage({iframeHeight:h},'*');
+}
+window.addEventListener('load',()=>setTimeout(notifyHeight,200));
+window.addEventListener('resize',notifyHeight);
+const _origBuild=buildMatrix;
+buildMatrix=function(){_origBuild();setTimeout(notifyHeight,150);};
+const _origCalc=runCalc;
+runCalc=function(){_origCalc();setTimeout(notifyHeight,100);};
+const _origToggleCalc=toggleCalc;
+toggleCalc=function(){_origToggleCalc();setTimeout(notifyHeight,300);};
+</script>
+</body>
+</html>
