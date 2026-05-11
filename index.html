@@ -23,7 +23,6 @@
 
   gtag('config', 'G-89LJ02GSGS');
 </script>  
-<meta name="google-site-verification" content="uUHpo6gI0F4XuuyZRivVv7AXAGdGmMfLIPWXZacmGS0" />
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>マイル集約電卓・マイル交換レート一覧</title>
@@ -570,6 +569,7 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
 const CATS={
   site:{label:'ポイントサイト'},
   common:{label:'共通ポイント'},
+  card:{label:'クレジットカード'},
   hotel:{label:'ホテル'},
   mile:{label:'航空マイル'},
   coin:{label:'SKYコイン等'},
@@ -610,6 +610,7 @@ const PTS=[
   {id:'united',  name:'ユナイテッドMP', cat:'mile',  lv:'niche'},
   {id:'anacoin', name:'ANA SKYコイン', cat:'coin',  lv:'major'},
   {id:'yamada',  name:'ヤマダ電機P',   cat:'common',lv:'niche'},
+  {id:'amex_mr', name:'AMEXメンバーシップリワード', cat:'card', lv:'major'},
   {id:'jpy',     name:'日本円(現金)',  cat:'cash',  lv:'major'},
   {id:'usd',     name:'米ドル(現金)', cat:'cash',  lv:'standard'},
 ];
@@ -722,6 +723,49 @@ id('fancrew','jal',{rate:0.50/10,
     '【推奨ルート★】ファンくる→ドットマネー（手数料無料・10P→1マネー）→JALマイル（50%）。実質5%/P。Gポイント経由より有利。',
     'ドットマネー→JALは500マネー単位。申請月の下旬または翌月上旬に積算。',
     '【Gポイント経由の場合】Gポイント内交換で10%手数料発生（実質4.5%/P）。Pontaキャンペーン時60%増量なら手数料引後5.4%/P。ただしドットマネー経由の5%/Pの方が通常は有利。']});
+
+// ─── AMEXメンバーシップリワード ───
+// ※MRプラス=「メンバーシップ・リワード・プラス」（年間参加費3,300円税込）
+// ※プラチナカード・ゴールドプリファードカード会員はMRプラスに無料・自動登録
+// ※ANA移行にはANAコース参加費5,500円/年が別途必要（プラチナカードは無料）
+// MRプラス登録時レートをメインレートとして設定
+d('amex_mr','ana',{rate:1.0,
+  url:'https://www.americanexpress.com/ja-jp/point/mile-point/airline/',
+  history:[{d:'2020-01',r:0.5},{d:'2024-01',r:1.0},{d:'2026-01',r:1.0}],
+  verified:true,
+  notices:[
+    '【MRプラス登録済み】1,000pt=1,000ANAマイル（1:1・100%）。未登録は2,000pt=1,000マイル（50%）。',
+    '【年間移行上限】暦年（1/1〜12/31）で40,000マイルまで。AmExカード複数枚保有の場合は合算計算。',
+    '【ANAコース参加費】年間5,500円（税込）。プラチナカード会員は無料。ANAアメックスカード会員は「ポイント移行コース」（年間6,600円税込）への登録が別途必要。',
+    '【MRプラス参加費】年間3,300円（税込）。プラチナカード・ゴールドプリファード会員は無料・自動登録。',
+    '1,000pt単位。1日1回（1日1,000pt〜999,000ptまで）申請可能。初回移行は約2週間、2回目以降は約5営業日。']});
+d('amex_mr','jal',{rate:1000/2500,
+  url:'https://partner.jal.co.jp/shop/?tp=200354',
+  history:[{d:'2020-01',r:1000/3000},{d:'2024-01',r:1000/2500},{d:'2026-01',r:1000/2500}],
+  verified:true,
+  notices:[
+    '【MRプラス登録済み】2,500pt=1,000JALマイル（40%）。未登録は3,000pt=1,000マイル（33.3%）。',
+    '年間移行上限なし。2,500pt単位。移行手数料なし。',
+    '【MRプラス参加費】年間3,300円（税込）。プラチナカード・ゴールドプリファード会員は無料。',
+    '対象カード：グリーン/ゴールド/ゴールドプリファード/プラチナ/ビジネスグリーン/ビジネスゴールド/ビジネスプラチナ。ANAカード3種はJALへ移行不可。']});
+d('amex_mr','kris',{rate:1000/1250,
+  url:'https://www.americanexpress.com/ja-jp/point/mile-point/airline/',
+  history:[{d:'2020-01',r:1000/1250},{d:'2024-01',r:1000/1250},{d:'2026-01',r:1000/1250}],
+  verified:true,
+  notices:[
+    '1,250pt=1,000KrisFlyer(SQ)マイル（80%）。MRプラス未登録でも同レート。',
+    '年間移行上限なし。移行手数料なし。1,250pt単位。',
+    '対象カード：グリーン/ゴールド/ゴールドプリファード/プラチナ等（スカイ・トラベラー2種はKFへ移行可）。ANAカード3種はKFへ移行不可。']});
+d('amex_mr','avios',{rate:1000/1250,
+  url:'https://www.americanexpress.com/ja-jp/point/mile-point/airline/',
+  history:[{d:'2022-01',r:1000/1250},{d:'2026-01',r:1000/1250}],
+  verified:true,
+  notices:['1,250pt=1,000Avios（80%）。年間上限なし。移行手数料なし。']});
+d('amex_mr','delta',{rate:1000/1250,
+  url:'https://www.americanexpress.com/ja-jp/point/mile-point/airline/',
+  history:[{d:'2022-01',r:1000/1250},{d:'2026-01',r:1000/1250}],
+  verified:true,
+  notices:['1,250pt=1,000デルタSkyMiles（80%）。年間上限なし。移行手数料なし。']});
 
 // ─── げん玉・ポイントインカム・ECナビ ───
 d('gendama','dpoint',{rate:1.0,url:'https://www.google.com/search?q=げん玉+ポイント交換+公式',history:[{d:'2022-01',r:1},{d:'2026-01',r:1}],verified:true,notices:[]});
@@ -1417,6 +1461,7 @@ const AGG_RATES = {
     { id:'hapitas', name:'ハピタス',         rate: (330/500)*(25000/60000),   route:'マリオットBonvoy経由（500P→330pt換算）', unit:'ポイント', default: 0  },
     { id:'fancrew', name:'ファンくる',       rate: 0.9*0.70/10, route:'※10P=1円相当。Gポイント経由(G内10%手数料)→nimoca→ANA換算。実質6.3%/P', unit:'ポイント', default: 0 },
     { id:'marriott', name:'マリオットBonvoy', rate: 25000/60000, route:'60,000pt単位でKF25,000マイル換算（+5,000ボーナス込み・≈41.7%）', unit:'ポイント', default: 0 },
+    { id:'amex_mr', name:'AMEXメンバーシップリワード', rate: 1000/1250, route:'直接移行（1,250pt=1,000KFマイル・80%）。MRプラス登録不要・上限なし・手数料なし', unit:'ポイント', default: 0 },
     { id:'rakuten', name:'楽天ポイント',     rate: (1/3)*(25000/60000), route:'マリオット経由（3楽天P→1マリオットpt→KF 41.7%）約13.9%', unit:'ポイント', default: 0 },
     { id:'vpoint',  name:'Vポイント(旧T)',  rate: 0,                   route:'KF直接換算ルートなし（Vポイント→KFの変換経路なし。ANA目標への切替を推奨）', unit:'ポイント', default: 0 },
     { id:'paypay',  name:'PayPayポイント',  rate: 0,                   route:'⚠️ KFへの換算ルートなし（PayPay→V→KFは制限により不可）', unit:'ポイント', default: 0 },
@@ -1432,7 +1477,7 @@ const AGG_RATES = {
     { id:'vpoint',   name:'Vポイント(旧T)',   rate: 0.70, route:'JQみずほルート（Vポイント→JRキューポ→永久不滅P→ANA）最大70%。直接交換50〜60%', unit:'ポイント', default: 0 },
     { id:'paypay',   name:'PayPayポイント',   rate: 0,    route:'⚠️ PayPay→V経由でのマイル交換は不可（制限付きVポイント）。Vポイント運用の裏技あり', unit:'ポイント', default: 0 },
     { id:'marriott', name:'マリオットBonvoy', rate: 25000/60000, route:'60,000pt単位でANA25,000マイル換算（+5,000ボーナス込み・≈41.7%）', unit:'ポイント', default: 0 },
-    { id:'rakuten', name:'楽天ポイント',     rate: 0.50, route:'直接交換50%（1,000P単位）', unit:'ポイント', default: 0 },
+    { id:'amex_mr', name:'AMEXメンバーシップリワード', rate: 1.0, route:'MRプラス登録時：1,000pt=1,000ANAマイル（1:1=100%）。年間上限40,000マイル。ANAコース参加費5,500円/年（プラチナは無料）', unit:'ポイント', default: 0 },
     { id:'yamada',  name:'ヤマダ電機P',     rate: 1000/4000, route:'ANA直接交換（4,000P→1,000マイル・25%）※楽天・dP等への交換は不可', unit:'ポイント', default: 0 },
     { id:'dmoney',  name:'ドットマネー',     rate: 85/300, route:'300マネー→85マイル（約28.3%）', unit:'マネー', default: 0 },
     { id:'jpy',     name:'日本円（現金購入）', rate: 0,    route:'直接購入ルートなし', unit:'円', default: 0 },
@@ -1446,6 +1491,7 @@ const AGG_RATES = {
     { id:'paypay',   name:'PayPayポイント',   rate: 0,    route:'⚠️ PayPay→V交換後のVポイントはJALマイル交換不可（制限付き）。Vポイント運用の裏技あり', unit:'ポイント', default: 0 },
     { id:'rakuten',  name:'楽天ポイント',     rate: 0.50, route:'直接交換50%（1,000P単位）', unit:'ポイント', default: 0 },
     { id:'marriott', name:'マリオットBonvoy', rate: 25000/60000, route:'60,000pt単位でJAL25,000マイル換算（+5,000ボーナス込み・≈41.7%）', unit:'ポイント', default: 0 },
+    { id:'amex_mr', name:'AMEXメンバーシップリワード', rate: 1000/2500, route:'MRプラス登録時：2,500pt=1,000JALマイル（40%）。年間上限なし・手数料なし。未登録時は3,000pt=1,000マイル（33.3%）', unit:'ポイント', default: 0 },
     { id:'yamada',   name:'ヤマダ電機P',     rate: 0, route:'JAL直接換算ルートなし（ヤマダP→ANAマイル変換は可能だが、ANAマイルからJALへの変換ルートは存在しない）', unit:'ポイント', default: 0 },
     { id:'dmoney',   name:'ドットマネー',     rate: 0.50, route:'直接交換（2マネー=1マイル・50%）/ キャンペーン時55%', unit:'マネー', default: 0 },
     { id:'jpy',      name:'日本円（現金購入）', rate: 0,    route:'直接購入ルートなし', unit:'円', default: 0 },
@@ -1458,6 +1504,7 @@ const AGG_RATES = {
     { id:'vpoint',  name:'Vポイント(旧T)',  rate: 0,          route:'マリオット直接交換ルートなし（Vポイント→Marriottの換算経路なし）', unit:'ポイント', default: 0 },
     { id:'paypay',  name:'PayPayポイント',  rate: 0,          route:'⚠️ マリオットへの換算ルートなし（PayPay→V→Marriottは制限により不可）', unit:'ポイント', default: 0 },
     { id:'rakuten', name:'楽天ポイント',     rate: 1/3, route:'直接交換（3楽天P→1マリオットpt ≈33.3%）最低3,000P単位', unit:'ポイント', default: 0 },
+    { id:'amex_mr', name:'AMEXメンバーシップリワード', rate: 0, route:'AmEx Japan MRからマリオットBonvoyへの直接移行ルートなし（US AmExとは異なる）。ANAマイル等を経由する迂回ルートも非実用的', unit:'ポイント', default: 0 },
     { id:'yamada',  name:'ヤマダ電機P',     rate: 0,          route:'マリオット直接交換ルートなし（ANA経由も低レート）', unit:'ポイント', default: 0 },
     { id:'dmoney',  name:'ドットマネー',     rate: 0,          route:'マリオット直接交換ルートなし', unit:'マネー', default: 0 },
     { id:'jpy',     name:'日本円（現金購入）', rate: 1000/1875, route:'マリオット公式購入（1,000pt≈1,875円）', unit:'円', default: 0 },
