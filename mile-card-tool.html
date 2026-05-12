@@ -10,7 +10,6 @@
 
   gtag('config', 'G-89LJ02GSGS');
 </script>  
-<meta name="google-site-verification" content="uUHpo6gI0F4XuuyZRivVv7AXAGdGmMfLIPWXZacmGS0" />  
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>マイル最強クレカ診断ツール｜日本在住者向け</title>
@@ -28,14 +27,14 @@
   --emerald:   #16A34A;
   --rose:      #E11D48;
   --gold:      #D97706;
-  --bg:        #F0F9FF;
+  --bg:        #F2F4F8;
   --surface:   #FFFFFF;
-  --border:    #BAE6FD;
-  --border-dk: #7DD3FC;
+  --border:    #D8E4EF;
+  --border-dk: #AECDE8;
   --text:      #0C2340;
   --text-mid:  #1E4976;
   --text-dim:  #64A0C0;
-  --shadow:    0 2px 16px rgba(14,165,233,.13);
+  --shadow:    0 1px 8px rgba(0,0,0,.07);
   --radius:    12px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -130,8 +129,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 .adt{font-weight:700;color:var(--rose)}
 
 /* ── スタットグリッド ── */
-.sg{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
-.sc{background:var(--surface);padding:9px 12px}
+.sg{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.sc{background:var(--surface);padding:9px 12px;border-right:1px solid var(--border)}
+.sc:last-child{border-right:none}
 .sl_{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--text-dim);margin-bottom:3px}
 .sv{font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:var(--text);line-height:1}
 .sv.sky{color:var(--sky-dk)}
@@ -250,9 +250,22 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
       <div class="sl-labels"><span>100万</span><span>250万</span><span>400万</span></div>
     </div>
     <div class="cs">
-      <div class="ctrl-lbl"><span class="n">4</span>こだわり条件</div>
+      <div class="ctrl-lbl"><span class="n">4</span>1マイルの価値（円換算）</div>
+      <div class="sl-top">
+        <div class="sl-val" id="mvd">5<span> 円/マイル</span></div>
+        <div style="font-size:10px;color:var(--text-dim)">試算ベース</div>
+      </div>
+      <div style="font-size:10px;color:var(--sky-dk);font-weight:600;margin:-3px 0 5px" id="mvhint">ビジネスクラス目安</div>
+      <input type="range" id="mvs" min="2" max="10" step="0.5" value="5" oninput="onMileVal(this)">
+      <div class="sl-labels"><span>2円（エコノミー）</span><span>6円</span><span>10円（特典上限）</span></div>
+      <div style="font-size:9.5px;color:var(--text-dim);margin-top:5px;line-height:1.55">
+        目安：エコノミー2〜3円・ビジネス5〜7円・ファースト8〜10円。実質おトク額と並び順がリアルタイム更新されます。
+      </div>
+    </div>
+    <div class="cs">
+      <div class="ctrl-lbl"><span class="n">5</span>こだわり条件</div>
       <div class="chips">
-        <span class="chip-wrap" data-tip="プライオリティ・パス（PP）・ダイナース独自サービス等、海外も含む空港ラウンジが利用できるカードのみ表示（回数制限あり・有料制も含む）。国内空港カードラウンジのみのカードは対象外。">
+        <span class="chip-wrap" data-tip="プライオリティ・パス（PP無制限・有料含む）・ラウンジキー・ダイナース独自サービス等、海外空港ラウンジが利用できるカードのみ表示。国内カードラウンジのみのカードは対象外。有料・回数制限ありも表示対象に含みます。">
           <span class="chip" data-k="pp" onclick="tgTag(this)">✈ 海外ラウンジ付帯</span>
           <button class="tip-btn" type="button" onclick="void(0)">?</button>
         </span>
@@ -279,7 +292,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
       </div>
     </div>
     <div class="cs">
-      <div class="ctrl-lbl"><span class="n">5</span>並び替え</div>
+      <div class="ctrl-lbl"><span class="n">6</span>並び替え</div>
       <div class="sortrow">
         <button class="sbtn on" data-s="score"  onclick="setSort(this)">おすすめ順</button>
         <button class="sbtn"    data-s="profit" onclick="setSort(this)">実質おトク額</button>
@@ -308,7 +321,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 
 <div class="foot">
   <strong>⚠ 重要事項</strong><br>
-  ① 「実質おトク額」＝獲得マイル×5円（ビジネスクラス換算目安）－年会費。マイルの価値は利用方法により大きく異なります。<br>
+  ① 「実質おトク額」＝獲得マイル×設定した1マイルの価値（円）－年会費。マイルの価値は利用方法（エコノミー2〜3円・ビジネス5〜7円・ファースト8〜10円）により大きく異なります。<br>
   ② KF 3名分目標: Saver枠54,500マイル/人×往復2×3名＝327,000マイル（東京-シンガポール ビジネスクラス）。<br>
   ③ アメックスゴールドプリファードのANA移行は「MRアナコース」年5,500円別途必要（ANA移行上限40,000マイル/年に注意）。JAL移行は2,500pt→1,000マイルと低効率。<br>
   ④ セゾン系はセゾンマイルクラブの月額費用を含めた実質年会費でご判断ください。<br>
@@ -330,7 +343,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
   【JAL/ANA共通】apollostation THE PLATINUM セゾンアメックス（22,000円）：基本1.2%還元だがPonta経由のANA換算で実質0.6%程度。既存収録カードに劣後。<br>
   【JAL】イオンJMBカード：WAON経由0.5%マイルで陸マイラー向け高額決済には不向き。<br>
   【ANA】三井住友カード(NL)（無料）：0.3%ANA、旅行保険なし。ゴールドNLの下位版で年100万円超ならゴールドのほうが合理的。<br>
-  【ANA】ANA JCB 一般カード（2,200円）：単体では0.5%、ソラチカゴールドが同コスト帯でPP無制限・1.0%のため優位。<br>
+  【ANA】ANA JCB 一般カード（2,200円）：単体では0.5%、ソラチカゴールドが同コスト帯でラウンジキー付帯・1.0%のため優位。<br>
   【ANA】ANAアメックス一般カード：0.5%でゴールドの下位版。<br>
   【ホテル】アメックスプラチナ（165,000円）：マイル効率はゴールドプリファードと同等だが年会費4倍超。年200〜300万円のコスパ試算に適合しない超高額帯。<br>
   【ホテル】ヒルトンHonorsアメックスプレミアム（約66,000円）：マイル換算効率が0.1%程度と極めて低くマイル目的の本ツール趣旨から外れる。<br>
@@ -349,7 +362,7 @@ const GLBL={
   MB:'SINカテゴリー6ホテル2室×3泊（USD$250〜350/泊・330,000pt目安）',
   ALL:'ANA 東京-SIN ビジネス往復3名（95,000マイル/人）',
 };
-function mbmi(pt){const f=Math.floor(pt/60000);return f*30000+(pt%60000)*(25000/60000)}
+function mbmi(pt){return Math.round(pt*(30000/60000))}
 
 // ━━━━━━━━ カードデータ（17枚） ━━━━━━━━
 const CARDS=[
@@ -364,7 +377,7 @@ const CARDS=[
     milesCalc(man,t){const pt=man*10000*.03;return t==='MB'?pt:mbmi(pt)},
     pp:'no',noExp:true,ins:true,multi:true,hotel:false,
     freeNight:'年400万円決済達成で更新時に75,000ポイント分の無料宿泊券（世界中のマリオット系列ホテル対象・シンガポールのW Singapore・Westin・JW Marriott等も利用可）。年200〜300万円/年の通常決済では条件未達。改悪前は150万円条件だった。',
-    lounge:'PP付帯（プレステージ会員・無制限）。世界1,700ヶ所以上対応。2025年7月開業の羽田T3 AMEXセンチュリオンラウンジも利用可（本会員+同伴者2名まで）。',
+    lounge:'国内主要空港カードラウンジのみ（2025年6月1日以降、国内16空港＋ハワイ1空港に縮小）。同伴者1名まで無料。PP・海外ラウンジアクセスなし。AMEXセンチュリオンラウンジはプラチナカード以上が対象のため本カードでは利用不可。',
     desc:'ANA/JAL/KF等40社以上に移行可能。年200万円でちょうど60,000pt→ボーナス込み30,000マイル（1.5%相当）。マイル種別を後から決めたい人の最適解。',
     alerts:[{d:'2025年10月改悪',t:'年会費49,500円→82,500円。無料宿泊条件150万円→400万円に改悪。公共料金・国税還元率0.5%に引き下げ。'}],
     outlook:{risk:'high',items:[{y:'2026〜2027年',i:'⚠️',t:'さらなる年会費引き上げ（100,000円超）や特典削減の可能性。AMEXとマリオットの提携更新時期に注意。'},{y:'安定要素',i:'✅',t:'MBポイント自体の多様な移行先は安定維持の見込み。'}]},
@@ -402,7 +415,7 @@ const CARDS=[
     },
     pp:'warn',noExp:true,ins:true,multi:true,hotel:false,
     freeNight:'フリー・ステイ・ギフト：年200万円以上利用＋カード更新時に、国内指定ホテルの1泊2名分無料宿泊券（ペア）。日本国内限定のためシンガポール等海外ホテルは対象外。200万円以上決済なら条件達成可能。',
-    lounge:'グローバル・ラウンジ・コレクション（PPスタンダード会員資格付帯）。スタンダード会員ではラウンジ利用は原則$35/回が自己負担。国内主要空港カードラウンジ（29空港）は追加費用なし。',
+    lounge:'グローバル・ラウンジ・コレクション（PPスタンダード会員資格付帯）。年間2回まで無料、3回目以降$35/回。空港レストラン等ラウンジ以外の施設は利用不可。国内主要空港カードラウンジ（同伴者1名まで無料）も追加費用なし。',
     desc:'ANA/JAL/KFなど14社に移行可能なマルチカード。ANA1.0%（MRアナコース5,500円別途）、JALは0.4%と低効率のため注意。PP年2回無料・フリーステイ特典・レストラン優待あり。',
     alerts:[{d:'注意',t:'ANAマイルの年間移行上限は40,000マイル。年200万円（20,000マイル）では問題なし。JALへの移行は2,500pt→1,000マイルと効率が悪く非推奨。'}],
     outlook:{risk:'low',items:[{y:'安定要素',i:'✅',t:'2024年2月に新登場した比較的新しいカード。当面は改悪リスクは低い。'},{y:'注意点',i:'⚠️',t:'PP年2回無制限から回数制限への変更リスクあり（世界的トレンド）。'}]},
@@ -419,7 +432,7 @@ const CARDS=[
     rates:{ANA:1.0,JAL:0,KF:0,MB:0,ALL:1.0},
     milesCalc(man,t){return(t==='ANA'||t==='ALL')?man*10000*.010:0},
     pp:'warn',noExp:true,ins:true,multi:false,hotel:false,freeNight:null,
-    lounge:'グローバル・ラウンジ・コレクション（PPスタンダード会員資格付帯）。スタンダード会員ではラウンジ利用は原則$35/回が自己負担。国内主要空港カードラウンジは追加費用なし。',
+    lounge:'グローバル・ラウンジ・コレクション（PPスタンダード会員資格付帯）。年間2回まで無料、3回目以降$35/回。空港レストラン等ラウンジ以外の施設は利用不可。国内主要空港カードラウンジは追加費用なし。',
     desc:'入会ボーナスの爆発力が随一。ANA一択でPP付帯も欲しい人向け。移行コース（6,600円/年）が還元率1.0%の前提。',
     alerts:[],
     outlook:{risk:'mid',items:[{y:'注意点',i:'⚠️',t:'移行コスト年6,600円の値上げリスクあり。AMEXとANAの提携更新時に改定可能性。'},{y:'安定要素',i:'✅',t:'ANAアメックスとしての長期ブランド価値は安定。入会ボーナスの爆発力は維持見込み。'}]},
@@ -435,9 +448,9 @@ const CARDS=[
     brands:['JCB'],
     rates:{ANA:1.0,JAL:0,KF:0,MB:0,ALL:1.0},
     milesCalc(man,t){return(t==='ANA'||t==='ALL')?man*10000*.010:0},
-    pp:'yes',noExp:true,ins:true,multi:false,hotel:false,freeNight:null,
-    lounge:'PP付帯（プレステージ会員・無制限）。世界1,700ヶ所以上対応。年会費11,000円でPP無制限は国内最安コスト。',
-    desc:'年会費11,000円でPP無制限付帯という破格のコスパ。ANA Pay二重取りで最大1.6%も狙える。低コストで着実にANAマイルを積みたい陸マイラーの定番。',
+    pp:'warn',noExp:true,ins:true,multi:false,hotel:false,freeNight:null,
+    lounge:'プライオリティパス（PP）の付帯なし。国内主要空港カードラウンジは無料（JCBゴールドサービス）。ラウンジキー（LoungeKey）付帯で世界1,300か所以上の海外空港ラウンジを利用可能だが、1回あたりUS$35の自己負担が発生。ANAラウンジはカード提示では利用不可。',
+    desc:'ANA Pay二重取りで最大1.6%のANAマイル還元が狙える低コスト陸マイラーの定番。ラウンジキー（有料$35/回）付帯。低コストで着実にANAマイルを積みたい方の最有力候補。',
     alerts:[],
     outlook:{risk:'low',items:[{y:'安定要素',i:'✅',t:'JCBとANAの提携は長期安定。年会費・還元率の大幅変更リスクは低い。'},{y:'注意点',i:'⚠️',t:'ANA Pay二重取りルートはANA Pay規約変更で封じられるリスクあり。'}]},
     referral:{r:'JCBの友達紹介キャンペーン（不定期）経由で1,000〜3,000マイル相当のボーナス付与実績あり。',c:'常設ではなく期間限定。JCB公式サイトでキャンペーン情報を確認を。'},
@@ -467,11 +480,11 @@ const CARDS=[
     dkt:'三菱UFJカード プラチナ アメックス',psType:'psite',
     fee:22000,feeNote:null,ac:'linear-gradient(90deg,#7C3AED,#0EA5E9)',
     brands:['AMEX'],
-    rates:{ANA:0.8,JAL:0.8,KF:0,MB:0,ALL:0.8},
-    milesCalc(man,t){const r={ANA:.008,JAL:.008,ALL:.008}[t]||0;return man*10000*r},
+    rates:{ANA:0,JAL:0.8,KF:0.8,MB:0,ALL:0.8},
+    milesCalc(man,t){const r={JAL:.008,KF:.008,ALL:.008}[t]||0;return man*10000*r},
     pp:'yes',noExp:false,ins:true,multi:false,hotel:false,freeNight:null,
     lounge:'PP付帯（プレステージ会員・無制限）。世界1,700ヶ所以上対応。2024年10月より国内外の空港レストラン・リフレッシュ施設は利用不可（ラウンジ本体は引続き利用可）。',
-    desc:'プラチナカードの中でPP付帯コストが最安クラス（22,000円）。ANA/JAL両方に0.8%換算。家族カードでもPP発行可能な点が他にない強み。',
+    desc:'プラチナカードの中でPP付帯コストが最安クラス（22,000円）。JAL・SQ（クリスフライヤー）に0.8%換算（マイレージプログラム加入要・年会費3,300円＋移行手数料6,600円/回）。ANA直接移行なし（高レートプラン対象外）。家族カードでもPP発行可能な点が他にない強み。',
     alerts:[],
     outlook:{risk:'low',items:[{y:'安定要素',i:'✅',t:'三菱UFJとAMEXの長期提携。プラチナ最安PP付帯という独自ポジションは維持見込み。'},{y:'注意点',i:'⚠️',t:'グローバルポイントのマイル換算率（0.8%）が他に比べて低い点は改善が期待されるが不確定。'}]},
     referral:{r:'AMEXのRefer a Friendプログラム経由で追加ポイント付与の実績あり（3,000〜5,000円相当）。',c:'三菱UFJ発行のAMEX提携カードのため、通常AMEXのリファーラルとは別扱いになる場合あり。'},
@@ -538,7 +551,7 @@ const CARDS=[
     rates:{ANA:0.4,JAL:0.4,KF:0,MB:0,ALL:0.4},
     milesCalc(man,t){const r={ANA:.004,JAL:.004,ALL:.004}[t]||0;return man*10000*r},
     pp:'warn',noExp:false,ins:true,multi:false,hotel:false,freeNight:null,
-    lounge:'ダイナース独自の空港ラウンジサービス（PP相当）：国内外1,700ヶ所以上・年10回まで無料（家族カード含む）。11回目以降3,500円/回。2025年4月より国内空港レストラン等は不可、海外は引続き可。',
+    lounge:'ダイナース独自のPP提携ラウンジサービス：国内外1,700か所以上。国内カードラウンジは無制限無料。海外ラウンジは本会員・家族会員のカードごとにそれぞれ年10回まで無料（11回目以降3,500円/回）。2025年4月より国内の空港レストラン等は利用不可（ラウンジ本体・海外施設は引き続き可）。',
     desc:'マイル換算率は0.4%と低いが、グルメ特典（高級レストラン優待）・ゴルフ優待・コンシェルジュが充実。マイル効率より「ライフスタイル特典」を重視する人向け。国内空港ラウンジは利用可能。',
     alerts:[{d:'注意',t:'マイル換算率は低い（0.4%）。純粋なマイル効率目的ではなく、特典・ステータス目的で選ぶカード。'}],
     outlook:{risk:'low',items:[{y:'安定要素',i:'✅',t:'ダイナースブランドの安定性は高い。グルメ・ゴルフ特典は継続維持見込み。'},{y:'注意点',i:'⚠️',t:'Mastercardとの提携（コンパニオンカード）で国際利用の利便性はあるが、加盟店数の少なさは課題。'}]},
@@ -552,11 +565,11 @@ const CARDS=[
     dkt:'マリオット ボンヴォイ アメリカンエキスプレス',psType:'referral',
     fee:34100,feeNote:null,ac:'linear-gradient(90deg,#7C3AED,#EC4899)',
     brands:['AMEX'],
-    rates:{ANA:0.83,JAL:0.83,KF:0.83,MB:2.0,ALL:0.83},
+    rates:{ANA:1.0,JAL:1.0,KF:1.0,MB:2.0,ALL:1.0},
     milesCalc(man,t){const pt=man*10000*.02;return t==='MB'?pt:mbmi(pt)},
     pp:'no',noExp:true,ins:true,multi:true,hotel:true,freeNight:null,
     lounge:'国内主要空港カードラウンジのみ（羽田・成田等主要空港）。PP等の海外空港ラウンジサービス付帯なし。マリオット上級会員資格（ゴールドエリート）でホテルラウンジ利用可。',
-    desc:'300万円/年の決済で60,000pt達成→ボーナス込み30,000マイル（1.0%相当）。200万円では60,000ptに届かずボーナスなし（0.83%）。MBポイントを学ぶ入門として。',
+    desc:'100円につき2MBポイント獲得（プレミアムは3pt）。ANA/JAL/KF等への移行で1.0%相当のマイルに変換可能（60,000pt→30,000マイル換算）。ポイント移行先は40社以上。マリオットポイントを学ぶ入門として。',
     alerts:[{d:'2025年10月改悪',t:'公共料金・国税・事業用決済のポイント還元率が1.0%→0.5%に引き下げ。'}],
     outlook:{risk:'high',items:[{y:'注意点',i:'⚠️',t:'プレミアム大改悪に続き、一般カードの年会費改定も視野に。プレミアムとの差別化が薄まるリスク。'},{y:'安定要素',i:'✅',t:'MBポイント自体の多様な移行先は維持見込み。ホテルポイントとして使う分には価値あり。'}]},
     referral:{r:'AMEXのRefer a Friend経由で追加5,000〜10,000MB pt付与の実績あり。',c:'キャンペーン時のみ。一般カードへの紹介リンクはプレミアムより出回りが少ない。'},
@@ -591,7 +604,7 @@ const CARDS=[
     pp:'warn',noExp:false,ins:true,multi:false,hotel:false,freeNight:null,
     lounge:'PP付帯（2025年1月改悪：年5回まで無料・6回目以降$35。空港レストラン・リフレッシュ施設利用不可）。国内空港カードラウンジも利用可。',
     desc:'楽天経済圏ユーザーが最初に検討するカード。楽天ポイント1.0%貯まり、ANA/JALマイルに50%換算。PP年5回付帯（2024年に改悪）。楽天市場のSPU活用と組み合わせると実質高効率になる場合あり。',
-    alerts:[{d:'2024年1月改悪',t:'PPが従来の「無制限」から「年5回まで」に大幅改悪。PPを重視する方には他カードを推奨。'}],
+    alerts:[{d:'2025年1月改悪',t:'PPが従来の「無制限」から「年5回まで」に大幅改悪（2025年1月15日適用）。PPを重視する方には他カードを推奨。'}],
     outlook:{risk:'mid',items:[{y:'注意点',i:'⚠️',t:'PP特典のさらなる改悪（廃止・有料化）のリスクあり。楽天経済圏の改悪傾向が継続中。'},{y:'安定要素',i:'✅',t:'楽天市場でのポイント高倍率（SPU）は継続中。楽天ヘビーユーザーには依然として一定の価値。'}]},
     referral:{r:'楽天カードの友達紹介で紹介者・被紹介者ともにポイント付与（500〜2,000pt程度）の実績あり。',c:'楽天市場での紹介URLシェアが主な入手手段。常時開催。'},
     bonusCurrent:{p:'2026年現在',t:'入会ボーナス5,000〜10,000楽天pt（常時開催）。200〜300万円/年でANA/JALに年間10,000〜15,000マイル換算。'},
@@ -622,8 +635,8 @@ const CARDS=[
     brands:['JCB'],
     rates:{ANA:0.3,JAL:0.3,KF:0,MB:0,ALL:0.3},
     milesCalc(man,t){const r={ANA:.003,JAL:.003,ALL:.003}[t]||0;return man*10000*r},
-    pp:'no',noExp:false,ins:true,multi:false,hotel:false,freeNight:null,
-    lounge:'国内主要空港カードラウンジのみ（成田等でJCB独自ラウンジ含む）。PP等の海外空港ラウンジサービス付帯なし。JCBプラチナ招待後はPP無制限付帯となる。',
+    pp:'warn',noExp:false,ins:true,multi:false,hotel:false,freeNight:null,
+    lounge:'国内主要空港カードラウンジ無料（成田等でJCB独自ラウンジ含む）。ラウンジキー（LoungeKey）付帯で世界1,300か所以上の海外空港ラウンジを$35/回で利用可（有料）。PP本体の付帯なし。JCBプラチナ招待後はPP無制限付帯となる。',
     desc:'マイル換算率は約0.3%と低いが、2年以上の利用実績でJCBプラチナへの招待（PP無制限付帯）を狙える登竜門。スタバ・Amazon等の特約店で高倍率ポイント還元が魅力。マイル効率より招待目的。',
     alerts:[{d:'注意',t:'マイル目的で選ぶカードではない。JCBプラチナへの招待（PP付帯・年27,500円）を目標とした2〜3年の足がかりカードとして位置づけを。'}],
     outlook:{risk:'low',items:[{y:'安定要素',i:'✅',t:'JCBの安定性は高い。プラチナ招待制度は維持見込み。'},{y:'注意点',i:'⚠️',t:'プラチナへの招待条件（年間利用額等）が厳格化されるリスクあり。招待が保証されるわけではない。'}]},
@@ -639,7 +652,7 @@ const CARDS=[
     brands:['AMEX'],
     rates:{ANA:1.0,JAL:0.4,KF:0.8,MB:0,ALL:1.0},
     milesCalc(man,t){const r={ANA:.010,JAL:.004,KF:.008,ALL:.010}[t]||0;return man*10000*r},
-    pp:'no',noExp:true,ins:true,multi:true,hotel:false,freeNight:null,
+    pp:'warn',noExp:true,ins:true,multi:true,hotel:false,freeNight:null,
     lounge:'グローバル・ラウンジ・コレクション（PPスタンダード会員資格付帯）。海外ラウンジ利用は$35/回が自己負担（スタンダード会員）。国内主要空港カードラウンジは追加費用なし。',
     desc:'AMEXを最安値で始めるマルチマイル入門カード。ANA/JAL/KF等14社に移行可能。ただしANA移行にはMRプラス（3,300円）＋ANAコース（5,500円）が必要で実質年22,000円。ゴールドプリファードへのステップアップを前提に。',
     alerts:[{d:'注意',t:'ANA移行には年3,300円（MRプラス）＋年5,500円（ANAコース）が別途必要。MRプラスなしでは1pt→0.5マイル（0.5%）に低下。JAL移行は2,500pt→1,000マイルと低効率（0.4%）。'}],
@@ -658,8 +671,8 @@ const CARDS=[
     brands:['JCB'],
     rates:{ANA:0,JAL:0,KF:1.0,MB:0,ALL:1.0},
     milesCalc(man,t){return(t==='KF'||t==='ALL')?man*10000*.010:0},
-    pp:'no',noExp:false,ins:true,multi:false,hotel:false,freeNight:null,
-    lounge:'国内主要空港カードラウンジ（JCBゴールドラウンジ含む）。PP等の海外空港ラウンジサービス付帯なし。',
+    pp:'warn',noExp:false,ins:true,multi:false,hotel:false,freeNight:null,
+    lounge:'国内主要空港カードラウンジ無料（JCBゴールドラウンジ含む）。ラウンジキー（LoungeKey）付帯で世界1,300か所以上の海外空港ラウンジを$35/回で利用可（有料）。PP本体の付帯なし。',
     desc:'KFマイルが100円=1マイルで直接付与（中間変換不要・変換費用ゼロ）。年会費11,000円でKF専用カードとして最もシンプル。旅行保険最高1億円（国内外）。KF一択かつ変換ロスを嫌う方の最適解。KFマイルは36ヶ月失効に注意。',
     alerts:[{d:'注意',t:'KFマイルの有効期限は積算月から36ヶ月（3年）。ANA・JAL等への移行は一切不可。KF特化の純粋なシングルマイルカード。マリオット等への移行も不可。'}],
     outlook:{risk:'low',items:[{y:'安定要素',i:'✅',t:'SQとJCBの日本向け長期提携。直接付与のシンプルな仕組みは大幅改悪リスクが低い。'},{y:'注意点',i:'⚠️',t:'KFマイルの価値変動（SQの特典改定）がリスク。移行先がKFのみのため分散不可。'}]},
@@ -688,7 +701,7 @@ const CARDS=[
 ];
 
 // ━━━━━━━━ State ━━━━━━━━
-const S={mile:'ALL',amt:200,sort:'score',brands:new Set(['ALL']),tags:{pp:false,'no-exp':false,insurance:false,'low-fee':false,multi:false,'free-night':false}};
+const S={mile:'ALL',amt:200,mileVal:5,sort:'score',brands:new Set(['ALL']),tags:{pp:false,'no-exp':false,insurance:false,'low-fee':false,multi:false,'free-night':false}};
 const fmt=n=>Math.round(n).toLocaleString('ja-JP');
 
 function getMiles(c,man,t){return c.milesCalc(man,t)}
@@ -700,6 +713,7 @@ function calcScore(c,t,man){
   if(r>0||m>0)s+=40;
   s+=r*15;
   if(S.tags.pp&&c.pp==='yes')s+=20;
+  if(S.tags.pp&&c.pp==='warn')s+=10;
   if(S.tags['no-exp']&&c.noExp)s+=15;
   if(S.tags.insurance&&c.ins)s+=10;
   if(S.tags['low-fee']&&c.fee<=20000)s+=25;
@@ -712,10 +726,10 @@ function calcScore(c,t,man){
 function render(){
   S.mile=document.getElementById('sm').value;
   const t=S.mile,man=S.amt;
-  let list=CARDS.map(c=>({...c,_m:getMiles(c,man,t),_r:getRate(c,t),_p:getMiles(c,man,t)*5-c.fee,_s:calcScore(c,t,man)}));
+  let list=CARDS.map(c=>({...c,_m:getMiles(c,man,t),_r:getRate(c,t),_p:getMiles(c,man,t)*S.mileVal-c.fee,_s:calcScore(c,t,man)}));
   list=list.filter(c=>{
     if(!brandOK(c))return false;
-    if(S.tags.pp&&c.pp!=='yes')return false;
+    if(S.tags.pp&&c.pp==='no')return false;
     if(S.tags['no-exp']&&!c.noExp)return false;
     if(S.tags.insurance&&!c.ins)return false;
     if(S.tags['low-fee']&&c.fee>20000)return false;
@@ -810,7 +824,7 @@ ${freeNightHTML}
 ${loungeHTML}
 <div class="sg">
   <div class="sc"><div class="sl_">年間獲得${unit}（${man}万円）</div><div class="sv sky">${fmt(miles)}<sub> ${unit}</sub></div><div class="ssub">還元率 ${c._r>0?c._r.toFixed(3):'—'}%</div></div>
-  <div class="sc"><div class="sl_">マイル価値（5円換算）</div><div class="sv">${fmt(miles*5)}<sub> 円相当</sub></div><div class="ssub">年会費 ${fmt(c.fee)}円</div></div>
+  <div class="sc"><div class="sl_">マイル価値（${S.mileVal}円換算）</div><div class="sv">${fmt(miles*S.mileVal)}<sub> 円相当</sub></div><div class="ssub">年会費 ${fmt(c.fee)}円</div></div>
   <div class="sc"><div class="sl_">★ 実質おトク額</div><div class="sv ${pcls}">${psign}${fmt(profit)}<sub> 円</sub></div><div class="ssub">マイル価値－年会費</div></div>
 </div>
 <div class="fam">
@@ -838,6 +852,17 @@ function updSlider(){
   const sl=document.getElementById('as');
   const p=(sl.value-sl.min)/(sl.max-sl.min)*100;
   sl.style.background=`linear-gradient(to right,var(--sky) ${p}%,var(--border) ${p}%)`;
+  const mvs=document.getElementById('mvs');
+  if(mvs){const p2=(S.mileVal-2)/(10-2)*100;mvs.style.background=`linear-gradient(to right,var(--sky) ${p2}%,var(--border) ${p2}%)`;}
+}
+function onMileVal(el){
+  S.mileVal=parseFloat(el.value);
+  document.getElementById('mvd').innerHTML=`${S.mileVal}<span> 円/マイル</span>`;
+  const hint=S.mileVal<=3?'エコノミー目安':S.mileVal<=5?'ビジネスクラス目安':S.mileVal<=7?'ビジネス高効率目安':'ファースト/最高目安';
+  document.getElementById('mvhint').textContent=hint;
+  const p=(S.mileVal-2)/(10-2)*100;
+  el.style.background=`linear-gradient(to right,var(--sky) ${p}%,var(--border) ${p}%)`;
+  render();
 }
 function onAmt(el){
   S.amt=parseInt(el.value);
@@ -875,7 +900,7 @@ const gTip=(()=>{
     'font-size:11px','line-height:1.6','padding:8px 11px','border-radius:7px',
     'max-width:220px','box-shadow:0 4px 16px rgba(0,0,0,.3)',
     'pointer-events:none','opacity:0','transition:opacity .15s','display:none',
-    'white-space:normal','word-break:keep-all'
+    'white-space:normal','word-break:break-word','overflow-wrap:break-word'
   ].join(';');
   document.body.appendChild(el);
   return el;
