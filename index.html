@@ -461,6 +461,18 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
           </div>
         </div>
         <!-- 不足分補填の現金参考額 -->
+        <!-- CTA① -->
+        <div id="aggCtaHint" style="display:none;background:linear-gradient(135deg,#fff8e1 0%,#ffecb3 100%);border:2px solid #ff8f00;border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:11px;color:#5a3e00;line-height:1.7">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <div style="flex:1;min-width:180px">
+              💡 <strong style="color:#bf3800">まだモッピー未登録の方へ</strong><br>
+              <span style="font-size:10.5px">紹介コード経由で登録 → 翌々月末までに5,000P獲得で<strong>＋2,000P（約1,000マイル相当）</strong>がプレゼント。スタート時の不足分を縮められます。</span>
+            </div>
+            <a href="https://pc.moppy.jp/entry/invite.php?invite=gFgmA1d9" target="_blank" rel="noopener noreferrer nofollow" onclick="window.open(this.href,&apos;_blank&apos;,&apos;noopener&apos;);return false;" style="display:inline-block;background:#ff6b00;color:#fff;font-size:12px;font-weight:bold;padding:8px 16px;border-radius:6px;text-decoration:none;white-space:nowrap;box-shadow:0 2px 6px rgba(255,107,0,0.3);cursor:pointer">
+              +2,000Pを受け取る →
+            </a>
+          </div>
+        </div>
         <div id="aggCashHint" style="display:none;background:#fff8e1;border:1px solid #ffe082;border-radius:6px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:#5a3e00;line-height:1.8"></div>
         <!-- 進捗バー -->
         <div style="background:#c8e6c9;border-radius:99px;height:16px;overflow:hidden;position:relative">
@@ -533,6 +545,18 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
       <span class="li"><span class="ld" style="background:var(--fall-bg)"></span>不利改定▼</span>
       <span style="font-size:9px;color:var(--text3);margin-left:auto">上段=直接交換レート　下段=間接最良レート　<strong style="color:#185fa5">▲▼=最近改定　セルクリックで詳細</strong></span>
     </div>
+  </div>
+
+  <!-- CTA③ -->
+  <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:11px 14px;margin:0 0 10px;color:#5a3e00;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <div style="font-size:22px;flex-shrink:0">🎁</div>
+    <div style="flex:1;min-width:200px;line-height:1.5">
+      <span style="font-size:10.5px;color:#7a5500">— このツールを役立てていただけたなら —</span><br>
+      <span style="font-size:12px;color:#5a3e00">作者の紹介コード経由で登録 → 翌々月末までに5,000P獲得で<strong style="color:#bf3800">2,000P（約1,000マイル相当）</strong>プレゼント！マイル計画を加速させましょう</span>
+    </div>
+    <a href="https://pc.moppy.jp/entry/invite.php?invite=gFgmA1d9" target="_blank" rel="noopener noreferrer nofollow" onclick="window.open(this.href,&apos;_blank&apos;,&apos;noopener&apos;);return false;" style="display:inline-block;background:#ff6b00;color:#fff;font-size:12px;font-weight:bold;padding:9px 18px;border-radius:6px;text-decoration:none;white-space:nowrap;box-shadow:0 2px 6px rgba(255,107,0,0.3);cursor:pointer">
+      モッピー無料登録 →
+    </a>
   </div>
 
   <div class="footer-info">
@@ -641,7 +665,7 @@ id('moppy','ana',{rate:0.70,
   route:[{from:'モッピー',to:'Vポイント',rate:1.0,url:'https://www.google.com/search?q=モッピー+ポイント交換+公式'},{from:'Vポイント',to:'JRキューポ',rate:1.0,url:'https://www.google.com/search?q=JRキューポ+永久不滅ポイント+交換+公式'},{from:'JRキューポ',to:'永久不滅P',rate:0.5,url:'https://www.google.com/search?q=セゾンカード+永久不滅ポイント+ANAマイル+交換'},{from:'永久不滅P',to:'ANAマイル',rate:1.25,url:'https://www.google.com/search?q=永久不滅ポイント+ANAマイル+交換レート+セゾンカード'}],
   url:'https://www.google.com/search?q=モッピー+ポイント交換+公式',
   history:[{d:'2020-01',r:0.70},{d:'2022-01',r:0.70},{d:'2024-01',r:0.70},{d:'2026-02',r:0.70}],
-  notices:['みずほルート(JQカードセゾン+みずほマイレージクラブカード/ANA)で70%。','カード2枚必要・全オンライン完結。所要約1ヶ月。','※ルート図の「×125%」はJRキューポ→永久不滅ポイント換算後の「永久不滅P→ANAマイル」単体レート(800P→1,000マイル)。トータルは各ステップの積算で70%になります。']});
+  notices:['【70%ルート】みずほルート(JQカードセゾン+みずほマイレージクラブカード/ANA)。ただし2026年1月21日でみずほマイレージクラブカード/ANAは新規発行終了。既存保有者のみ継続利用可。','【60%ルート】★初心者向け★ モッピー→Vポイント(100%)→ANAマイル(60%)。三井住友カード発行のANAカード(年会費2,200円・初年度無料)保有が条件。これからポイ活を始める方の現実的な選択肢。','【33.3%ルート】2026年2月から、カード不要のモッピー→ANA直接交換も可能(別途記載)。','※ルート図の「×125%」はJRキューポ→永久不滅ポイント換算後の「永久不滅P→ANAマイル」単体レート(800P→1,000マイル)。']});
 
 d('moppy','jal',{rate:0.50,url:'https://www.google.com/search?q=モッピー+ポイント交換+ANAマイル+JALマイル+公式',
   history:[{d:'2017-01',r:0.333},{d:'2019-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-01',r:0.50}],
@@ -691,7 +715,7 @@ id('hapitas','ana',{rate:0.70,
   route:[{from:'ハピタス',to:'Vポイント',rate:1.0,url:'https://www.google.com/search?q=ハピタス+ポイント交換+公式'},{from:'Vポイント',to:'JRキューポ',rate:1.0,url:'https://www.google.com/search?q=JRキューポ+永久不滅ポイント+交換+公式'},{from:'JRキューポ',to:'永久不滅P',rate:0.5,url:'https://www.google.com/search?q=セゾンカード+永久不滅ポイント+ANAマイル+交換'},{from:'永久不滅P',to:'ANAマイル',rate:1.25,url:'https://www.google.com/search?q=永久不滅ポイント+ANAマイル+交換レート+セゾンカード'}],
   url:'https://www.google.com/search?q=ハピタス+ポイント交換+公式',
   history:[{d:'2020-01',r:0.70},{d:'2022-01',r:0.70},{d:'2026-01',r:0.70}],
-  notices:['直接ANAマイル交換不可。みずほルート経由で70%。']});
+  notices:['ハピタスからANAマイルへの直接交換は不可。中継ルートが必要。','【70%ルート】みずほルート経由。ただし2026年1月21日でみずほマイレージクラブカード/ANAは新規発行終了。既存保有者のみ継続利用可。','【60%ルート】★初心者向け★ ハピタス→Vポイント(100%)→ANAマイル(60%)。三井住友カード発行のANAカード(年会費2,200円・初年度無料)保有が条件。これからポイ活を始める方の現実的な選択肢。']});
 // ハピタス→マリオット 2025/04改悪: 500P→330pt
 d('hapitas','marriott',{rate:330/500,url:'https://www.google.com/search?q=ハピタス+ポイント交換+公式',
   history:[{d:'2022-01',r:1.0},{d:'2024-01',r:1.0},{d:'2025-04',r:330/500}],
@@ -812,7 +836,7 @@ id('paypay','jal',{rate:1.0*0.50,
 d('ponta','ana',{rate:0.50,url:'https://www.google.com/search?q=ANAマイル+Pontaポイント+交換+公式',history:[{d:'2019-01',r:0.50},{d:'2022-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-01',r:0.50}],verified:true,notices:['1,000P単位。増量キャンペーンあり。']});
 d('ponta','jal',{rate:0.50,url:'https://www.google.com/search?q=JALマイル+Pontaポイント+交換+公式',history:[{d:'2019-01',r:0.50},{d:'2022-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-01',r:0.50}],verified:true,notices:['1,000P単位。']});
 d('ponta','delta',{rate:1.0,url:'https://www.google.com/search?q=Pontaポイント+デルタマイル+交換+公式',history:[{d:'2022-01',r:1},{d:'2026-01',r:1}],verified:true,notices:['500P単位。']});
-d('vpoint','ana',{rate:0.50,url:'https://www.google.com/search?q=ANAマイル+Vポイント+交換+公式',history:[{d:'2022-01',r:0.50},{d:'2024-04',r:0.50},{d:'2026-01',r:0.50}],verified:true,notices:['2,000P単位。三井住友ANAカード保有者は0.6倍も可。']});
+d('vpoint','ana',{rate:0.50,url:'https://www.google.com/search?q=ANAマイル+Vポイント+交換+公式',history:[{d:'2022-01',r:0.50},{d:'2024-04',r:0.50},{d:'2026-01',r:0.50}],verified:true,notices:['【通常50%】200P→100マイル。500P単位。','【60%優遇】三井住友カード発行のANAカード保有で200P→120マイル。対象カード:ANAカード一般(年会費2,200円/初年度無料)、ANAカードゴールド等。これからポイ活を始める方でも入手可能な現実的な60%ルート。','約2〜3週間で反映。']});
 d('vpoint','jal',{rate:0.50,url:'https://www.google.com/search?q=JALマイル+Vポイント+交換+公式',
   history:[{d:'2022-01',r:0.50},{d:'2024-04',r:0.50},{d:'2026-01',r:0.50}],verified:true,
   notices:['1,000Vポイント→500JALマイル（50%）。1,000P単位。',
@@ -1447,6 +1471,21 @@ function runCalc() {
   });
 
   resEl.innerHTML = html;
+
+  // CTA②
+  if (results.length > 0) {
+    const url = 'https://pc.moppy.jp/entry/invite.php?invite=gFgmA1d9';
+    const ctaDiv = document.createElement('div');
+    ctaDiv.style.cssText = 'margin-top:8px;padding:9px 12px;background:#fff8e1;border-left:3px solid #ff8f00;border-radius:4px;font-size:10.5px;color:#5a3e00;line-height:1.6';
+    ctaDiv.innerHTML = '💡 <strong>+2,000P特典</strong>: モッピー未登録の方は紹介コード経由で登録し、翌々月末までに5,000P獲得すると<strong style="color:#bf3800">+2,000P（約1,000マイル相当）がプレゼント</strong>されます。 <a href="' + url + '" rel="noopener noreferrer nofollow" style="color:#bf3800;font-weight:bold;text-decoration:underline;margin-left:3px;cursor:pointer">→ 詳細</a>';
+    // 確認ダイアログをスキップして直接新規タブで開く
+    const aTag = ctaDiv.querySelector('a');
+    aTag.addEventListener('click', function(e) {
+      e.preventDefault();
+      window.open(url, '_blank', 'noopener');
+    });
+    resEl.appendChild(ctaDiv);
+  }
 }
 
 // ════════════════════════════════
@@ -1751,6 +1790,14 @@ function runAgg() {
     }
     html += '</table>';
     bdEl.innerHTML = html;
+  }
+
+  // CTA①表示制御
+  const aggCta = document.getElementById('aggCtaHint');
+  if (aggCta) {
+    const hasInput = aggRowData.some(r => r.amount > 0);
+    const notReached = goal > 0 && total < goal;
+    aggCta.style.display = (hasInput && notReached) ? 'block' : 'none';
   }
 }
 
