@@ -387,6 +387,11 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
       <button class="btn-xs" onclick="selAll()">全選択</button>
       <button class="btn-xs" onclick="selNone()">全解除</button>
     </div>
+    <div class="sb-actions" style="margin-top:4px">
+      <button class="btn-xs" onclick="savePtCustom()" style="background:#e3f2fd;border-color:#90caf9;color:#0d47a1" title="現在の選択を次回以降の初期表示として保存します">💾 初期表示として保存</button>
+      <button class="btn-xs" onclick="clearPtCustom()" title="保存した初期表示をクリアします">🗑 クリア</button>
+    </div>
+    <div id="ptCustomStatus" style="font-size:9px;color:#0d47a1;margin-top:4px;line-height:1.4;min-height:11px"></div>
   </div>
 
 </div>
@@ -436,10 +441,15 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
       <div style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:6px">保有ポイント入力</div>
       <div id="aggRows" style="display:flex;flex-direction:column;gap:5px;margin-bottom:10px"></div>
 
-      <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+      <div style="display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap">
         <button class="btn-xs" onclick="addAggRow()" style="background:#e8f5e9;border-color:#81c784;color:#2e7d32;font-size:10px;padding:4px 10px">+ ポイントを追加</button>
-        <button class="btn-xs" onclick="resetAgg()" style="font-size:10px;padding:4px 10px">リセット</button>
+        <button class="btn-xs" onclick="resetAgg()" style="font-size:10px;padding:4px 10px">デフォルトに戻す</button>
       </div>
+      <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;align-items:center">
+        <button class="btn-xs" onclick="saveAggCustom()" style="background:#e3f2fd;border-color:#90caf9;color:#0d47a1;font-size:10px;padding:4px 10px" title="目標マイル種別・目標数・為替・保有ポイント入力を次回以降の初期値として保存">💾 現在の入力を初期値として保存</button>
+        <button class="btn-xs" onclick="clearAggCustom()" style="font-size:10px;padding:4px 10px" title="保存した初期値をクリア">🗑 保存をクリア</button>
+      </div>
+      <div id="aggCustomStatus" style="font-size:9px;color:#0d47a1;margin-bottom:10px;line-height:1.4;min-height:11px"></div>
 
       <!-- 合計・進捗表示 -->
       <div style="background:#f1f8e9;border:1px solid #a5d6a7;border-radius:8px;padding:12px 14px;margin-bottom:10px">
@@ -561,7 +571,7 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
 
   <div class="footer-info">
   <div class="footer-update">
-    📅 本ツールのレートデータ最終更新日: <strong>2026年5月7日</strong>
+    📅 本ツールのレートデータ最終更新日: <strong>2026年5月27日</strong>
     &emsp;|&emsp;
     表示レートは調査時点のものであり、予告なく変更される場合があります。
   </div>
@@ -1579,25 +1589,162 @@ function changeAggTarget() {
 // 初期表示に含めるID（ヤマダ・現金・dmoneyは除外）
 const AGG_DEFAULT_IDS = ['moppy','hapitas','fancrew'];
 
-function initAgg() {
-  aggTarget = 'ana';
-  const rates = AGG_RATES[aggTarget];
-  aggRowData = AGG_DEFAULT_IDS.map(id => {
-    const def = rates.find(r => r.id === id);
-    return { id, amount: def ? def.default : 0 };
-  });
-  // 初期UIカラーをANA用に設定
+// ════════════════════════════════
+// localStorage 永続化（ユーザーごとの初期表示カスタマイズ）
+// ════════════════════════════════
+const LS_KEY_PT  = 'mile_calc_pt_selection_v1';
+const LS_KEY_AGG = 'mile_calc_agg_settings_v1';
+
+function loadPtSelection(){
+  try{
+    const raw = localStorage.getItem(LS_KEY_PT);
+    if(!raw) return null;
+    const data = JSON.parse(raw);
+    return (data && typeof data === 'object') ? data : null;
+  }catch(e){ return null; }
+}
+function savePtSelection(){
+  try{
+    const data = { ptSt: {...ptSt}, curLv: curLv };
+    localStorage.setItem(LS_KEY_PT, JSON.stringify(data));
+    return true;
+  }catch(e){ return false; }
+}
+function clearPtSelectionLS(){
+  try{ localStorage.removeItem(LS_KEY_PT); return true; }catch(e){ return false; }
+}
+
+function loadAggSettings(){
+  try{
+    const raw = localStorage.getItem(LS_KEY_AGG);
+    if(!raw) return null;
+    const data = JSON.parse(raw);
+    return (data && typeof data === 'object') ? data : null;
+  }catch(e){ return null; }
+}
+function saveAggSettings(){
+  try{
+    const data = {
+      aggTarget: aggTarget,
+      aggGoal: parseFloat(document.getElementById('aggGoal')?.value) || 0,
+      usdJpyRate: parseFloat(document.getElementById('usdJpyRate')?.value) || 160,
+      aggRowData: aggRowData.map(r => ({ id: r.id, amount: r.amount })),
+    };
+    localStorage.setItem(LS_KEY_AGG, JSON.stringify(data));
+    return true;
+  }catch(e){ return false; }
+}
+function clearAggSettingsLS(){
+  try{ localStorage.removeItem(LS_KEY_AGG); return true; }catch(e){ return false; }
+}
+
+// ─── UI: 保存/クリアボタンの動作（ポイント選択側） ───
+function savePtCustom(){
+  const ok = savePtSelection();
+  const el = document.getElementById('ptCustomStatus');
+  if(!el) return;
+  if(ok){
+    el.style.color = '#0d47a1';
+    el.textContent = '✓ 保存しました（次回開いた時にこの選択状態で表示されます）';
+  }else{
+    el.style.color = '#c62828';
+    el.textContent = '⚠ 保存に失敗しました（プライベートブラウジング等では使えません）';
+  }
+}
+function clearPtCustom(){
+  const ok = clearPtSelectionLS();
+  const el = document.getElementById('ptCustomStatus');
+  if(!el) return;
+  if(ok){
+    el.style.color = '#0d47a1';
+    el.textContent = '✓ 保存をクリアしました（次回からデフォルト表示に戻ります）';
+  }else{
+    el.style.color = '#c62828';
+    el.textContent = '⚠ クリアに失敗しました';
+  }
+}
+function updatePtCustomStatus(){
+  const el = document.getElementById('ptCustomStatus');
+  if(!el) return;
+  const saved = loadPtSelection();
+  el.style.color = '#0d47a1';
+  el.textContent = saved ? '✓ カスタム初期表示が保存されています' : '';
+}
+
+// ─── UI: 保存/クリアボタンの動作（マイル集約電卓側） ───
+function saveAggCustom(){
+  const ok = saveAggSettings();
+  const el = document.getElementById('aggCustomStatus');
+  if(!el) return;
+  if(ok){
+    el.style.color = '#0d47a1';
+    el.textContent = '✓ 保存しました（次回開いた時にこの入力内容が初期値になります）';
+  }else{
+    el.style.color = '#c62828';
+    el.textContent = '⚠ 保存に失敗しました（プライベートブラウジング等では使えません）';
+  }
+}
+function clearAggCustom(){
+  const ok = clearAggSettingsLS();
+  const el = document.getElementById('aggCustomStatus');
+  if(!el) return;
+  if(ok){
+    el.style.color = '#0d47a1';
+    el.textContent = '✓ 保存をクリアしました（次回からデフォルトに戻ります）';
+  }else{
+    el.style.color = '#c62828';
+    el.textContent = '⚠ クリアに失敗しました';
+  }
+}
+function updateAggCustomStatus(){
+  const el = document.getElementById('aggCustomStatus');
+  if(!el) return;
+  const saved = loadAggSettings();
+  el.style.color = '#0d47a1';
+  el.textContent = saved ? '✓ カスタム初期値が保存されています' : '';
+}
+
+// 工場出荷時のデフォルトUI設定（aggTargetを既定のANAに戻す）
+function applyAggUI(){
   const meta = AGG_TARGET_META[aggTarget];
   const panel = document.querySelector('#aggBody')?.closest('.calc-panel');
-  if (panel) panel.style.borderColor = meta.color;
+  if(panel) panel.style.borderColor = meta.color;
   const hdr = document.querySelector('.calc-header[onclick="toggleAgg()"]');
-  if (hdr) hdr.style.background = meta.bg;
+  if(hdr) hdr.style.background = meta.bg;
   const goalUnit = document.getElementById('aggGoalUnit');
-  if (goalUnit) goalUnit.textContent = meta.unit;
+  if(goalUnit) goalUnit.textContent = meta.unit;
   const totalSub = document.getElementById('aggTotalSub');
-  if (totalSub) totalSub.textContent = meta.unit;
+  if(totalSub) totalSub.textContent = meta.unit;
   const note = document.getElementById('aggNote');
-  if (note) note.textContent = '※ ' + meta.note + '。換算前に公式サイトをご確認ください。';
+  if(note) note.textContent = '※ ' + meta.note + '。換算前に公式サイトをご確認ください。';
+}
+
+function initAgg() {
+  const saved = loadAggSettings();
+  if (saved && saved.aggTarget && AGG_RATES[saved.aggTarget]) {
+    // 保存済みの初期値を復元
+    aggTarget = saved.aggTarget;
+    aggRowData = Array.isArray(saved.aggRowData) && saved.aggRowData.length
+      ? saved.aggRowData.map(r => ({ id: r.id, amount: parseFloat(r.amount) || 0 }))
+      : AGG_DEFAULT_IDS.map(id => {
+          const def = AGG_RATES[aggTarget].find(r => r.id === id);
+          return { id, amount: def ? def.default : 0 };
+        });
+    const targetEl = document.getElementById('aggTarget');
+    if (targetEl) targetEl.value = aggTarget;
+    const goalEl = document.getElementById('aggGoal');
+    if (goalEl && saved.aggGoal != null && saved.aggGoal > 0) goalEl.value = saved.aggGoal;
+    const usdEl = document.getElementById('usdJpyRate');
+    if (usdEl && saved.usdJpyRate != null && saved.usdJpyRate > 0) usdEl.value = saved.usdJpyRate;
+  } else {
+    // 工場出荷時デフォルト
+    aggTarget = 'ana';
+    aggRowData = AGG_DEFAULT_IDS.map(id => {
+      const def = AGG_RATES[aggTarget].find(r => r.id === id);
+      return { id, amount: def ? def.default : 0 };
+    });
+  }
+  applyAggUI();
   renderAggRows();
   runAgg();
 }
@@ -1651,7 +1798,21 @@ function addAggRow() {
   runAgg();
 }
 function resetAgg() {
-  initAgg();
+  // 工場出荷時デフォルトに戻す（localStorageは触らない）
+  aggTarget = 'ana';
+  aggRowData = AGG_DEFAULT_IDS.map(id => {
+    const def = AGG_RATES[aggTarget].find(r => r.id === id);
+    return { id, amount: def ? def.default : 0 };
+  });
+  const targetEl = document.getElementById('aggTarget');
+  if (targetEl) targetEl.value = aggTarget;
+  const goalEl = document.getElementById('aggGoal');
+  if (goalEl) goalEl.value = 285000;
+  const usdEl = document.getElementById('usdJpyRate');
+  if (usdEl) usdEl.value = 160;
+  applyAggUI();
+  renderAggRows();
+  runAgg();
 }
 function toggleAgg() {
   const body = document.getElementById('aggBody');
@@ -1805,14 +1966,25 @@ function runAgg() {
 // INIT
 // ════════════════════════════════
 buildChips();
-// 初期表示: 主要6項目のみ選択
-PTS.forEach(p=>{ptSt[p.id]=false;});
-const INIT_6=['moppy','hapitas','fancrew','dmoney','marriott','ana','jal','kris'];
-INIT_6.forEach(id=>{ptSt[id]=true;});
+// 初期表示: 保存があれば復元、なければ主要8項目
+const _savedPt = loadPtSelection();
+if (_savedPt && _savedPt.ptSt) {
+  PTS.forEach(p => { ptSt[p.id] = !!_savedPt.ptSt[p.id]; });
+  if (_savedPt.curLv && ['major','standard','all'].includes(_savedPt.curLv)) {
+    curLv = _savedPt.curLv;
+    document.querySelectorAll('.lv-btn').forEach(b => b.classList.toggle('active', b.dataset.lv === curLv));
+  }
+} else {
+  PTS.forEach(p=>{ptSt[p.id]=false;});
+  const INIT_6=['moppy','hapitas','fancrew','dmoney','marriott','ana','jal','kris'];
+  INIT_6.forEach(id=>{ptSt[id]=true;});
+}
 buildChips();
 buildMatrix();
 buildCalcSelect();
 initAgg();
+updatePtCustomStatus();
+updateAggCustomStatus();
 
 // ════════════════════════════════
 // IFRAME 高さ自動通知
