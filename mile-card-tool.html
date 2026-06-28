@@ -118,6 +118,22 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 .cn{font-size:14px;font-weight:700;color:var(--sky-dk);line-height:1.3}
 .ci{font-size:10px;color:var(--text-dim);margin-top:2px}
 .ct{font-size:11px;font-weight:600;color:#92400E;background:#FEF3C7;border-radius:4px;padding:1px 7px;margin-top:5px;display:inline-block;line-height:1.6;letter-spacing:.01em}
+/* ── 初年度トグル ── */
+.fy-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--sky-xlt);border:1.5px solid var(--sky-lt);border-radius:8px;cursor:pointer;transition:background .2s,border-color .2s;margin-top:4px;user-select:none}
+.fy-row.on{background:#FFFBEB;border-color:#FDE68A}
+.fy-sw{width:36px;height:20px;background:#CBD5E1;border-radius:20px;position:relative;transition:background .2s;flex-shrink:0}
+.fy-sw::after{content:'';position:absolute;width:16px;height:16px;background:#fff;border-radius:50%;top:2px;left:2px;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+.fy-row.on .fy-sw{background:var(--gold)}
+.fy-row.on .fy-sw::after{transform:translateX(16px)}
+.fy-desc{flex:1;font-size:11px;color:var(--text-mid);line-height:1.45}
+.fy-desc strong{display:block;color:var(--text);font-size:12px;margin-bottom:2px}
+.fy-on-badge{display:none;margin-top:4px;font-size:10px;font-weight:700;color:#92400E;background:#FEF3C7;border:1px solid #FDE68A;border-radius:4px;padding:1px 7px}
+.fy-row.on .fy-on-badge{display:inline-block}
+/* ── カード内ボーナス行 ── */
+.bonus-line{font-size:11px;color:#92400E;background:#FFFBEB;border-radius:6px;padding:5px 10px;margin:0 0 6px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;border:1px solid #FDE68A;flex-wrap:wrap}
+.bonus-line .bl-label{font-weight:700;white-space:nowrap}
+.bonus-line .bl-items{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}
+.bl-chip{background:#FEF3C7;border:1px solid #FDE68A;border-radius:4px;padding:1px 6px;font-size:10.5px;font-weight:600;white-space:nowrap}
 .chr{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
 .rbadge{background:linear-gradient(135deg,var(--sunset),#E11D48);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:5px;white-space:nowrap}
 .sbtn2{display:inline-flex;align-items:center;gap:3px;padding:4px 10px;border-radius:6px;border:1.5px solid var(--sky);font-size:10px;font-weight:600;color:var(--sky-dk);background:var(--sky-xlt);cursor:pointer;text-decoration:none;transition:all .15s;white-space:nowrap;font-family:inherit}
@@ -342,6 +358,20 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
         <div class="sr"><span>旅行保険フィルター</span><span>+10pt</span></div>
       </div>
     </div>
+    <div class="cs">
+      <div class="ctrl-lbl"><span class="n">7</span>初年度シミュレーション</div>
+      <div class="fy-row" id="fyRow" onclick="onFirstYear()">
+        <div class="fy-sw"></div>
+        <div class="fy-desc">
+          <strong>📅 入会ボーナス込みで計算する</strong>
+          各カードの最大入会ボーナスを加算して実質おトク額・並び順をリアルタイム更新します
+          <span class="fy-on-badge">初年度モード ON</span>
+        </div>
+      </div>
+      <div style="font-size:9.5px;color:var(--text-dim);margin-top:6px;line-height:1.55">
+        ※ ボーナスは各社公表キャンペーンの最大値（目安）。条件・時期により異なります。実質おトク額・獲得マイル数ソートに反映。
+      </div>
+    </div>
   </div>
 
   <div>
@@ -461,7 +491,7 @@ function mbmi(pt){const b=Math.floor(pt/60000);return b*25000+Math.round((pt%600
 // ━━━━━━━━ カードデータ（19枚） ━━━━━━━━
 const CARDS=[
   {
-    id:'mb-pre',name:'マリオットBonvoy アメックスプレミアム',issuer:'American Express',tagline:'40社超マルチ移行 × 最大1.25% — マイル先送り型の最終兵器',
+    id:'mb-pre',name:'マリオットBonvoy アメックスプレミアム',issuer:'American Express',tagline:'40社超マルチ移行 × 最大1.25% — マイル先送り型の最終兵器',bonusMilesApprox:95000,bonusMbPt:true,bonusFeeWaiver:0,
     sq:'マリオットBonvoyアメックスプレミアムカード 公式サイト',
     dkt:'マリオット ボンヴォイ アメリカン エキスプレス プレミアム',
     psType:'referral',
@@ -480,7 +510,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年9〜12月',t:'同様の6ヶ月条件で75,000〜95,000MB pt。旧年会費比較で入会メリットが縮小。'},{p:'2025年前半',t:'同条件65,000〜95,000MB pt。改悪前（旧49,500円）の最後の好機。'}],
   },
   {
-    id:'saison-plat',name:'セゾンプラチナ ビジネスアメックス',issuer:'American Express（セゾン）',tagline:'JAL最高水準1.125% + PP無制限 — JAL派唯一の選択肢',
+    id:'saison-plat',name:'セゾンプラチナ ビジネスアメックス',issuer:'American Express（セゾン）',tagline:'JAL最高水準1.125% + PP無制限 — JAL派唯一の選択肢',bonusMilesApprox:0,bonusMbPt:false,bonusMrPt:false,bonusFeeWaiver:33000,
     sq:'セゾンプラチナビジネスアメリカンエキスプレスカード 公式サイト',
     dkt:'セゾンプラチナ ビジネス アメックス',psType:'psite',
     fee:33000,feeNote:'※JAL1.125%はセゾンマイルクラブ（年5,500円）加入前提。実質年会費38,500円（カード33,000円＋マイルクラブ5,500円）。',ac:'linear-gradient(90deg,#E11D48,#F97316)',
@@ -497,7 +527,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年後半',t:'同様に初年度無料＋入会特典5,000〜10,000円相当。'},{p:'2025年前半',t:'初年度無料キャンペーン継続。最安値でJALマイルを積める時期。'}],
   },
   {
-    id:'amex-gold-pref',name:'アメックスゴールド・プリファード',issuer:'American Express',tagline:'14社マルチ + 入会ボーナス最大 — 初年度爆積みの定番カード',
+    id:'amex-gold-pref',name:'アメックスゴールド・プリファード',issuer:'American Express',tagline:'14社マルチ + 入会ボーナス最大 — 初年度爆積みの定番カード',bonusMilesApprox:110000,bonusMrPt:true,bonusFeeWaiver:0,
     sq:'アメックスゴールドプリファードカード 公式サイト',
     dkt:'アメリカンエキスプレス ゴールド プリファード',psType:'referral',
     fee:39600,feeNote:'ANA移行は「MRアナコース」年5,500円別途必要（年間上限40,000マイル）。JAL移行は2,500pt→1,000マイルと低効率（0.4%）。',ac:'linear-gradient(90deg,#F59E0B,#EF4444)',
@@ -518,7 +548,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年後半',t:'最大65,000〜110,000ptのキャンペーン。入会ボーナスが強力で最初の年はマイル大量獲得。'},{p:'2025年前半',t:'同様の大型キャンペーン。マルチ対応で後からマイル種別を決められる強み。'}],
   },
   {
-    id:'ana-amex-gold',name:'ANAアメックスゴールドカード',issuer:'American Express',tagline:'入会ボーナス最大70,000マイル — ANA初年度一気積みの切り札',
+    id:'ana-amex-gold',name:'ANAアメックスゴールドカード',issuer:'American Express',tagline:'入会ボーナス最大70,000マイル — ANA初年度一気積みの切り札',bonusMilesApprox:70000,bonusMbPt:false,bonusMrPt:false,bonusFeeWaiver:0,
     sq:'ANAアメリカンエキスプレスゴールドカード 公式サイト',
     dkt:'ANA アメリカンエキスプレス ゴールド',psType:'referral',
     fee:34100,feeNote:'※ポイント移行コース年6,600円込みで1.0%還元（実質40,700円）。',ac:'linear-gradient(90deg,#0EA5E9,#2563EB)',
@@ -535,7 +565,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年10〜2026年3月',t:'同様の最大70,000マイルキャンペーン。入会年は80,000〜90,000マイル超えが現実的。'},{p:'2025年前半',t:'最大60,000〜70,000マイル。移行コース費用を引いても圧倒的なボーナス量。'}],
   },
   {
-    id:'sora',name:'ソラチカゴールドカード',issuer:'JCB（ANA To Me CARD PASMO JCB Gold）',tagline:'ANA1.0% × 年会費11,000円 — 陸マイラーのコスパ最高基準',
+    id:'sora',name:'ソラチカゴールドカード',issuer:'JCB（ANA To Me CARD PASMO JCB Gold）',tagline:'ANA1.0% × 年会費11,000円 — 陸マイラーのコスパ最高基準',bonusMilesApprox:19000,bonusMbPt:false,bonusMrPt:false,bonusFeeWaiver:0,
     sq:'ソラチカゴールドカード ANA JCB 公式サイト',
     dkt:'ANA To Me CARD PASMO JCB ゴールド ソラチカ',psType:'psite',
     fee:11000,feeNote:null,ac:'linear-gradient(90deg,#0EA5E9,#22C55E)',
@@ -552,7 +582,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年11月〜2026年2月',t:'同様に最大19,000マイル相当。年会費11,000円対比のコスパが特に高い。'},{p:'2025年前半',t:'12,000〜15,000マイル相当の入会ボーナス。PP付帯カードとして破格のコスト。'}],
   },
   {
-    id:'ana-wide-g',name:'ANAワイドゴールドカード',issuer:'JCB / VISA / Mastercard',tagline:'ANA直接付与・無期限 × 3ブランド — シンプル積立の定番',
+    id:'ana-wide-g',name:'ANAワイドゴールドカード',issuer:'JCB / VISA / Mastercard',tagline:'ANA直接付与・無期限 × 3ブランド — シンプル積立の定番',bonusMilesApprox:30000,bonusMbPt:false,bonusMrPt:false,bonusFeeWaiver:0,
     sq:'ANAワイドゴールドカード 公式サイト',
     dkt:'ANA ワイドゴールドカード',psType:'psite',
     fee:15400,feeNote:null,ac:'linear-gradient(90deg,#2563EB,#0EA5E9)',
@@ -569,7 +599,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年10〜12月',t:'JCBキャンペーンで入会3ヶ月以内50万円利用→約30,000マイル相当。'},{p:'2025年前半',t:'入会2,000＋利用ボーナス8,000〜15,000マイル。継続ボーナス2,000マイルは毎年。'}],
   },
   {
-    id:'mufg-plat',name:'三菱UFJカード・プラチナ・アメックス',issuer:'American Express（三菱UFJ）',tagline:'PP最安プラチナ22,000円 × 家族PP可 — KF/JAL高レート移行も',
+    id:'mufg-plat',name:'三菱UFJカード・プラチナ・アメックス',issuer:'American Express（三菱UFJ）',tagline:'PP最安プラチナ22,000円 × 家族PP可 — KF/JAL高レート移行も',bonusMilesApprox:0,bonusMbPt:false,bonusMrPt:false,bonusFeeWaiver:0,
     sq:'三菱UFJカードプラチナアメリカンエキスプレスカード 公式サイト',
     dkt:'三菱UFJカード プラチナ アメックス',psType:'psite',
     fee:22000,feeNote:null,ac:'linear-gradient(90deg,#7C3AED,#0EA5E9)',
@@ -586,7 +616,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年後半',t:'同様の条件で15,000〜25,000円相当。PP目的のサブカードとして最安コストで取得できる時期。'},{p:'2025年前半',t:'入会ボーナス10,000〜20,000円相当。22,000円の年会費に対してバランスの取れたキャンペーン。'}],
   },
   {
-    id:'jal-amex-plat',name:'JALアメックスプラチナカード',issuer:'American Express（JAL）',tagline:'JAL1.0% + PP無制限 × AMEX — JAL派のAMEXブランド選択肢',
+    id:'jal-amex-plat',name:'JALアメックスプラチナカード',issuer:'American Express（JAL）',tagline:'JAL1.0% + PP無制限 × AMEX — JAL派のAMEXブランド選択肢',bonusMilesApprox:5000,bonusMbPt:false,bonusMrPt:false,bonusFeeWaiver:0,
     sq:'JALアメリカンエキスプレスプラチナカード 公式サイト',
     dkt:'JAL アメリカンエキスプレス プラチナ',psType:'referral',
     fee:34100,feeNote:null,ac:'linear-gradient(90deg,#E11D48,#7C3AED)',
@@ -603,7 +633,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年後半',t:'入会ボーナス3,000〜5,000マイル。JAL派でAMEXを希望するニッチな需要に応えるカード。'},{p:'2025年前半',t:'同様の水準。JAL CLUB-Aゴールドと比較してブランドと特典で選択。'}],
   },
   {
-    id:'jal-club-a',name:'JAL CLUB-Aゴールドカード',issuer:'VISA / MC / JCB / Diners',tagline:'JAL1.0% × 4ブランド対応 — 最もシンプルなJAL直積みカード',
+    id:'jal-club-a',name:'JAL CLUB-Aゴールドカード',issuer:'VISA / MC / JCB / Diners',tagline:'JAL1.0% × 4ブランド対応 — 最もシンプルなJAL直積みカード',bonusMilesApprox:50000,bonusMbPt:false,bonusMrPt:false,bonusFeeWaiver:0,
     sq:'JAL CLUB-Aゴールドカード VISA 公式サイト',
     dkt:'JAL CLUB-A ゴールドカード',psType:'psite',
     fee:17600,feeNote:'ショッピングマイルプレミアム（年3,300円）自動付帯で100円=1マイルを実現。年会費に含む。',ac:'linear-gradient(90deg,#E11D48,#FB923C)',
@@ -620,7 +650,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年12月〜2026年4月',t:'VISA入会キャンペーンで最大50,000マイル。300万円/年なら合計80,000マイル超えも可能。'},{p:'2025年前半',t:'VISA入会ボーナス30,000〜40,000マイル。JAL一択の初心者に最もわかりやすいカード。'}],
   },
   {
-    id:'saison-gold',name:'セゾンゴールド アメックスカード',issuer:'American Express（セゾン）',tagline:'JAL0.75% × 年11,000円 — セゾンプラチナへの低コスト入口',
+    id:'saison-gold',name:'セゾンゴールド アメックスカード',issuer:'American Express（セゾン）',tagline:'JAL0.75% × 年11,000円 — セゾンプラチナへの低コスト入口',bonusMilesApprox:0,bonusMbPt:false,bonusMrPt:false,bonusFeeWaiver:0,
     sq:'セゾンゴールドアメリカンエキスプレスカード 公式サイト',
     dkt:'セゾンゴールド アメックス',psType:'psite',
     fee:11000,feeNote:'※JAL0.75%はセゾンマイルクラブ（年9,900円）加入前提。実質年会費20,900円（カード11,000円＋マイルクラブ9,900円）。',ac:'linear-gradient(90deg,#E11D48,#7C3AED)',
@@ -637,7 +667,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年後半',t:'入会特典3,000〜5,000円相当。低コストでJALマイルを始める選択肢として注目される。'},{p:'2025年前半',t:'同水準。セゾンプラチナとの比較でコスト重視の選択として選ばれるケースが多い。'}],
   },
   {
-    id:'diners',name:'ダイナースクラブカード',issuer:'Citi（ダイナースクラブ）',tagline:'ANA/JAL/KF全対応1.0% — グルメ特典付きマルチマイルカード',
+    id:'diners',name:'ダイナースクラブカード',issuer:'Citi（ダイナースクラブ）',tagline:'ANA/JAL/KF全対応1.0% — グルメ特典付きマルチマイルカード',bonusMilesApprox:30000,bonusMbPt:false,bonusMrPt:false,bonusFeeWaiver:0,
     sq:'ダイナースクラブカード 公式サイト',
     dkt:'ダイナース クラブ カード',psType:'psite',
     fee:24200,feeNote:'ダイナースグローバルマイレージ（年6,600円）加入が1.0%換算の前提。年間移行上限40,000マイル/ANA。',ac:'linear-gradient(90deg,#374151,#6B7280)',
@@ -654,7 +684,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年後半',t:'入会ボーナス20,000〜30,000マイル相当。グローバルマイレージ加入で複数マイルに分散獲得可能。'},{p:'2025年前半',t:'同水準。マルチマイル対応の強みが評価される。'}],
   },
   {
-    id:'mb-std',name:'マリオットBonvoy アメックス（一般）',issuer:'American Express',tagline:'マルチ対応・最大0.833% — MBプレミアムのコスト抑え版',
+    id:'mb-std',name:'マリオットBonvoy アメックス（一般）',issuer:'American Express',tagline:'マルチ対応・最大0.833% — MBプレミアムのコスト抑え版',bonusMilesApprox:45000,bonusMbPt:true,bonusFeeWaiver:0,
     sq:'マリオットBonvoyアメリカンエキスプレスカード 公式サイト',
     dkt:'マリオット ボンヴォイ アメリカンエキスプレス 一般',psType:'referral',
     fee:23100,feeNote:'2025年10月より公共料金・国税の還元率0.5%（改悪）。',ac:'linear-gradient(90deg,#7C3AED,#A78BFA)',
@@ -671,7 +701,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年後半',t:'同様の条件で35,000〜45,000MB pt。プレミアムの大型改悪後、コスト重視で一般に乗り換える動きも。'},{p:'2025年前半',t:'入会ボーナス30,000〜45,000MB pt。年会費23,100円に対して入会年は実質黒字になる水準。'}],
   },
   {
-    id:'hilton',name:'ヒルトンHonors アメックスカード',issuer:'American Express',tagline:'ヒルトンゴールド自動付帯 — MBと対になるホテル系入門カード',
+    id:'hilton',name:'ヒルトンHonors アメックスカード',issuer:'American Express',tagline:'ヒルトンゴールド自動付帯 — MBと対になるホテル系入門カード',bonusMilesApprox:0,bonusMbPt:false,bonusMrPt:false,bonusFeeWaiver:0,
     sq:'ヒルトンオナーズアメリカンエキスプレスカード 公式サイト',
     dkt:'ヒルトン オナーズ アメックス',psType:'referral',
     fee:16500,feeNote:'マイル換算効率：100円=3pt×10%（ポイント→マイル変換率）＝0.3マイル/100円（0.3%）と低効率。ホテル宿泊目的が前提のカード。',ac:'linear-gradient(90deg,#0EA5E9,#164E63)',
@@ -688,7 +718,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年後半',t:'45,000〜55,000ヒルトンポイントの入会ボーナス。マイルよりもヒルトン宿泊特典を狙う層に人気。'},{p:'2025年前半',t:'同水準。ヒルトンコンラッドSINGAPORE宿泊実現のためのポイント積算戦略として機能。'}],
   },
   {
-    id:'rakuten-pre',name:'楽天プレミアムカード',issuer:'楽天カード株式会社',tagline:'楽天経済圏と相性良し × PP年5回 — コスパ型の定番カード',
+    id:'rakuten-pre',name:'楽天プレミアムカード',issuer:'楽天カード株式会社',tagline:'楽天経済圏と相性良し × PP年5回 — コスパ型の定番カード',bonusMilesApprox:2500,bonusMbPt:false,bonusMrPt:false,bonusFeeWaiver:0,
     sq:'楽天プレミアムカード 公式サイト',
     dkt:'楽天プレミアム カード',psType:'psite',
     fee:11000,feeNote:null,ac:'linear-gradient(90deg,#E11D48,#F97316)',
@@ -705,7 +735,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年後半',t:'PP改悪後もコスト対比でPP取得手段として一定評価。入会特典3,000〜5,000楽天ポイント。'},{p:'2025年前半',t:'PP改悪前の最後の黄金期。無制限PP最後の取得機会として需要が集中した時期。'}],
   },
   {
-    id:'smcc-gold-nl',name:'三井住友カード ゴールド（NL）',issuer:'三井住友カード',tagline:'年100万円で永年無料 — ANA派初心者のファーストステップ',
+    id:'smcc-gold-nl',name:'三井住友カード ゴールド（NL）',issuer:'三井住友カード',tagline:'年100万円で永年無料 — ANA派初心者のファーストステップ',bonusMilesApprox:10000,bonusMbPt:false,bonusMrPt:false,bonusFeeWaiver:0,
     sq:'三井住友カードゴールドNL 公式サイト',
     dkt:'三井住友 ゴールドNL',psType:'psite',
     fee:5500,feeNote:'初年度5,500円。年100万円以上利用で翌年以降永年無料。ただし年間ボーナスポイント（10,000pt相当）はゴールド特典として維持。200〜300万円決済なら条件達成容易。',ac:'linear-gradient(90deg,#16A34A,#0EA5E9)',
@@ -727,7 +757,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年後半',t:'入会ボーナス8,000〜12,000Vポイント。永年無料化条件の達成しやすさから低コスト派に根強い人気。'},{p:'2025年前半',t:'同水準。コスト最優先・ANAサブカードとしての利用が多い。'}],
   },
   {
-    id:'jcb-gold',name:'JCBゴールドカード',issuer:'JCB',tagline:'JCBプラチナ招待への登竜門 — PP最安取得ルート',
+    id:'jcb-gold',name:'JCBゴールドカード',issuer:'JCB',tagline:'JCBプラチナ招待への登竜門 — PP最安取得ルート',bonusMilesApprox:0,bonusMbPt:false,bonusMrPt:false,bonusFeeWaiver:0,
     sq:'JCBゴールドカード 公式サイト',
     dkt:'JCBゴールド カード',psType:'psite',
     fee:11000,feeNote:null,ac:'linear-gradient(90deg,#16A34A,#0EA5E9)',
@@ -744,7 +774,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年後半',t:'入会特典15,000〜20,000円相当。JCBゴールドゆえの入会特典は手厚いが、通常決済でのマイル効率が課題。'},{p:'2025年前半',t:'同水準。ソラチカゴールドへの乗り換え導入として評価されるケースもある。'}],
   },
   {
-    id:'amex-green',name:'アメックスグリーンカード',issuer:'American Express',tagline:'ANA1.0% × 年13,200円 — AMEXブランド最安のスタートライン',
+    id:'amex-green',name:'アメックスグリーンカード',issuer:'American Express',tagline:'ANA1.0% × 年13,200円 — AMEXブランド最安のスタートライン',bonusMilesApprox:40000,bonusMrPt:true,bonusFeeWaiver:0,
     sq:'アメリカンエキスプレスグリーンカード 公式サイト',
     dkt:'アメックス グリーン カード',psType:'referral',
     fee:13200,feeNote:'MRポイント→マイル移行コース加入が必要（有料）。ANA移行は1,000pt→1,000マイル（移行コースプレミアム：年6,600円）。',ac:'linear-gradient(90deg,#16A34A,#0EA5E9)',
@@ -765,7 +795,7 @@ const CARDS=[
   },
   // ── SQクリスフライヤー提携カード ──
   {
-    id:'sq-jcb-gold',name:'SQクリスフライヤーJCBゴールドカード',issuer:'JCB（シンガポール航空）',tagline:'KFマイル直接付与1.0% — 変換費用ゼロのKF最短ルート',
+    id:'sq-jcb-gold',name:'SQクリスフライヤーJCBゴールドカード',issuer:'JCB（シンガポール航空）',tagline:'KFマイル直接付与1.0% — 変換費用ゼロのKF最短ルート',bonusMilesApprox:5000,bonusMbPt:false,bonusMrPt:false,bonusFeeWaiver:0,
     sq:'SQクリスフライヤーJCBゴールドカード 公式サイト',
     dkt:'シンガポール航空 KrisFlyer JCBゴールド',psType:'psite',
     fee:11000,feeNote:null,ac:'linear-gradient(90deg,#0C2340,#F97316)',
@@ -782,7 +812,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年後半',t:'入会特典3,000〜5,000KFマイル。KFマイル直接付与という希少性から陸マイラーのKF派に人気急上昇中。'},{p:'2025年前半',t:'同水準。シンガポール航空ビジネスクラス目標の人の最有力候補として注目される。'}],
   },
   {
-    id:'sq-smbc-visa',name:'SQクリスフライヤーVISAゴールドカード',issuer:'三井住友カード（シンガポール航空）',tagline:'KFマイル直接付与1.0% × VISA — 汎用性重視のKF最短ルート',
+    id:'sq-smbc-visa',name:'SQクリスフライヤーVISAゴールドカード',issuer:'三井住友カード（シンガポール航空）',tagline:'KFマイル直接付与1.0% × VISA — 汎用性重視のKF最短ルート',bonusMilesApprox:5000,bonusMbPt:false,bonusMrPt:false,bonusFeeWaiver:0,
     sq:'SQクリスフライヤーVISAゴールドカード 公式サイト',
     dkt:'シンガポール航空 KrisFlyer VISA ゴールド',psType:'psite',
     fee:11000,feeNote:null,ac:'linear-gradient(90deg,#0C2340,#E11D48)',
@@ -802,7 +832,7 @@ const CARDS=[
 
 // ━━━━━━━━ State ━━━━━━━━
 const S={
-  mile:'ALL',amt:200,mileVal:5,sort:'score',
+  mile:'ALL',amt:200,mileVal:5,sort:'score',firstYear:false,
   brands:new Set(['ALL']),
   tags:{pp:false,'no-exp':false,insurance:false,'low-fee':false,multi:false,'free-night':false}
 };
@@ -891,6 +921,26 @@ function copyUrl(){
 // ━━━━━━━━ ヘルパー関数 ━━━━━━━━
 function getMiles(c){return c.milesCalc(S.amt,S.mile)}
 function getRate(c){return(getMiles(c)/(S.amt*10000))*100}
+
+// ━━━━━━━━ 初年度ボーナスヘルパー（A-1追加）━━━━━━━━
+function getBonusMiles(c){
+  if(!S.firstYear||!c.bonusMilesApprox)return 0;
+  // MB系カード：ボーナスはMBポイント → milesCalc相当変換
+  if(c.bonusMbPt){
+    return S.mile==='MB'?c.bonusMilesApprox:mbmi(c.bonusMilesApprox);
+  }
+  // MR系カード（AMEX マルチ）：MRポイント → マイル種別ごとに変換
+  // 1MR = 1円相当（100円=1pt）、bonusMilesApprox万円分のmilesCalcで換算
+  if(c.bonusMrPt){
+    return Math.round(c.milesCalc(c.bonusMilesApprox/100,S.mile));
+  }
+  // その他：直接マイル数
+  return c.bonusMilesApprox;
+}
+function getEffectiveMiles(c){return getMiles(c)+getBonusMiles(c)}
+function getEffectiveFee(c){
+  return S.firstYear?Math.max(0,c.fee-(c.bonusFeeWaiver||0)):c.fee;
+}
 function brandOK(c){
   if(S.brands.has('ALL'))return true;
   return c.brands.some(b=>S.brands.has(b));
@@ -936,8 +986,8 @@ function render(){
   // ソート
   const sortFns={
     score:(a,b)=>calcScore(b)-calcScore(a),
-    profit:(a,b)=>(getMiles(b)*S.mileVal-b.fee)-(getMiles(a)*S.mileVal-a.fee),
-    miles:(a,b)=>getMiles(b)-getMiles(a),
+    profit:(a,b)=>(getEffectiveMiles(b)*S.mileVal-getEffectiveFee(b))-(getEffectiveMiles(a)*S.mileVal-getEffectiveFee(a)),
+    miles:(a,b)=>getEffectiveMiles(b)-getEffectiveMiles(a),
     fee:(a,b)=>a.fee-b.fee,
   };
   cards.sort(sortFns[S.sort]||sortFns.score);
@@ -962,14 +1012,37 @@ function render(){
 // ━━━━━━━━ カードHTML生成 ━━━━━━━━
 function cardHTML(c,best){
   const miles=getMiles(c);
+  const bonusMiles=getBonusMiles(c);
+  const totalMiles=miles+bonusMiles;
+  const effectiveFee=getEffectiveFee(c);
   const rate=getRate(c);
-  const profit=Math.round(miles*S.mileVal-c.fee);
+  const profit=Math.round(totalMiles*S.mileVal-effectiveFee);
   const goalMiles=GOAL[S.mile]||GOAL.ALL;
   const goalYrs=miles>0?(goalMiles/miles).toFixed(1):'—';
   const profitCls=profit>=0?'pos':'neg';
   const profitStr=(profit>=0?'+':'')+fmt(profit)+'円';
+  const profitLabel=S.firstYear?'実質おトク額（初年度）':'実質おトク額';
+  const profitSub=S.firstYear?`初年度試算（ボーナス込）・${S.mileVal}円/M`:`年間試算・マイル価値${S.mileVal}円`;
   const goalDesc=GLBL[S.mile]||GLBL.ALL;
-  const barPct=Math.min(100,Math.round((miles/Math.max(...CARDS.map(x=>x.milesCalc(S.amt,S.mile))))*100))||0;
+  const maxMiles=Math.max(...CARDS.map(x=>getEffectiveMiles(x)));
+  const barPct=Math.min(100,Math.round((totalMiles/maxMiles)*100))||0;
+
+  // 初年度ボーナス表示行
+  let bonusIndicator='';
+  if(S.firstYear){
+    const chips=[];
+    if(bonusMiles>0){
+      const mu=S.mile==='MB'?'pt':'マイル';
+      chips.push(`入会ボーナス +${fmt(bonusMiles)}${mu}（最大目安）`);
+    }
+    if(c.bonusFeeWaiver){
+      chips.push(`初年度年会費無料 −${fmt(c.bonusFeeWaiver)}円`);
+    }
+    if(chips.length>0){
+      const chipHtml=chips.map(t=>`<span class="bl-chip">${t}</span>`).join('');
+      bonusIndicator=`<div class="bonus-line"><span class="bl-label">🎁 初年度加算</span><div class="bl-items">${chipHtml}</div></div>`;
+    }
+  }
 
   // ラウンジ表示
   let loungeTag='';
@@ -1035,15 +1108,16 @@ function cardHTML(c,best){
   </div>
   <div class="brand-row">${brandBadges}<span style="font-size:10px;color:var(--text-dim);margin-left:auto;align-self:center">年会費 <strong>${fmt(c.fee)}円</strong></span></div>
   ${alertBanner}
+  ${bonusIndicator}
   <div class="sg">
-    <div class="sc"><div class="sl_">実質おトク額</div><div class="sv ${profitCls}">${profitStr}</div><div class="ssub">年間試算・マイル価値${S.mileVal}円</div></div>
+    <div class="sc"><div class="sl_">${profitLabel}</div><div class="sv ${profitCls}">${profitStr}</div><div class="ssub">${profitSub}</div></div>
     ${kpiStat2}
     <div class="sc"><div class="sl_">年会費</div><div class="sv">${fmt(c.fee)}<sub>円</sub></div><div class="ssub">${c.feeNote?'※ 注記あり':'カード本体年会費'}</div></div>
   </div>
   <div class="fam">
     <div class="faml">📊 ${S.amt}万円決済時のマイル数</div>
     <div class="famrow">
-      <span class="famyr">${fmt(miles)}</span>
+      <span class="famyr">${fmt(totalMiles)}</span>
       <span>${S.mile==='MB'?'pt':displayMile+'マイル'}</span>
       <div class="fbar"><div class="fbari" data-p="${barPct}"></div></div>
       <span style="font-size:10px;color:var(--text-dim)">${rate.toFixed(2)}%</span>
@@ -1104,6 +1178,13 @@ function setSort(el){
   S.sort=el.dataset.s;
   document.querySelectorAll('.sbtn').forEach(b=>b.classList.remove('on'));
   el.classList.add('on');
+  render();
+}
+
+// ━━━━━━━━ 初年度トグル（A-1追加）━━━━━━━━
+function onFirstYear(){
+  S.firstYear=!S.firstYear;
+  document.getElementById('fyRow').classList.toggle('on',S.firstYear);
   render();
 }
 function tgAcc(el){
