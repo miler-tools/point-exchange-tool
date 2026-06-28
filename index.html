@@ -137,13 +137,13 @@ body{font-family:'Hiragino Kaku Gothic ProN','Hiragino Sans','Noto Sans JP',sans
   /* マトリクスのスクロール高さをスマホ画面に合わせる */
   .mtx-scroll{max-height:55vh}
 
-  /* セル幅を少し狭く（スマホでより多く見える） */
-  .cell{width:70px}
+  /* セル幅: PC と同じ 84px を維持（横スクロール前提のため狭くしない） */
+  .cell{width:84px}
   .cr{font-size:11px;height:22px}
   .cb{font-size:10px;height:20px}
   thead tr th.corner{min-width:90px}
-  tbody tr td.rh{min-width:90px;font-size:9px}
-  tbody tr td.rh .tc{display:none}
+  tbody tr th.rh{min-width:90px;font-size:9px}
+  tbody tr th.rh .tc{display:none}
 
   /* フッターをコンパクトに */
   .footer-info{padding:8px 10px;font-size:9px}
@@ -166,16 +166,16 @@ thead tr th .tc{font-size:8px;display:block;opacity:.65;font-weight:400}
 thead tr th.corner{position:sticky;left:0;top:0;z-index:32;min-width:130px;text-align:left;border-right:2px solid var(--border2);background:var(--bg2)}
 
 /* sticky row header (FROM) */
-tbody tr td.rh{
+tbody tr th.rh{
   position:sticky;left:0;z-index:12;
   background:var(--bg2);padding:5px 7px;font-weight:600;
   white-space:nowrap;border-right:2px solid var(--border2);min-width:130px;font-size:10px
 }
-tbody tr td.rh .tc{font-size:8px;display:block;color:var(--text3);font-weight:400}
+tbody tr th.rh .tc{font-size:8px;display:block;color:var(--text3);font-weight:400}
 
 /* category row */
 .cath td{background:#e0dfd7;font-size:9px;font-weight:700;padding:3px 7px;color:var(--text2);border-bottom:1px solid var(--border2);letter-spacing:.05em}
-.cath td.rh{background:#d8d7cf;border-right:2px solid var(--border2)}
+.cath th.rh{background:#d8d7cf;border-right:2px solid var(--border2)}
 
 /* cells */
 tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
@@ -423,7 +423,7 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
           <option value="marriott">マリオットBonvoyポイント</option>
         </select>
         <span style="font-size:11px;font-weight:700;color:#2e7d32;white-space:nowrap;margin-left:8px">目標数</span>
-        <input class="calc-input" id="aggGoal" type="number" min="0" step="10000" value="285000" oninput="runAgg()" style="width:120px">
+        <input class="calc-input" id="aggGoal" type="number" min="0" step="10000" value="285000" oninput="runAgg();autoSaveAgg()" style="width:120px">
         <span style="font-size:11px;color:#4a7a4a" id="aggGoalUnit">マイル</span>
         <span style="font-size:10px;color:#4a7a4a" id="aggGoalNote">（例: ANAビジネスクラス特典航空券 目安）</span>
       </div>
@@ -432,7 +432,7 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:7px 10px;background:var(--bg2);border-radius:6px;border:0.5px solid var(--border2);flex-wrap:wrap">
         <span style="font-size:11px;font-weight:700;color:var(--text2);white-space:nowrap">為替レート</span>
         <span style="font-size:11px;color:var(--text2);white-space:nowrap">1 USD =</span>
-        <input type="number" id="usdJpyRate" min="1" step="1" value="160" oninput="runAgg()" style="width:72px;font-size:12px;font-weight:700;padding:3px 7px;border:1px solid var(--border2);border-radius:4px;background:var(--bg);color:var(--text);text-align:right">
+        <input type="number" id="usdJpyRate" min="1" step="1" value="160" oninput="runAgg();autoSaveAgg()" style="width:72px;font-size:12px;font-weight:700;padding:3px 7px;border:1px solid var(--border2);border-radius:4px;background:var(--bg);color:var(--text);text-align:right">
         <span style="font-size:11px;color:var(--text2)">円</span>
         <span style="font-size:10px;color:var(--text3);margin-left:4px">（不足分のマリオット購入に必要な円額の計算に使用）</span>
       </div>
@@ -446,7 +446,7 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:1px solid 
         <button class="btn-xs" onclick="resetAgg()" style="font-size:10px;padding:4px 10px">デフォルトに戻す</button>
       </div>
       <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;align-items:center">
-        <button class="btn-xs" onclick="saveAggCustom()" style="background:#e3f2fd;border-color:#90caf9;color:#0d47a1;font-size:10px;padding:4px 10px" title="目標マイル種別・目標数・為替・保有ポイント入力を次回以降の初期値として保存">💾 現在の入力を初期値として保存</button>
+        <button class="btn-xs" onclick="saveAggCustom()" style="background:#e3f2fd;border-color:#90caf9;color:#0d47a1;font-size:10px;padding:4px 10px" title="自動保存中。クリックして保存状態を確認できます">💾 自動保存中（確認）</button>
         <button class="btn-xs" onclick="clearAggCustom()" style="font-size:10px;padding:4px 10px" title="保存した初期値をクリア">🗑 保存をクリア</button>
       </div>
       <div id="aggCustomStatus" style="font-size:9px;color:#0d47a1;margin-bottom:10px;line-height:1.4;min-height:11px"></div>
@@ -1347,9 +1347,9 @@ function buildMatrix(){
   catOrder.forEach(cat=>{
     if(ROW_EXCLUDE.has(cat))return; // site/cash/mile/coin はFROM行に出さない
     if(!grouped[cat].length)return;
-    h+=`<tr class="cath"><td class="rh">${CATS[cat].label}</td>${toVis.map(()=>'<td></td>').join('')}</tr>`;
+    h+=`<tr class="cath"><th scope="rowgroup" class="rh">${CATS[cat].label}</th>${toVis.map(()=>'<td></td>').join('')}</tr>`;
     grouped[cat].forEach(row=>{
-      h+=`<tr><td class="rh">${row.name}<span class="tc">${CATS[row.cat].label}</span></td>`;
+      h+=`<tr><th scope="row" class="rh">${row.name}<span class="tc">${CATS[row.cat].label}</span></th>`;
       toVis.forEach(col=>{
         if(row.id===col.id){h+=`<td><div class="cell selfcell">—</div></td>`;return;}
         const k=`${row.id}->${col.id}`;
@@ -1825,6 +1825,7 @@ function changeAggTarget() {
   // 換算率は選択中のaggTargetのAGG_RATESに基づき自動更新される
   renderAggRows();
   runAgg();
+  autoSaveAgg();
 }
 
 // 初期表示に含めるID（ヤマダ・現金・dmoneyは除外）
@@ -1945,6 +1946,15 @@ function updateAggCustomStatus(){
   el.textContent = saved ? '✓ カスタム初期値が保存されています' : '';
 }
 
+// ─── Auto-save（入力変更時に自動で localStorage へ保存） ───
+function autoSaveAgg(){
+  const ok = saveAggSettings();
+  const el = document.getElementById('aggCustomStatus');
+  if(!el) return;
+  el.style.color = ok ? '#0d47a1' : '#c62828';
+  el.textContent = ok ? '✓ 自動保存済み' : '⚠ 保存に失敗しました（プライベートブラウジング等では使えません）';
+}
+
 // 工場出荷時のデフォルトUI設定（aggTargetを既定のANAに戻す）
 function applyAggUI(){
   const meta = AGG_TARGET_META[aggTarget];
@@ -2023,20 +2033,24 @@ function changeAggId(idx, newId) {
   aggRowData[idx].id = newId;
   renderAggRows();
   runAgg();
+  autoSaveAgg();
 }
 function changeAggAmt(idx, val) {
   aggRowData[idx].amount = parseFloat(val) || 0;
   runAgg();
+  autoSaveAgg();
 }
 function removeAggRow(idx) {
   aggRowData.splice(idx, 1);
   renderAggRows();
   runAgg();
+  autoSaveAgg();
 }
 function addAggRow() {
   aggRowData.push({ id: PTS[0].id, amount: 0 });
   renderAggRows();
   runAgg();
+  autoSaveAgg();
 }
 function resetAgg() {
   // 工場出荷時デフォルトに戻す（localStorageは触らない）
