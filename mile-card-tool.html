@@ -7,9 +7,8 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-89LJ02GSGS');
-</script>  
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>マイル最強クレカ診断ツール｜日本在住者向け</title>
@@ -53,7 +52,6 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP','Helvetic
 
 /* ── パネル ── */
 .panel{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;border:1px solid var(--border)}
-/* ② スティッキー左パネル（デスクトップのみ） */
 @media(min-width:641px){
   .panel{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border-dk) transparent}
   .panel::-webkit-scrollbar{width:4px}
@@ -208,6 +206,30 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 .foot{max-width:800px;margin:14px auto 0;background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:13px 17px;font-size:10.5px;color:var(--text-mid);line-height:1.8}
 .foot strong{color:var(--text)}
 .empty{text-align:center;padding:50px 20px;color:var(--text-dim);font-size:14px}
+
+/* ━━━━━━━━ 改悪トラッカー（A-4追加）━━━━━━━━ */
+.tracker{max-width:800px;margin:14px auto;background:var(--surface);border-radius:var(--radius);border:1.5px solid #FDE68A;overflow:hidden;box-shadow:var(--shadow)}
+.tracker-hd{display:flex;align-items:center;gap:10px;padding:12px 18px;background:linear-gradient(135deg,#FEF3C7,#FFFBF5);border-bottom:1px solid #FDE68A;flex-wrap:wrap}
+.tracker-hd-ttl{font-size:14px;font-weight:700;color:#92400E}
+.tracker-hd-sub{font-size:10.5px;color:#A16207;margin-top:1px}
+.tracker-badge{margin-left:auto;font-size:10px;font-weight:700;background:#FEE2E2;color:#991B1B;border:1px solid #FECACA;border-radius:10px;padding:2px 9px;flex-shrink:0}
+.tt{width:100%;border-collapse:collapse;font-size:12px}
+.tt th{background:#FFFBF5;color:#78350F;padding:8px 12px;text-align:left;font-size:10.5px;font-weight:700;border-bottom:1.5px solid #FDE68A;white-space:nowrap}
+.tt td{padding:8px 12px;border-bottom:1px solid #FEF3C7;color:#333;vertical-align:top;line-height:1.55;font-size:11.5px}
+.tt tr:last-child td{border-bottom:none}
+.tt tr:hover td{background:#FFF9EC}
+.tt-date{color:#92400E;white-space:nowrap;font-size:11px}
+.tt-card{font-weight:700;color:var(--text-mid);min-width:100px}
+.imp{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.imp-hi{background:#FEE2E2;color:#991B1B}
+.imp-md{background:#FEF9C3;color:#78350F}
+.tracker-note{padding:9px 18px;font-size:10.5px;color:#92400E;background:#FFFBF5;border-top:1px solid #FDE68A;line-height:1.6}
+
+/* URLコピーボタン */
+.url-share{max-width:800px;margin:0 auto 10px;display:flex;align-items:center;gap:8px;justify-content:flex-end}
+.url-share-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:7px;border:1.5px solid var(--border-dk);font-size:11px;font-weight:600;color:var(--text-mid);background:var(--surface);cursor:pointer;font-family:inherit;transition:all .15s}
+.url-share-btn:hover{border-color:var(--sky);color:var(--sky-dk);background:var(--sky-xlt)}
+.url-share-btn.copied{border-color:var(--emerald);color:var(--emerald);background:#F0FDF4}
 </style>
 </head>
 <body>
@@ -215,6 +237,14 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 <div class="page-header">
   <h1>✈ マイル最強クレカ診断ツール <span class="nb">広告・提携なし</span></h1>
   <p>19枚比較｜年間200〜300万円決済を想定した日本在住者向けマイル獲得シミュレーター｜2026年5月7日更新</p>
+</div>
+
+<!-- ── URLシェアボタン ── -->
+<div class="url-share">
+  <button class="url-share-btn" id="shareBtn" onclick="copyUrl()">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+    この設定をシェア
+  </button>
 </div>
 
 <div class="layout">
@@ -319,6 +349,69 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
   </div>
 </div>
 
+<!-- ━━━━━━━━ 改悪トラッカーセクション（B-1追加）━━━━━━━━ -->
+<div class="tracker">
+  <div class="tracker-hd">
+    <span style="font-size:20px;flex-shrink:0">📉</span>
+    <div>
+      <div class="tracker-hd-ttl">主要カード 改悪トラッカー</div>
+      <div class="tracker-hd-sub">2024〜2026年 実施済み改悪の記録</div>
+    </div>
+    <span class="tracker-badge">随時更新</span>
+  </div>
+  <div style="overflow-x:auto">
+    <table class="tt">
+      <thead>
+        <tr>
+          <th style="min-width:72px">年月</th>
+          <th style="min-width:110px">カード</th>
+          <th>変更内容</th>
+          <th style="min-width:65px">影響度</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="tt-date">2025年10月</td>
+          <td class="tt-card">MBアメックス プレミアム</td>
+          <td>年会費49,500→82,500円（+67%）、無料宿泊条件150万→400万円、公共料金・国税の還元率1.0%→0.5%</td>
+          <td><span class="imp imp-hi">🔴 大</span></td>
+        </tr>
+        <tr>
+          <td class="tt-date">2025年10月</td>
+          <td class="tt-card">MBアメックス（一般）</td>
+          <td>公共料金・国税・事業用決済の還元率1.0%→0.5%に引き下げ</td>
+          <td><span class="imp imp-md">🟡 中</span></td>
+        </tr>
+        <tr>
+          <td class="tt-date">2025年6月</td>
+          <td class="tt-card">MBアメックス プレミアム</td>
+          <td>国内ラウンジ縮小（2025年6月1日以降、国内16空港＋ハワイ1空港のみ対応・同伴者1名まで無料）</td>
+          <td><span class="imp imp-md">🟡 中</span></td>
+        </tr>
+        <tr>
+          <td class="tt-date">2025年4月</td>
+          <td class="tt-card">ダイナースクラブ</td>
+          <td>国内空港レストラン等のPP提携施設が利用不可に。ラウンジ本体・海外施設は引き続き利用可</td>
+          <td><span class="imp imp-md">🟡 中</span></td>
+        </tr>
+        <tr>
+          <td class="tt-date">2025年1月</td>
+          <td class="tt-card">楽天プレミアムカード</td>
+          <td>プライオリティ・パス：無制限→年5回まで無料（2025年1月15日適用）、6回目以降$35/回</td>
+          <td><span class="imp imp-hi">🔴 大</span></td>
+        </tr>
+        <tr>
+          <td class="tt-date">2024年10月</td>
+          <td class="tt-card">三菱UFJプラチナ アメックス</td>
+          <td>国内外の空港レストラン・リフレッシュ施設が利用不可に（ラウンジ本体は引き続き利用可）</td>
+          <td><span class="imp imp-md">🟡 中</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="tracker-note">⚠ 編集部把握分のみ掲載。変更内容の詳細・最新情報は各カード会社の公式発表をご確認ください。</div>
+</div>
+
 <div class="foot">
   <strong>⚠ 重要事項</strong><br>
   ① 「実質おトク額」＝獲得マイル×設定した1マイルの価値（円）－年会費。マイルの価値は利用方法（エコノミー2〜3円・ビジネス5〜7円・ファースト8〜10円）により大きく異なります。<br>
@@ -364,13 +457,13 @@ const GLBL={
 };
 function mbmi(pt){const b=Math.floor(pt/60000);return b*25000+Math.round((pt%60000)*(20000/60000))}
 
-// ━━━━━━━━ カードデータ（17枚） ━━━━━━━━
+// ━━━━━━━━ カードデータ（19枚） ━━━━━━━━
 const CARDS=[
   {
     id:'mb-pre',name:'マリオットBonvoy アメックスプレミアム',issuer:'American Express',
     sq:'マリオットBonvoyアメックスプレミアムカード 公式サイト',
     dkt:'マリオット ボンヴォイ アメリカン エキスプレス プレミアム',
-    psType:'referral', // referral=紹介特典有利 / psite=ポイントサイト有利
+    psType:'referral',
     fee:82500,feeNote:'2025年8月21日以降の新規入会者（旧49,500円から改定）',ac:'linear-gradient(90deg,#7C3AED,#F97316)',
     brands:['AMEX'],
     rates:{ANA:1.25,JAL:1.25,KF:1.25,MB:3.0,ALL:1.25},
@@ -543,408 +636,517 @@ const CARDS=[
     bonusHistory:[{p:'2025年後半',t:'入会特典3,000〜5,000円相当。低コストでJALマイルを始める選択肢として注目される。'},{p:'2025年前半',t:'同水準。セゾンプラチナとの比較でコスト重視の選択として選ばれるケースが多い。'}],
   },
   {
-    id:'diners',name:'ダイナースクラブカード',issuer:'ダイナースクラブ（三井住友トラスト）',
+    id:'diners',name:'ダイナースクラブカード',issuer:'Citi（ダイナースクラブ）',
     sq:'ダイナースクラブカード 公式サイト',
-    dkt:'ダイナースクラブカード',psType:'psite',
-    fee:29700,feeNote:'初年度年会費無料キャンペーン実施中（時期により変動）',ac:'linear-gradient(90deg,#334155,#475569)',
+    dkt:'ダイナース クラブ カード',psType:'psite',
+    fee:24200,feeNote:'ダイナースグローバルマイレージ（年6,600円）加入が1.0%換算の前提。年間移行上限40,000マイル/ANA。',ac:'linear-gradient(90deg,#374151,#6B7280)',
     brands:['Diners'],
-    rates:{ANA:1.0,JAL:0.4,KF:0,MB:0,ALL:1.0},
-    milesCalc(man,t){const r={ANA:.010,JAL:.004,ALL:.010}[t]||0;return man*10000*r},
-    pp:'warn',noExp:false,ins:true,multi:false,hotel:false,freeNight:null,
-    lounge:'ダイナース独自のPP提携ラウンジサービス：国内外1,700か所以上。国内カードラウンジは無制限無料。海外ラウンジは本会員・家族会員のカードごとにそれぞれ年10回まで無料（11回目以降3,500円/回）。2025年4月より国内の空港レストラン等は利用不可（ラウンジ本体・海外施設は引き続き可）。',
-    desc:'ANA:1.0%（1,000pt=1,000ANAマイル・年40,000マイル上限）、JAL:0.4%（2,500pt=1,000JALマイル・上限なし）。マイル移行にはグローバルマイレージ参加（年6,600円）が必要。グルメ特典（高級レストラン優待）・ゴルフ優待・コンシェルジュが充実。マイル効率より「ライフスタイル特典」を重視する人向け。',
-    alerts:[{d:'注意',t:'マイル移行にはダイナースグローバルマイレージ（年6,600円）への参加が必要。ANA:年40,000マイルの移行上限あり。JALは上限なし。純粋なマイル効率目的ではなく、特典・ステータス目的で選ぶカード。'}],
-    outlook:{risk:'low',items:[{y:'安定要素',i:'✅',t:'ダイナースブランドの安定性は高い。グルメ・ゴルフ特典は継続維持見込み。'},{y:'注意点',i:'⚠️',t:'Mastercardとの提携（コンパニオンカード）で国際利用の利便性はあるが、加盟店数の少なさは課題。'}]},
-    referral:{r:'ダイナースの紹介プログラムは限定的。主要なマイラーコミュニティよりは特典・ステータス重視の層に向けたカード。',c:'紹介特典の情報は乏しい。公式サイトで最新情報確認を。'},
-    bonusCurrent:{p:'2026年現在',t:'初年度無料（通常29,700円）＋入会ボーナス数千円相当のポイント付与。年200万円決済で年間8,000マイル（0.4%）。'},
-    bonusHistory:[{p:'2025年後半',t:'初年度無料キャンペーン継続。マイル効率より特典重視の陸マイラー上位層に訴求。'},{p:'2025年前半',t:'同水準。グルメ特典目的での保有が主流。'}],
+    rates:{ANA:1.0,JAL:1.0,KF:1.0,MB:0,ALL:1.0},
+    milesCalc(man,t){const r={ANA:.010,JAL:.010,KF:.010,ALL:.010}[t]||0;return man*10000*r},
+    pp:'warn',noExp:true,ins:true,multi:true,hotel:false,freeNight:null,
+    lounge:'PP付帯（独自サービス）。100か国以上1,700か所以上の空港ラウンジを利用可能。なお2025年4月より国内空港レストラン・カフェ等のPP提携施設は利用不可（ラウンジ本体・海外施設は引き続き利用可）。ダイナース独自ラウンジサービス（ダイナースクラブ ラウンジ）も付帯。',
+    desc:'ANA/JAL/KFすべてに1.0%換算（グローバルマイレージ年6,600円必要・上限40,000マイル/年）。多様なエグゼクティブ特典付帯。Dinersブランドの加盟店制限に注意。',
+    alerts:[{d:'2025年4月改悪',t:'国内空港レストラン・カフェ等のPP提携施設（飲食含む）が利用不可に。ラウンジ本体は引き続き利用可。'}],
+    outlook:{risk:'mid',items:[{y:'注意点',i:'⚠️',t:'ダイナースブランドは一部加盟店で使えない場合あり。グローバルマイレージ費用の値上げリスクあり。'},{y:'安定要素',i:'✅',t:'Citiとダイナースの提携は安定。上級会員向けの付帯サービスは差別化要因として維持見込み。'}]},
+    referral:{r:'ダイナースクラブの紹介プログラム経由で入会ボーナス3,000〜5,000マイル相当の付与実績あり。',c:'常設ではなく期間限定。ダイナースクラブ公式で最新情報確認を。'},
+    bonusCurrent:{p:'2026年現在',t:'入会特典最大30,000マイル相当（キャンペーン時）。200〜300万円/年ならANA20,000〜30,000マイル獲得可能。'},
+    bonusHistory:[{p:'2025年後半',t:'入会ボーナス20,000〜30,000マイル相当。グローバルマイレージ加入で複数マイルに分散獲得可能。'},{p:'2025年前半',t:'同水準。マルチマイル対応の強みが評価される。'}],
   },
   {
     id:'mb-std',name:'マリオットBonvoy アメックス（一般）',issuer:'American Express',
-    sq:'マリオットBonvoyアメリカンエキスプレスカード一般 公式サイト',
-    dkt:'マリオット ボンヴォイ アメリカンエキスプレス',psType:'referral',
-    fee:34100,feeNote:null,ac:'linear-gradient(90deg,#7C3AED,#EC4899)',
+    sq:'マリオットBonvoyアメリカンエキスプレスカード 公式サイト',
+    dkt:'マリオット ボンヴォイ アメリカンエキスプレス 一般',psType:'referral',
+    fee:23100,feeNote:'2025年10月より公共料金・国税の還元率0.5%（改悪）。',ac:'linear-gradient(90deg,#7C3AED,#A78BFA)',
     brands:['AMEX'],
-    rates:{ANA:0.833,JAL:0.833,KF:0.833,MB:2.0,ALL:0.833},
+    rates:{ANA:1.0,JAL:1.0,KF:1.0,MB:2.0,ALL:1.0},
     milesCalc(man,t){const pt=man*10000*.02;return t==='MB'?pt:mbmi(pt)},
-    pp:'no',noExp:true,ins:true,multi:true,hotel:true,freeNight:null,
-    lounge:'国内主要空港カードラウンジのみ（羽田・成田等主要空港）。PP等の海外空港ラウンジサービス付帯なし。マリオット上級会員資格（ゴールドエリート）でホテルラウンジ利用可。',
-    desc:'100円につき2MBポイント獲得（プレミアムは3pt）。60,000pt貯まるごとにボーナス込み25,000マイルに変換可（最大0.833%相当）。60,000ptに満たない端数はボーナスなし換算（0.667%相当）。ポイント移行先は40社以上。マリオットポイントを学ぶ入門として。',
-    alerts:[{d:'2025年10月改悪',t:'公共料金・国税・事業用決済のポイント還元率が1.0%→0.5%に引き下げ。'}],
-    outlook:{risk:'high',items:[{y:'注意点',i:'⚠️',t:'プレミアム大改悪に続き、一般カードの年会費改定も視野に。プレミアムとの差別化が薄まるリスク。'},{y:'安定要素',i:'✅',t:'MBポイント自体の多様な移行先は維持見込み。ホテルポイントとして使う分には価値あり。'}]},
-    referral:{r:'AMEXのRefer a Friend経由で追加5,000〜10,000MB pt付与の実績あり。',c:'キャンペーン時のみ。一般カードへの紹介リンクはプレミアムより出回りが少ない。'},
-    bonusCurrent:{p:'2026年1〜4月',t:'入会後6ヶ月以内100万円利用で合計最大45,000MB pt（≈18,750マイル）。'},
-    bonusHistory:[{p:'2025年後半',t:'同条件で45,000MB pt。改悪前は事業決済でも1%でビジネスユーザーに有利だった。'},{p:'2025年前半',t:'旧年会費（23,100円）から34,100円への値上げ後。プレミアムとの差別化が薄れた時期。'}],
+    pp:'no',noExp:true,ins:true,multi:true,hotel:false,freeNight:null,
+    lounge:'国内主要空港カードラウンジのみ。PP等の海外ラウンジサービス付帯なし。',
+    desc:'MBプレミアムの廉価版（23,100円）。ANA/JAL/KFに1.0%換算（60,000pt=25,000マイル変換時）。MBプレミアムより15,000pt/年の付与差があるが、コストは59,400円安い。マイル移行先の柔軟性はプレミアムと同等。',
+    alerts:[{d:'2025年10月改悪',t:'公共料金・国税・事業用決済の還元率が1.0%→0.5%に引き下げ。通常決済は従来通り2pt/100円を維持。'}],
+    outlook:{risk:'mid',items:[{y:'注意点',i:'⚠️',t:'プレミアムカードに続き一般カードも改悪。今後のさらなる還元率引き下げリスクあり。'},{y:'安定要素',i:'✅',t:'MBポイント自体の移行先（40社以上）の多様性は維持見込み。コスト対比ではプレミアムより合理的な場合あり。'}]},
+    referral:{r:'AMEXのRefer a Friend経由で追加5,000〜10,000MB pt付与の過去実績あり。',c:'紹介者と被紹介者の両方にボーナスがある場合が多い。陸マイラー系コミュニティでリンクを探すと良い。'},
+    bonusCurrent:{p:'2026年現在',t:'入会後6ヶ月以内100万円利用で最大45,000MB pt（キャンペーン時）。200〜300万円/年なら条件達成は容易。'},
+    bonusHistory:[{p:'2025年後半',t:'同様の条件で35,000〜45,000MB pt。プレミアムの大型改悪後、コスト重視で一般に乗り換える動きも。'},{p:'2025年前半',t:'入会ボーナス30,000〜45,000MB pt。年会費23,100円に対して入会年は実質黒字になる水準。'}],
   },
   {
     id:'hilton',name:'ヒルトンHonors アメックスカード',issuer:'American Express',
-    sq:'ヒルトンHonorsアメリカンエキスプレスカード 公式サイト',
-    dkt:'ヒルトン オナーズ アメリカンエキスプレス',psType:'referral',
-    fee:17600,feeNote:'ヒルトンHonorsポイントはマイル換算率が低い（0.20%）。ホテル宿泊での直接利用が高価値。',ac:'linear-gradient(90deg,#1D4ED8,#7C3AED)',
+    sq:'ヒルトンオナーズアメリカンエキスプレスカード 公式サイト',
+    dkt:'ヒルトン オナーズ アメックス',psType:'referral',
+    fee:16500,feeNote:'マイル換算効率：100円=3pt×10%（ポイント→マイル変換率）＝0.3マイル/100円（0.3%）と低効率。ホテル宿泊目的が前提のカード。',ac:'linear-gradient(90deg,#0EA5E9,#164E63)',
     brands:['AMEX'],
-    rates:{ANA:0.20,JAL:0.20,KF:0.20,MB:2.0,ALL:0.20},
-    milesCalc(man,t){const r=t==='MB'?.020:.002;return man*10000*r},
-    pp:'no',noExp:true,ins:true,multi:false,hotel:true,freeNight:null,
-    lounge:'国内主要空港カードラウンジ（羽田・成田・伊丹・関西・福岡等）。PP等の海外空港ラウンジサービス付帯なし。ヒルトンゴールドステータスでヒルトンホテルのエグゼクティブラウンジ利用可。',
-    desc:'ヒルトンゴールドエリート会員資格自動付帯（朝食2名無料・客室アップグレード）。マイル換算は非効率のため、ヒルトン系列ホテル頻繁利用者専用カード。MBと対になる選択肢。',
-    alerts:[{d:'注意',t:'マイルへの換算率は低い（10,000pt→1,000マイル=0.2%相当。100円=2ヒルトンポイント）。ホテルポイント直接利用で1泊あたり0.4〜0.6セント/pt相当の価値が出る。マイル目的では不向き。'}],
-    outlook:{risk:'low',items:[{y:'安定要素',i:'✅',t:'ヒルトンとAMEXの提携は安定。ゴールド自動付帯の価値は維持見込み。'},{y:'注意点',i:'⚠️',t:'ヒルトンの特典航空券プログラムはMAの（MBとは異なり）マイル換算効率が低いため、マイラーにはMBが優位。'}]},
-    referral:{r:'AMEXのRefer a Friend経由で追加ヒルトンHonorsポイント付与の実績あり。',c:'ホテル利用目的のカードのため、マイラーよりホテル滞在重視の層向け。'},
-    bonusCurrent:{p:'2026年現在',t:'入会後条件達成で最大50,000〜80,000ヒルトンHonorsポイント付与（≈5〜8泊分相当のポイント）。'},
-    bonusHistory:[{p:'2025年後半',t:'同様の入会ボーナス。MBとヒルトンを比較してライフスタイルに合った方を選ぶのが重要。'},{p:'2025年前半',t:'同水準。ヒルトン系列の頻繁利用者にとってゴールド資格の価値は大きい。'}],
+    rates:{ANA:0.3,JAL:0.3,KF:0.3,MB:0,ALL:0.3},
+    milesCalc(man,t){const r={ANA:.003,JAL:.003,KF:.003,ALL:.003}[t]||0;return man*10000*r},
+    pp:'warn',noExp:true,ins:false,multi:true,hotel:false,freeNight:null,
+    lounge:'グローバル・ラウンジ・コレクション（AMEXのPPスタンダード資格）。年間2回まで無料、3回目以降$35/回。',
+    desc:'マイル還元率は低い（0.3%）が、ヒルトンポイント（100円=3pt）で直接ホテル予約するなら強力。シンガポールのHilton Singapore Orchard・Conrad Singapore Orchardで高コスパな宿泊が可能。マイル目的のカードではない点に注意。',
+    alerts:[],
+    outlook:{risk:'mid',items:[{y:'注意点',i:'⚠️',t:'ヒルトンの動的価格制導入でポイント価値が変動。マイル換算は非効率のため、ホテル利用が多い人向け。'},{y:'安定要素',i:'✅',t:'AMEXとヒルトンの提携は安定。ヒルトンポイントの多様な利用法は維持見込み。'}]},
+    referral:{r:'AMEXのRefer a Friend経由で追加5,000〜10,000ヒルトンポイント付与の実績あり。',c:'ヒルトン会員番号との紐付けが必要。陸マイラー系コミュニティで紹介リンクを入手できる場合あり。'},
+    bonusCurrent:{p:'2026年現在',t:'入会後6ヶ月以内に条件達成で最大55,000ヒルトンポイント（キャンペーン時）。シンガポール中級ホテル1泊分相当。'},
+    bonusHistory:[{p:'2025年後半',t:'45,000〜55,000ヒルトンポイントの入会ボーナス。マイルよりもヒルトン宿泊特典を狙う層に人気。'},{p:'2025年前半',t:'同水準。ヒルトンコンラッドSINGAPORE宿泊実現のためのポイント積算戦略として機能。'}],
   },
   {
-    id:'rakuten-pre',name:'楽天プレミアムカード',issuer:'Visa / Mastercard / JCB / American Express',
+    id:'rakuten-pre',name:'楽天プレミアムカード',issuer:'楽天カード株式会社',
     sq:'楽天プレミアムカード 公式サイト',
-    dkt:'楽天プレミアムカード',psType:'psite',
-    fee:11000,feeNote:'楽天ポイント1.0%→ANAマイル換算50%→実質マイル0.5%。楽天SPU活用者は実質高効率。',ac:'linear-gradient(90deg,#EF4444,#F97316)',
-    brands:['VISA','MC','JCB','AMEX'],
-    rates:{ANA:0.5,JAL:0.5,KF:0,MB:0,ALL:0.5},
-    milesCalc(man,t){const r={ANA:.005,JAL:.005,ALL:.005}[t]||0;return man*10000*r},
-    pp:'warn',noExp:false,ins:true,multi:false,hotel:false,freeNight:null,
-    lounge:'PP付帯（2025年1月改悪：年5回まで無料・6回目以降$35。空港レストラン・リフレッシュ施設利用不可）。国内空港カードラウンジも利用可。',
-    desc:'楽天経済圏ユーザーが最初に検討するカード。楽天ポイント1.0%貯まり、ANA/JALマイルに50%換算。PP年5回付帯（2024年に改悪）。楽天市場のSPU活用と組み合わせると実質高効率になる場合あり。',
-    alerts:[{d:'2025年1月改悪',t:'PPが従来の「無制限」から「年5回まで」に大幅改悪（2025年1月15日適用）。PPを重視する方には他カードを推奨。'}],
-    outlook:{risk:'mid',items:[{y:'注意点',i:'⚠️',t:'PP特典のさらなる改悪（廃止・有料化）のリスクあり。楽天経済圏の改悪傾向が継続中。'},{y:'安定要素',i:'✅',t:'楽天市場でのポイント高倍率（SPU）は継続中。楽天ヘビーユーザーには依然として一定の価値。'}]},
-    referral:{r:'楽天カードの友達紹介で紹介者・被紹介者ともにポイント付与（500〜2,000pt程度）の実績あり。',c:'楽天市場での紹介URLシェアが主な入手手段。常時開催。'},
-    bonusCurrent:{p:'2026年現在',t:'入会ボーナス5,000〜10,000楽天pt（常時開催）。200〜300万円/年でANA/JALに年間10,000〜15,000マイル換算。'},
-    bonusHistory:[{p:'2025年後半',t:'同様の5,000〜10,000pt入会ボーナス。PP改悪後も楽天経済圏ユーザーの入門カードとして継続人気。'},{p:'2025年前半',t:'同水準。楽天市場利用者は年会費以上の価値を楽天SPUで回収しやすい。'}],
+    dkt:'楽天プレミアム カード',psType:'psite',
+    fee:11000,feeNote:null,ac:'linear-gradient(90deg,#E11D48,#F97316)',
+    brands:['VISA','JCB','MC','AMEX'],
+    rates:{ANA:0.5,JAL:0.5,KF:0.5,MB:0,ALL:0.5},
+    milesCalc(man,t){const r={ANA:.005,JAL:.005,KF:.005,ALL:.005}[t]||0;return man*10000*r},
+    pp:'warn',noExp:false,ins:true,multi:true,hotel:false,freeNight:null,
+    lounge:'PP付帯（2025年1月15日適用分より年5回まで無料）。6回目以降$35/回。それ以外のPP改悪前の特典（無制限・レストラン含む）は廃止。',
+    desc:'2025年1月15日よりPP年5回制限に改悪。マイル換算は0.5%（楽天ポイント→ANA/JAL0.5倍）と低効率。楽天市場ヘビーユーザー（SPU対象）向けのカードであり、マイル効率のみでは選びにくい。',
+    alerts:[{d:'2025年1月改悪',t:'プライオリティ・パス：無制限→年5回まで無料に大幅改悪（2025年1月15日適用）。6回目以降$35/回の自己負担が発生。'}],
+    outlook:{risk:'high',items:[{y:'注意点',i:'⚠️',t:'PP改悪後も11,000円でPP5回付帯は低コスト。しかし2〜3回しか使わないなら他のPP付帯カードとのコスト比較を。'},{y:'改善リスク',i:'⚠️',t:'今後さらにPP回数削減（年3回等）のリスクあり。楽天市場で月5〜10万円以上使う人以外はコスパが下がっている。'}]},
+    referral:{r:'楽天カードの友人紹介プログラム経由で入会ボーナス2,000〜3,000ポイント付与実績あり。',c:'楽天会員IDが必要。紹介者・被紹介者双方にポイント付与される形式。'},
+    bonusCurrent:{p:'2026年現在',t:'入会ボーナス3,000〜5,000ポイント（1.5〜2.5マイル相当）。マイル目的ではなくPP目的での取得が主になっている。'},
+    bonusHistory:[{p:'2025年後半',t:'PP改悪後もコスト対比でPP取得手段として一定評価。入会特典3,000〜5,000楽天ポイント。'},{p:'2025年前半',t:'PP改悪前の最後の黄金期。無制限PP最後の取得機会として需要が集中した時期。'}],
   },
   {
-    id:'smcc-gold-nl',name:'三井住友カード ゴールド（NL）',issuer:'Visa / Mastercard',
+    id:'smcc-gold-nl',name:'三井住友カード ゴールド（NL）',issuer:'三井住友カード',
     sq:'三井住友カードゴールドNL 公式サイト',
-    dkt:'三井住友カード ゴールド NL',psType:'psite',
-    fee:5500,feeNote:'年100万円以上決済で翌年以降永年無料（200万円/年なら2年目から無料）。',ac:'linear-gradient(90deg,#22C55E,#0EA5E9)',
+    dkt:'三井住友 ゴールドNL',psType:'psite',
+    fee:5500,feeNote:'初年度5,500円。年100万円以上利用で翌年以降永年無料。ただし年間ボーナスポイント（10,000pt相当）はゴールド特典として維持。200〜300万円決済なら条件達成容易。',ac:'linear-gradient(90deg,#16A34A,#0EA5E9)',
     brands:['VISA','MC'],
-    rates:{ANA:0.3,JAL:0,KF:0,MB:0,ALL:0.3},
-    milesCalc(man,t){return(t==='ANA'||t==='ALL')?man*10000*.003:0},
-    pp:'no',noExp:true,ins:true,multi:false,hotel:false,freeNight:null,
+    rates:{ANA:0.5,JAL:0.5,KF:0.5,MB:0,ALL:0.5},
+    milesCalc(man,t){
+      const r={ANA:.005,JAL:.005,KF:.005,ALL:.005}[t]||0;
+      const baseM=man*10000*r;
+      const bonusMiles=100*r*10000;
+      return Math.round(baseM+bonusMiles);
+    },
+    pp:'no',noExp:false,ins:true,multi:false,hotel:false,freeNight:null,
     lounge:'国内主要空港カードラウンジのみ（羽田・成田・伊丹・関西・福岡・新千歳・那覇等）。PP等の海外空港ラウンジサービス付帯なし。',
-    desc:'年100万円以上決済で永年無料（年会費5,500円→0円）が最大の魅力。Vポイント→ANAマイル0.6倍換算で実質0.3%。マイル効率は低いが、コンビニ・マクドナルドで最大7%還元＋年会費実質無料の組み合わせが人気。',
-    alerts:[{d:'ポイント',t:'Vポイント→ANAマイル換算は60%（0.6倍）。100円=0.5pt×0.6=0.3マイル。マイル専用カードより効率は落ちるが年会費無料化で実質コストゼロ。'}],
-    outlook:{risk:'low',items:[{y:'安定要素',i:'✅',t:'三井住友カードの安定性は高い。年100万円条件での永年無料は維持見込み。'},{y:'改善期待',i:'🔼',t:'Vポイント→ANAマイルの換算率改善（0.6倍→1倍）が実現すれば大幅に価値向上。現状では期待のみ。'}]},
-    referral:{r:'三井住友カードの紹介キャンペーンで追加Vポイント付与の実績あり。',c:'Vポイントはマイルに換算すると0.6倍なため、紹介ボーナスのマイル換算効率は低い。'},
-    bonusCurrent:{p:'2026年現在',t:'入会＋年100万円利用達成で10,000pt（≈6,000ANAマイル相当）ボーナス。200〜300万円/年なら初年度のみ5,500円のコストで永年無料化。'},
-    bonusHistory:[{p:'2025年後半',t:'同条件で10,000pt（初年度限定ボーナス）。年会費実質無料化でサブカードとして保有する陸マイラーが増加。'},{p:'2025年前半',t:'同水準。コンビニ7%還元目的での保有が主な動機。マイル効率よりキャッシュバック的な使い方が主流。'}],
+    desc:'条件達成後は実質無料カード。ANA/JAL移行は0.5%（SMCCのVポイント→ANAは0.5pt換算・60%効率）と低効率。年間ボーナスポイント10,000pt（=ANAマイル5,000相当）が強み。マイル効率よりコスト最優先の人向け。',
+    alerts:[],
+    outlook:{risk:'low',items:[{y:'安定要素',i:'✅',t:'三井住友カード自体の安定性は高い。年100万円条件の永年無料化は維持見込み。'},{y:'注意点',i:'⚠️',t:'マイル換算効率が他のゴールドカードと比較して低い点は変わらない。VポイントをSMCCポイントに換えてからマイル移行する手順が必要。'}]},
+    referral:{r:'三井住友カードの友人紹介プログラム経由で1,000〜5,000Vポイント付与実績あり。',c:'常設ではなく期間限定。SMCC公式アプリ・サイトで最新情報確認を。'},
+    bonusCurrent:{p:'2026年現在',t:'入会ボーナス最大10,000Vポイント（=5,000ANAマイル相当）。年100万円達成で10,000ptのボーナスポイントも別途付与（毎年）。'},
+    bonusHistory:[{p:'2025年後半',t:'入会ボーナス8,000〜12,000Vポイント。永年無料化条件の達成しやすさから低コスト派に根強い人気。'},{p:'2025年前半',t:'同水準。コスト最優先・ANAサブカードとしての利用が多い。'}],
   },
   {
     id:'jcb-gold',name:'JCBゴールドカード',issuer:'JCB',
     sq:'JCBゴールドカード 公式サイト',
-    dkt:'JCBゴールド',psType:'psite',
-    fee:11000,feeNote:'初年度年会費無料。マイル換算率は低い（約0.3%）。JCBプラチナへの招待（PP付帯）を狙う登竜門カード。',ac:'linear-gradient(90deg,#16A34A,#0EA5E9)',
+    dkt:'JCBゴールド カード',psType:'psite',
+    fee:11000,feeNote:null,ac:'linear-gradient(90deg,#16A34A,#0EA5E9)',
     brands:['JCB'],
     rates:{ANA:0.3,JAL:0.3,KF:0,MB:0,ALL:0.3},
     milesCalc(man,t){const r={ANA:.003,JAL:.003,ALL:.003}[t]||0;return man*10000*r},
-    pp:'warn',noExp:false,ins:true,multi:false,hotel:false,freeNight:null,
-    lounge:'国内主要空港カードラウンジ無料（成田等でJCB独自ラウンジ含む）。ラウンジキー（LoungeKey）付帯で世界1,300か所以上の海外空港ラウンジを$35/回で利用可（有料）。PP本体の付帯なし。JCBプラチナ招待後はPP無制限付帯となる。',
-    desc:'マイル換算率は約0.3%と低いが、2年以上の利用実績でJCBプラチナへの招待（PP無制限付帯）を狙える登竜門。スタバ・Amazon等の特約店で高倍率ポイント還元が魅力。マイル効率より招待目的。',
-    alerts:[{d:'注意',t:'マイル目的で選ぶカードではない。JCBプラチナへの招待（PP付帯・年27,500円）を目標とした2〜3年の足がかりカードとして位置づけを。'}],
-    outlook:{risk:'low',items:[{y:'安定要素',i:'✅',t:'JCBの安定性は高い。プラチナ招待制度は維持見込み。'},{y:'注意点',i:'⚠️',t:'プラチナへの招待条件（年間利用額等）が厳格化されるリスクあり。招待が保証されるわけではない。'}]},
-    referral:{r:'JCBの友達紹介キャンペーン（不定期）経由で1,000〜3,000マイル相当のボーナス付与実績あり。',c:'常設ではなく期間限定。マイル目的よりプラチナ招待目的での保有が主流。'},
-    bonusCurrent:{p:'2026年現在（初年度無料）',t:'初年度無料＋入会ボーナス数千円相当。スタバ10倍・Amazon3倍などの特約店活用で実質コストを下げられる。'},
-    bonusHistory:[{p:'2025年後半',t:'同条件。プラチナ招待を目指す初心者の最初のJCBカードとして選ばれるケースが多い。'},{p:'2025年前半',t:'同水準。初年度無料のため、まず試してからプラチナを目指すという選択が合理的。'}],
+    pp:'no',noExp:false,ins:true,multi:false,hotel:false,freeNight:null,
+    lounge:'国内主要空港カードラウンジのみ（JCBゴールドサービス）。PP等の海外空港ラウンジサービス付帯なし。',
+    desc:'マイル換算0.3%（OkiDokiポイント→ANA/JAL変換は1pt=3マイルで、還元率が低い）。JCBゴールド自体は旅行保険が充実しているが、マイル積み立て目的では効率が劣後する。ソラチカゴールドへの乗り換えを推奨。',
+    alerts:[],
+    outlook:{risk:'low',items:[{y:'安定要素',i:'✅',t:'JCBの長期安定ブランド。旅行保険・国内ラウンジは安定維持。'},{y:'注意点',i:'⚠️',t:'マイル換算0.3%はソラチカゴールド（同年会費・1.0%）と比較して大幅に不利。マイル目的ならソラチカへの乗り換えが合理的。'}]},
+    referral:{r:'JCBの友人紹介プログラム（不定期）で1,000〜3,000マイル相当の付与実績あり。',c:'JCBカード全般に適用される場合あり。JCB公式サイトで最新情報確認を。'},
+    bonusCurrent:{p:'2026年現在',t:'入会ボーナス最大20,000円相当（キャンペーン時）。マイル換算0.3%のため入会ボーナス以外での積み立ては非効率。'},
+    bonusHistory:[{p:'2025年後半',t:'入会特典15,000〜20,000円相当。JCBゴールドゆえの入会特典は手厚いが、通常決済でのマイル効率が課題。'},{p:'2025年前半',t:'同水準。ソラチカゴールドへの乗り換え導入として評価されるケースもある。'}],
   },
   {
     id:'amex-green',name:'アメックスグリーンカード',issuer:'American Express',
     sq:'アメリカンエキスプレスグリーンカード 公式サイト',
-    dkt:'アメリカンエキスプレス グリーンカード',psType:'referral',
-    fee:13200,feeNote:'ANA移行は「MRプラス」年3,300円＋「MRアナコース」年5,500円が必要（合計22,000円）。',ac:'linear-gradient(90deg,#16A34A,#0EA5E9)',
+    dkt:'アメックス グリーン カード',psType:'referral',
+    fee:13200,feeNote:'MRポイント→マイル移行コース加入が必要（有料）。ANA移行は1,000pt→1,000マイル（移行コースプレミアム：年6,600円）。',ac:'linear-gradient(90deg,#16A34A,#0EA5E9)',
     brands:['AMEX'],
     rates:{ANA:1.0,JAL:0.4,KF:0.8,MB:0,ALL:1.0},
-    milesCalc(man,t){const r={ANA:.010,JAL:.004,KF:.008,ALL:.010}[t]||0;return man*10000*r},
-    pp:'warn',noExp:true,ins:true,multi:true,hotel:false,freeNight:null,
-    lounge:'グローバル・ラウンジ・コレクション（PPスタンダード会員資格付帯）。海外ラウンジ利用は$35/回が自己負担（スタンダード会員）。国内主要空港カードラウンジは追加費用なし。',
-    desc:'AMEXを最安値で始めるマルチマイル入門カード。ANA/JAL/KF等14社に移行可能。ただしANA移行にはMRプラス（3,300円）＋ANAコース（5,500円）が必要で実質年22,000円。ゴールドプリファードへのステップアップを前提に。',
-    alerts:[{d:'注意',t:'ANA移行には年3,300円（MRプラス）＋年5,500円（ANAコース）が別途必要。MRプラスなしでは1pt→0.5マイル（0.5%）に低下。JAL移行は2,500pt→1,000マイルと低効率（0.4%）。'}],
-    outlook:{risk:'low',items:[{y:'安定要素',i:'✅',t:'AMEXプロパーカードとして安定。MR移行先の多様性は維持見込み。'},{y:'注意点',i:'⚠️',t:'年会費コスト（実質22,000円）に対してゴールドプリファード（45,100円）との差が縮まるため、最初からゴールドを選ぶ選択も合理的。'}]},
-    referral:{r:'AMEXのRefer a Friend経由で追加MRポイント（3,000〜8,000pt）付与の実績あり。',c:'グリーンへの紹介リンクはゴールドより入手しやすい場合あり。ブログ・X(旧Twitter)で検索を。'},
-    bonusCurrent:{p:'2026年現在',t:'入会ボーナス最大24,000円相当（キャンペーン時）。200〜300万円/年の決済でANA年間20,000〜30,000マイル（実質年会費22,000円）。'},
-    bonusHistory:[{p:'2025年後半',t:'入会ボーナス20,000〜24,000円相当。AMEXを低コストで試す入門カードとして選ばれる。'},{p:'2025年前半',t:'同水準。ゴールドプリファードへの乗り換えを前提とした「お試し」利用が多い時期。'}],
+    milesCalc(man,t){
+      const r={ANA:.010,JAL:.004,KF:.008,ALL:.010}[t]||0;
+      return man*10000*r;
+    },
+    pp:'warn',noExp:true,ins:false,multi:true,hotel:false,freeNight:null,
+    lounge:'グローバル・ラウンジ・コレクション（PPスタンダード資格）付帯。年間2回まで無料、3回目以降$35/回。国内主要空港カードラウンジは同伴者有料（本人のみ無料）。',
+    desc:'13,200円でANA1.0%（移行コスト込み）。ANAアメックスゴールド（34,100円）より低コスト。旅行保険が自動付帯でない点に注意。ポイントの多様な移行先（14社以上）はゴールドと同様。',
+    alerts:[],
+    outlook:{risk:'low',items:[{y:'安定要素',i:'✅',t:'AMEXグリーンは入門カードとして安定。改悪リスクは低い。'},{y:'注意点',i:'⚠️',t:'旅行保険は自動付帯ではなく、利用付帯のみ。旅行保険重視の方はゴールドクラスを選択推奨。'}]},
+    referral:{r:'AMEXのRefer a Friend経由で追加3,000〜10,000pt付与の実績あり。',c:'グリーン・ゴールド・プラチナと紹介対象カードが異なる場合あり。AMEXアプリで確認を。'},
+    bonusCurrent:{p:'2026年現在',t:'入会後3ヶ月以内30万円利用で最大40,000pt相当（キャンペーン時）。200〜300万円/年なら条件達成は容易。'},
+    bonusHistory:[{p:'2025年後半',t:'入会特典30,000〜40,000pt。低コストでAMEXを始める選択肢として一定の支持あり。'},{p:'2025年前半',t:'同水準。コストを抑えてマルチマイル対応のAMEXを持ちたい人の入門カードとして機能。'}],
   },
-  // ── SQクリスフライヤー提携カード（日本在住者向け） ──
+  // ── SQクリスフライヤー提携カード ──
   {
     id:'sq-jcb-gold',name:'SQクリスフライヤーJCBゴールドカード',issuer:'JCB（シンガポール航空）',
-    sq:'シンガポール航空クリスフライヤーJCBゴールドカード 公式サイト',
-    dkt:'シンガポール航空 クリスフライヤー JCB ゴールド',psType:'psite',
-    fee:11000,feeNote:'クラシックカード（年会費2,200円）も同じ100円=1KFマイルだが、旅行保険が大幅に低く入会ボーナスも少ない（2,000マイル）。200万円以上の決済者にはゴールドを推奨。',
-    ac:'linear-gradient(90deg,#0EA5E9,#7C3AED)',
+    sq:'SQクリスフライヤーJCBゴールドカード 公式サイト',
+    dkt:'シンガポール航空 KrisFlyer JCBゴールド',psType:'psite',
+    fee:11000,feeNote:null,ac:'linear-gradient(90deg,#0C2340,#F97316)',
     brands:['JCB'],
     rates:{ANA:0,JAL:0,KF:1.0,MB:0,ALL:1.0},
     milesCalc(man,t){return(t==='KF'||t==='ALL')?man*10000*.010:0},
-    pp:'warn',noExp:false,ins:true,multi:false,hotel:false,freeNight:null,
-    lounge:'国内主要空港カードラウンジ無料（JCBゴールドラウンジ含む）。ラウンジキー（LoungeKey）付帯で世界1,300か所以上の海外空港ラウンジを$35/回で利用可（有料）。PP本体の付帯なし。',
-    desc:'KFマイルが100円=1マイルで直接付与（中間変換不要・変換費用ゼロ）。年会費11,000円でKF専用カードとして最もシンプル。旅行保険最高1億円（国内外）。KF一択かつ変換ロスを嫌う方の最適解。KFマイルは36ヶ月失効に注意。',
-    alerts:[{d:'注意',t:'KFマイルの有効期限は積算月から36ヶ月（3年）。ANA・JAL等への移行は一切不可。KF特化の純粋なシングルマイルカード。マリオット等への移行も不可。'}],
-    outlook:{risk:'low',items:[{y:'安定要素',i:'✅',t:'SQとJCBの日本向け長期提携。直接付与のシンプルな仕組みは大幅改悪リスクが低い。'},{y:'注意点',i:'⚠️',t:'KFマイルの価値変動（SQの特典改定）がリスク。移行先がKFのみのため分散不可。'}]},
-    referral:{r:'JCBの友達紹介キャンペーン（不定期）経由で追加ボーナスマイルの実績あり。',c:'常設ではなく期間限定。JCB公式サイトで最新情報確認を。'},
-    bonusCurrent:{p:'2026年現在',t:'新規入会で5,000ボーナスKFマイル。年200万円決済で年間20,000KFマイル＋入会ボーナス5,000マイル。'},
-    bonusHistory:[{p:'2025年後半',t:'同水準の5,000マイル入会ボーナス。KF直接付与の安定した仕組みを維持。'},{p:'2025年前半',t:'同水準。SQ搭乗でのマイル加算と組み合わせてKFマイルを効率的に積める。'}],
+    pp:'no',noExp:false,ins:true,multi:false,hotel:false,freeNight:null,
+    lounge:'国内主要空港カードラウンジ（JCBゴールドサービス）のみ。PP等の海外空港ラウンジサービス付帯なし。KrisFlyer上位資格（シルバー・ゴールド・PPS）はSQフライト搭乗マイル累積による別資格で、本カードでは取得不可。',
+    desc:'KFマイルが直接付与（変換費用ゼロ・ステップなし）。シンガポール航空ビジネスクラス（東京-SIN往復3名：327,000マイル必要）を目指す最もシンプルなルート。KrisFlyer有効期限3年のため計画的に利用が必要。日本在住者向けKF直接付与カードとして国内唯一クラスの存在。',
+    alerts:[],
+    outlook:{risk:'low',items:[{y:'安定要素',i:'✅',t:'SQとJCBの長期提携。KFマイル直接付与の仕組みは変更リスクが低い。'},{y:'注意点',i:'⚠️',t:'KrisFlyer有効期限3年の管理が必要。SQが特典航空券レートを改定した場合（2025年11月に実施）に必要マイルが変動。'}]},
+    referral:{r:'JCBの友人紹介キャンペーン（不定期）で追加1,000〜3,000マイル付与実績あり。',c:'SQ公式・JCB公式の両方でキャンペーン情報を確認。ポイントサイト経由との比較も忘れずに。'},
+    bonusCurrent:{p:'2026年現在',t:'入会ボーナス最大5,000KFマイル（キャンペーン時）。200〜300万円/年の決済なら年間20,000〜30,000KFマイル積立可能。'},
+    bonusHistory:[{p:'2025年後半',t:'入会特典3,000〜5,000KFマイル。KFマイル直接付与という希少性から陸マイラーのKF派に人気急上昇中。'},{p:'2025年前半',t:'同水準。シンガポール航空ビジネスクラス目標の人の最有力候補として注目される。'}],
   },
   {
     id:'sq-smbc-visa',name:'SQクリスフライヤーVISAゴールドカード',issuer:'三井住友カード（シンガポール航空）',
-    sq:'シンガポール航空クリスフライヤーVISAゴールドカード 三井住友 公式サイト',
-    dkt:'シンガポール航空 クリスフライヤー VISA ゴールド 三井住友',psType:'psite',
-    fee:11000,feeNote:'クラシックカード（年会費2,200円）も同じ100円=1KFマイル。入会ボーナスはGold・Classic共に2,000マイル。VISAブランドが必須の場合はこちら。',
-    ac:'linear-gradient(90deg,#0EA5E9,#22C55E)',
+    sq:'SQクリスフライヤーVISAゴールドカード 公式サイト',
+    dkt:'シンガポール航空 KrisFlyer VISA ゴールド',psType:'psite',
+    fee:11000,feeNote:null,ac:'linear-gradient(90deg,#0C2340,#E11D48)',
     brands:['VISA'],
     rates:{ANA:0,JAL:0,KF:1.0,MB:0,ALL:1.0},
     milesCalc(man,t){return(t==='KF'||t==='ALL')?man*10000*.010:0},
     pp:'no',noExp:false,ins:true,multi:false,hotel:false,freeNight:null,
-    lounge:'国内主要空港カードラウンジ（三井住友カードゴールド資格相当）。PP等の海外空港ラウンジサービス付帯なし。',
-    desc:'VISAブランドでKFマイル100円=1マイル直接付与。JCBゴールドと同還元率だがVISA加盟店網を活かせる。旅行保険最高5,000万円（国内外）。VISA指定やJCB非対応店をよく使う方のKF専用選択肢。KFマイルは36ヶ月失効に注意。',
-    alerts:[{d:'注意',t:'KFマイルの有効期限は積算月から36ヶ月（3年）。JCBゴールドと比較して入会ボーナスがやや少ない（2,000マイル）。VISAブランドが必要な場合の最有力KF直積みカード。'}],
-    outlook:{risk:'low',items:[{y:'安定要素',i:'✅',t:'SQと三井住友カードの長期提携。1.0%直接付与の安定性は高い。'},{y:'注意点',i:'⚠️',t:'KFのプログラム変更（特典改定等）が実質的な価値変動リスク。移行先はKFのみ。'}]},
-    referral:{r:'三井住友カードの紹介キャンペーン（不定期）経由で追加ボーナスの実績あり。',c:'SMBC公式サイトで最新情報確認を。'},
-    bonusCurrent:{p:'2026年現在',t:'新規入会で2,000ボーナスKFマイル。年200万円決済で年間20,000KFマイル。'},
-    bonusHistory:[{p:'2025年後半',t:'同水準の2,000マイル入会ボーナス。VISAブランドでのKF直接積算カードとして安定稼働。'},{p:'2025年前半',t:'同水準。JCBゴールドとVISAゴールドをブランド希望で比較する層に対応。'}],
+    lounge:'国内主要空港カードラウンジのみ（三井住友カードのラウンジサービス）。PP等の海外空港ラウンジサービス付帯なし。',
+    desc:'SQクリスフライヤーJCBゴールドと同様にKFマイル直接付与1.0%。VISAブランドのため加盟店の幅が広い点が優位。JCB版と機能は近似するため、VISAブランドを希望する場合の選択肢。',
+    alerts:[],
+    outlook:{risk:'low',items:[{y:'安定要素',i:'✅',t:'SQとSMCCの提携。VISAブランドの広い加盟店網は安定維持見込み。'},{y:'注意点',i:'⚠️',t:'KrisFlyer有効期限3年の管理が必要。JCB版との特典差（旅行保険内容等）を事前確認推奨。'}]},
+    referral:{r:'三井住友カードの友人紹介プログラム（不定期）で追加1,000〜3,000マイル付与実績あり。',c:'SMCC公式とSQ公式の両方でキャンペーン情報を確認。ポイントサイト経由との比較も忘れずに。'},
+    bonusCurrent:{p:'2026年現在',t:'入会ボーナス最大5,000KFマイル（キャンペーン時）。JCB版と近似した条件が多い。'},
+    bonusHistory:[{p:'2025年後半',t:'入会特典3,000〜5,000KFマイル。VISAブランド希望のKF派に。'},{p:'2025年前半',t:'同水準。JCBとVISAの二枚持ちでKFマイルを効率よく積む戦略も一部で採用されている。'}],
   },
 ];
 
 // ━━━━━━━━ State ━━━━━━━━
-const S={mile:'ALL',amt:200,mileVal:5,sort:'score',brands:new Set(['ALL']),tags:{pp:false,'no-exp':false,insurance:false,'low-fee':false,multi:false,'free-night':false}};
+const S={
+  mile:'ALL',amt:200,mileVal:5,sort:'score',
+  brands:new Set(['ALL']),
+  tags:{pp:false,'no-exp':false,insurance:false,'low-fee':false,multi:false,'free-night':false}
+};
 const fmt=n=>Math.round(n).toLocaleString('ja-JP');
 
-function getMiles(c,man,t){return c.milesCalc(man,t)}
-function getRate(c,t){return c.rates[t]||0}
-function brandOK(c){return S.brands.has('ALL')||c.brands.some(b=>S.brands.has(b))}
-function calcScore(c,t,man){
-  const r=getRate(c,t),m=getMiles(c,man,t);
-  let s=0;
-  if(r>0||m>0)s+=40;
-  s+=r*15;
-  if(S.tags.pp&&c.pp==='yes')s+=20;
-  if(S.tags.pp&&c.pp==='warn')s+=10;
-  if(S.tags['no-exp']&&c.noExp)s+=15;
-  if(S.tags.insurance&&c.ins)s+=10;
-  if(S.tags['low-fee']&&c.fee<=20000)s+=25;
-  if(S.tags.multi&&c.multi)s+=20;
-  if(S.tags['free-night']&&c.freeNight)s+=15;
-  return s;
+// ━━━━━━━━ URL Parameters（A-4追加）━━━━━━━━
+function readUrlParams(){
+  const p=new URLSearchParams(location.search);
+  if(p.has('mile')){
+    const v=p.get('mile');
+    if(['ALL','ANA','JAL','KF','MB'].includes(v)){
+      S.mile=v;
+      document.getElementById('sm').value=v;
+    }
+  }
+  if(p.has('amt')){
+    const v=parseInt(p.get('amt'));
+    if(v>=100&&v<=400&&v%50===0){
+      S.amt=v;
+      document.getElementById('as').value=v;
+      document.getElementById('ad').innerHTML=`${v}<span> 万円</span>`;
+    }
+  }
+  if(p.has('mv')){
+    const v=parseFloat(p.get('mv'));
+    if(v>=2&&v<=10){
+      S.mileVal=v;
+      document.getElementById('mvs').value=v;
+      document.getElementById('mvd').innerHTML=`${v}<span> 円/マイル</span>`;
+      const h=v<=3?'エコノミー目安':v<=5?'ビジネスクラス目安':v<=7?'ビジネス高効率目安':'ファースト/最高目安';
+      document.getElementById('mvhint').textContent=h;
+    }
+  }
+  if(p.has('sort')){
+    const v=p.get('sort');
+    if(['score','profit','miles','fee'].includes(v)){
+      S.sort=v;
+      document.querySelectorAll('.sbtn').forEach(b=>b.classList.toggle('on',b.dataset.s===v));
+    }
+  }
+  if(p.has('brands')){
+    const bl=p.get('brands').split(',').filter(b=>['AMEX','JCB','VISA','MC','Diners'].includes(b));
+    if(bl.length>0){
+      S.brands=new Set(bl);
+      document.querySelectorAll('.bchip').forEach(c=>c.classList.toggle('on',S.brands.has(c.dataset.b)));
+      document.querySelector('.bchip[data-b="ALL"]').classList.remove('on');
+    }
+  }
+  if(p.has('tags')){
+    p.get('tags').split(',').filter(t=>t in S.tags).forEach(t=>{
+      S.tags[t]=true;
+      const el=document.querySelector(`.chip[data-k="${t}"]`);
+      if(el)el.classList.add('on');
+    });
+  }
+}
+
+function updateUrl(){
+  const p=new URLSearchParams();
+  if(S.mile!=='ALL')p.set('mile',S.mile);
+  if(S.amt!==200)p.set('amt',S.amt);
+  if(S.mileVal!==5)p.set('mv',S.mileVal);
+  if(S.sort!=='score')p.set('sort',S.sort);
+  if(!S.brands.has('ALL'))p.set('brands',[...S.brands].join(','));
+  const at=Object.keys(S.tags).filter(k=>S.tags[k]);
+  if(at.length>0)p.set('tags',at.join(','));
+  const qs=p.toString();
+  history.replaceState(null,'',qs?'?'+qs:location.pathname);
+}
+
+function copyUrl(){
+  navigator.clipboard.writeText(location.href).then(()=>{
+    const btn=document.getElementById('shareBtn');
+    btn.textContent='✓ コピーしました';btn.classList.add('copied');
+    setTimeout(()=>{
+      btn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> この設定をシェア';
+      btn.classList.remove('copied');
+    },2000);
+  }).catch(()=>{
+    const btn=document.getElementById('shareBtn');
+    btn.textContent='URLをコピーできませんでした';
+    setTimeout(()=>btn.textContent='この設定をシェア',2000);
+  });
+}
+
+// ━━━━━━━━ ヘルパー関数 ━━━━━━━━
+function getMiles(c){return c.milesCalc(S.amt,S.mile)}
+function getRate(c){return(getMiles(c)/(S.amt*10000))*100}
+function brandOK(c){
+  if(S.brands.has('ALL'))return true;
+  return c.brands.some(b=>S.brands.has(b));
+}
+function calcScore(c){
+  let sc=0;
+  const r=getRate(c);
+  sc+=Math.min(45,r*18);
+  const tgt=['ANA','JAL','KF','MB'];
+  if(S.mile!=='ALL'&&tgt.includes(S.mile)){
+    const rat={ANA:c.rates.ANA,JAL:c.rates.JAL,KF:c.rates.KF,MB:c.rates.MB}[S.mile]||0;
+    if(rat>0)sc+=40;
+  }
+  if(S.tags.pp&&['yes','warn'].includes(c.pp))sc+=20;
+  if(S.tags['low-fee']&&c.fee<=20000)sc+=25;
+  if(S.tags.multi&&c.multi)sc+=20;
+  if(S.tags['no-exp']&&c.noExp)sc+=15;
+  if(S.tags['free-night']&&(c.hotel||c.freeNight))sc+=15;
+  if(S.tags.insurance&&c.ins)sc+=10;
+  return sc;
 }
 
 // ━━━━━━━━ Render ━━━━━━━━
 function render(){
-  S.mile=document.getElementById('sm').value;
-  const t=S.mile,man=S.amt;
-  let list=CARDS.map(c=>({...c,_m:getMiles(c,man,t),_r:getRate(c,t),_p:getMiles(c,man,t)*S.mileVal-c.fee,_s:calcScore(c,t,man)}));
-  list=list.filter(c=>{
+  let cards=[...CARDS];
+
+  // フィルター
+  cards=cards.filter(c=>{
     if(!brandOK(c))return false;
-    if(S.tags.pp&&c.pp==='no')return false;
+    if(S.mile!=='ALL'){
+      const rat={ANA:c.rates.ANA,JAL:c.rates.JAL,KF:c.rates.KF,MB:c.rates.MB}[S.mile]||0;
+      if(rat===0)return false;
+    }
+    if(S.tags.pp&&!['yes','warn'].includes(c.pp))return false;
     if(S.tags['no-exp']&&!c.noExp)return false;
     if(S.tags.insurance&&!c.ins)return false;
     if(S.tags['low-fee']&&c.fee>20000)return false;
     if(S.tags.multi&&!c.multi)return false;
-    if(S.tags['free-night']&&!c.freeNight)return false;
+    if(S.tags['free-night']&&!c.hotel&&!c.freeNight)return false;
     return true;
   });
-  if(S.sort==='score') list.sort((a,b)=>b._s-a._s);
-  if(S.sort==='profit')list.sort((a,b)=>b._p-a._p);
-  if(S.sort==='miles') list.sort((a,b)=>b._m-a._m);
-  if(S.sort==='fee')   list.sort((a,b)=>a.fee-b.fee);
-  document.getElementById('cnt').textContent=list.length;
-  document.getElementById('list').innerHTML=list.length===0?
-    '<div class="empty">条件に合うカードがありません。フィルターを変更してください。</div>':
-    list.map((c,i)=>cardHTML(c,i,t,man)).join('');
+
+  // ソート
+  const sortFns={
+    score:(a,b)=>calcScore(b)-calcScore(a),
+    profit:(a,b)=>(getMiles(b)*S.mileVal-b.fee)-(getMiles(a)*S.mileVal-a.fee),
+    miles:(a,b)=>getMiles(b)-getMiles(a),
+    fee:(a,b)=>a.fee-b.fee,
+  };
+  cards.sort(sortFns[S.sort]||sortFns.score);
+
+  document.getElementById('cnt').textContent=cards.length;
+  const list=document.getElementById('list');
+  if(cards.length===0){
+    list.innerHTML='<div class="empty">条件に合うカードが見つかりませんでした。絞り込みを緩めてみてください。</div>';
+    updateUrl();
+    return;
+  }
+
+  list.innerHTML=cards.map((c,i)=>cardHTML(c,i===0&&cards.length>1)).join('');
+
   requestAnimationFrame(()=>{
     document.querySelectorAll('.fbari[data-p]').forEach(el=>el.style.width=el.dataset.p+'%');
     updSlider();
+    updateUrl(); // A-4: 状態変化のたびにURLを更新
   });
 }
 
-function cardHTML(c,rank,t,man){
-  const miles=c._m,profit=c._p,isBest=rank===0;
-  const psign=profit>=0?'+':'',pcls=profit>=0?'pos':'neg';
-  const goal=GOAL[t]||285000,glbl=GLBL[t]||GLBL.ALL;
-  let famLine,barP;
-  if(miles<=0){famLine=`<span style="color:var(--text-dim)">このカードでは${t}マイルを直接獲得できません</span>`;barP=0;}
-  else{const yrs=goal/miles;barP=Math.min(100,Math.round(100/yrs));const yStr=yrs<1?`<span class="famyr">${(yrs*12).toFixed(1)}ヶ月</span>`:`<span class="famyr">${yrs.toFixed(1)}年</span>`;famLine=`${yStr}で達成`;}
-  const sq='https://www.google.com/search?q='+encodeURIComponent(c.sq);
-  // ① ポイントサイト vs 紹介特典バナー（BEST MATCHのみ表示）
-  const psLabel=c.psType==='referral'
-    ? {tag:'💌 紹介特典が有利な傾向',col:'#7C3AED',bg:'#F5F3FF',
-       body:'このカードはAMEX等のステータス系カードのため、<strong>ポイントサイトより紹介リンク経由の上乗せボーナスが大きい傾向</strong>があります。まず現在のポイントサイト還元額を確認し、知人の紹介特典と数字で比較してから申込先を決めてください。'}
-    : {tag:'🏆 ポイントサイト経由が有利な傾向',col:'#0284C7',bg:'#EFF6FF',
-       body:'このカードは<strong>ポイントサイト（モッピー等）経由の申込が有利な傾向</strong>があります。ただし紹介特典と比較してから最終判断してください。必ずモッピー・ハピタス等で現時点の最高還元額を確認するのが鉄則です。'};
-  const dktBanner=isBest?`
-<div class="dkt-banner">
-  <div class="dkt-title">
-    💡 申込前に必ず確認：ポイントサイト経由 vs 紹介特典、どちらが得？
-  </div>
-  <div class="dkt-vs">
-    <div class="dkt-col" style="border-color:${psLabel.col}20;background:${psLabel.bg}">
-      <strong style="color:${psLabel.col}">${psLabel.tag}</strong>
-      ${psLabel.body}
-    </div>
-    <div class="dkt-col">
-      <strong style="color:#065F46">🔢 比較の構造</strong>
-      <b>A</b>（公式入会キャンペーン）は共通。<br>
-      <b>A + B</b>（ポイントサイト還元）<br>
-      vs<br>
-      <b>A + C</b>（紹介特典ボーナス）<br>
-      合計が1円でも多い方を選択。
-    </div>
-  </div>
-  <div class="dkt-desc">📌 モッピー・ハピタス・ポイントタウン等の主要ポイントサイトで「カード名」を検索して現在の還元額を確認してから申し込みましょう（還元額は日々変動します）。</div>
-</div>`:'';
-  const alerts=c.alerts.map(a=>`<div class="abanner"><span class="adt">⚠ ${a.d}：</span>${a.t}</div>`).join('');
-  const btags=c.brands.map(b=>`<span class="btag">${b}</span>`).join('');
-  const unit=t==='MB'?'pt':'マイル';
-  const ftags=[
-    c.pp==='yes'?`<span class="ft pp">✈ 海外ラウンジ：無制限</span>`:c.pp==='warn'?`<span class="ft warn">✈ 海外ラウンジ：回数制限あり</span>`:`<span class="ft no">🏢 国内ラウンジのみ</span>`,
-    c.noExp?`<span class="ft exp">⏳ マイル無期限</span>`:`<span class="ft warn">⏳ 有効期限あり</span>`,
-    c.ins?`<span class="ft ins">🛡 旅行保険付帯</span>`:'',
-    c.multi?`<span class="ft multi">🔀 マルチマイル</span>`:'',
-    c.fee<=20000?`<span class="ft low">💴 年会費〜2万円</span>`:'',
-    c.hotel?`<span class="ft hotel">🏨 ホテル特化</span>`:'',
-    c.freeNight?`<span class="ft night">🏨 無料宿泊特典あり</span>`:'',
-  ].filter(Boolean).join('');
-  const freeNightHTML=c.freeNight?`<div class="abanner" style="background:#FEFCE8;border-color:#FDE047"><span class="adt" style="color:#78350F">🏨 無料宿泊特典：</span>${c.freeNight}</div>`:'';
-  const loungeHTML=c.lounge?`<div class="lounge-bar"><span class="lb-ico">✈</span><span class="lb-body"><strong>ラウンジ情報：</strong>${c.lounge}</span></div>`:'';
+// ━━━━━━━━ カードHTML生成 ━━━━━━━━
+function cardHTML(c,best){
+  const miles=getMiles(c);
+  const rate=getRate(c);
+  const profit=Math.round(miles*S.mileVal-c.fee);
+  const goalMiles=GOAL[S.mile]||GOAL.ALL;
+  const goalYrs=miles>0?(goalMiles/miles).toFixed(1):'—';
+  const profitCls=profit>=0?'pos':'neg';
+  const profitStr=(profit>=0?'+':'')+fmt(profit)+'円';
+  const goalDesc=GLBL[S.mile]||GLBL.ALL;
+  const barPct=Math.min(100,Math.round((miles/Math.max(...CARDS.map(x=>x.milesCalc(S.amt,S.mile))))*100))||0;
 
-  const rk=c.outlook.risk;
-  const outlook=`<div><span class="risk ${rk}">${{low:'リスク低',mid:'リスク中',high:'リスク高'}[rk]}</span> <span style="font-size:10px;color:var(--text-dim)">（編集部予測・確定情報ではありません）</span></div>
-${c.outlook.items.map(it=>`<div class="oi"><span class="oy">${it.y}</span><span>${it.i}</span><span>${it.t}</span></div>`).join('')}`;
-  const refHTML=`<div class="rrow"><div class="rl">被紹介者への特典（あなたが得られる可能性）</div><div class="rv">${c.referral.r}</div></div>
-<div class="rrow"><div class="rl">⚠ 注意</div><div class="rv" style="color:var(--gold)">${c.referral.c}</div></div>`;
-  return `<div class="card ${isBest?'best':''}">
-<div class="ctb" style="background:${c.ac}"></div>
-<div class="ch">
-  <div><div class="cn">${c.name}</div><div class="ci">${c.issuer}</div></div>
-  <div class="chr">
-    ${isBest?'<div class="rbadge">BEST MATCH</div>':`<div style="font-size:10px;color:var(--text-dim)">第${rank+1}位</div>`}
-    <a class="sbtn2" href="${sq}" target="_blank" rel="noopener">
-      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>公式を検索
-    </a>
+  // ラウンジ表示
+  let loungeTag='';
+  if(c.pp==='yes')loungeTag='<span class="ft pp">✈ PP無制限</span>';
+  else if(c.pp==='warn')loungeTag='<span class="ft warn">⚡ PP有料/回数制限</span>';
+  else loungeTag='<span class="ft no">🏢 国内ラウンジのみ</span>';
+
+  // タグ
+  const tags=[
+    loungeTag,
+    c.noExp?'<span class="ft exp">⏳ マイル無期限</span>':'',
+    c.ins?'<span class="ft ins">🛡 旅行保険充実</span>':'',
+    c.fee<=20000?'<span class="ft low">💴 年会費〜2万円</span>':'',
+    c.multi?'<span class="ft multi">🔀 マルチ対応</span>':'',
+    (c.hotel||c.freeNight)?'<span class="ft night">🏨 無料宿泊あり</span>':'',
+  ].filter(Boolean).join('');
+
+  // ブランドバッジ
+  const brandBadges=c.brands.map(b=>`<span class="btag">${b}</span>`).join('');
+
+  // マイル種別スタット表示
+  const displayMile=S.mile==='ALL'?'ANA':S.mile;
+  const ratesToShow=S.mile==='MB'
+    ?[{l:'MBポイント',v:`${fmt(miles)}pt`},{l:'→ANA換算',v:`${fmt(mbmi(miles*100/200))}M`}]
+    :[
+      {l:`${displayMile}マイル/年`,v:`${fmt(miles)}M`},
+      {l:'還元率',v:`${rate.toFixed(2)}%`},
+    ];
+
+  // アラートバナー
+  const alertBanner=c.alerts&&c.alerts.length>0
+    ?c.alerts.map(a=>`<div class="abanner"><span class="adt">⚠ ${a.d}</span><br>${a.t}</div>`).join('')
+    :'';
+
+  // ボーナス履歴
+  const bhist=c.bonusHistory&&c.bonusHistory.length>0
+    ?c.bonusHistory.map(b=>`<div class="bhi"><span class="bhp">${b.p}</span><span>${b.t}</span></div>`).join('')
+    :'';
+
+  // KPIスタット
+  const kpiStat2=S.mile==='MB'
+    ?`<div class="sc"><div class="sl_">ホテル泊換算</div><div class="sv sky" style="font-size:14px">${goalYrs}回泊分</div><div class="ssub">${goalDesc.split('（')[0]}</div></div>`
+    :`<div class="sc"><div class="sl_">目標達成まで</div><div class="sv sky">${goalYrs}年<sub>分</sub></div><div class="ssub">${goalDesc.slice(0,20)+'…'}</div></div>`;
+
+  // 申込みリンク
+  const applyBtn=c.psType==='psite'
+    ?`<a class="sbtn2" href="https://pc.moppy.jp/entry/invite.php?invite=gFgmA1d9" target="_blank" rel="noopener">🏅 モッピー経由で申込</a>`
+    :`<a class="sbtn2" href="#" onclick="alert('紹介リンクを取得してから申込ください');return false">👥 紹介特典で申込</a>`;
+
+  return `
+<div class="card${best?' best':''}">
+  <div class="ctb" style="background:${c.ac}"></div>
+  <div class="ch">
+    <div>
+      <div class="cn">${c.name}</div>
+      <div class="ci">${c.issuer}</div>
+    </div>
+    <div class="chr">
+      ${best?'<span class="rbadge">🏆 おすすめ1位</span>':''}
+      ${applyBtn}
+    </div>
   </div>
-</div>
-<div class="brand-row">${btags}</div>
-${dktBanner}
-${alerts}
-${freeNightHTML}
-${loungeHTML}
-<div class="sg">
-  <div class="sc"><div class="sl_">年間獲得${unit}（${man}万円）</div><div class="sv sky">${fmt(miles)}<sub> ${unit}</sub></div><div class="ssub">還元率 ${c._r>0?c._r.toFixed(3):'—'}%</div></div>
-  <div class="sc"><div class="sl_">マイル価値（${S.mileVal}円換算）</div><div class="sv">${fmt(miles*S.mileVal)}<sub> 円相当</sub></div><div class="ssub">年会費 ${fmt(c.fee)}円</div></div>
-  <div class="sc"><div class="sl_">★ 実質おトク額</div><div class="sv ${pcls}">${psign}${fmt(profit)}<sub> 円</sub></div><div class="ssub">マイル価値－年会費</div></div>
-</div>
-<div class="fam">
-  <div class="faml">✈ 3人家族シンガポールチェッカー</div>
-  <div class="famrow">${famLine}</div>
-  <div style="font-size:9.5px;color:var(--text-mid);margin-top:3px">${glbl}</div>
-  ${t==='MB'?`<div style="font-size:9px;color:var(--text-dim);margin-top:2px;line-height:1.5">⚠ ヒルトンは変動価格制（カテゴリー制廃止済み）。ポイント数は時期・ホテルにより変動します。</div>`:''}
-  <div class="fbar" style="margin-top:5px"><div class="fbari" data-p="${barP}"></div></div>
-  <div style="font-size:9px;color:var(--text-dim);margin-top:2px">年間達成率 ${barP}%</div>
-</div>
-<div class="ftr">${ftags}</div>
-<div class="cdesc">${c.desc}</div>
-${c.feeNote?`<div class="feenote">⚠ ${c.feeNote}</div>`:''}
-<div class="acc"><div class="acc-h" onclick="toggleAcc(this)"><span class="acc-t">📈 将来の改定見通し（予測）</span><span class="acc-a">▼</span></div><div class="acc-b">${outlook}<div class="specnote">※上記は編集部の予測です。確定情報ではありません。</div></div></div>
-<div class="acc"><div class="acc-h" onclick="toggleAcc(this)"><span class="acc-t">🤝 紹介経由申込の特典情報</span><span class="acc-a">▼</span></div><div class="acc-b">${refHTML}<div class="specnote" style="margin-top:8px">※過去実績に基づく参考情報。現在提供されていない場合があります。</div></div></div>
-<div class="bsec">
-  <div class="bcur">🎁 <strong>現在のボーナス（${c.bonusCurrent.p}）：</strong>${c.bonusCurrent.t}</div>
-  <div class="bhist"><div class="bht">📋 直近2回のキャンペーン実績（200〜300万円/年決済前提）</div>
-  ${c.bonusHistory.map(h=>`<div class="bhi"><span class="bhp">${h.p}</span><span>${h.t}</span></div>`).join('')}</div>
-</div>
+  <div class="brand-row">${brandBadges}<span style="font-size:10px;color:var(--text-dim);margin-left:auto;align-self:center">年会費 <strong>${fmt(c.fee)}円</strong></span></div>
+  ${alertBanner}
+  <div class="sg">
+    <div class="sc"><div class="sl_">実質おトク額</div><div class="sv ${profitCls}">${profitStr}</div><div class="ssub">年間試算・マイル価値${S.mileVal}円</div></div>
+    ${kpiStat2}
+    <div class="sc"><div class="sl_">年会費</div><div class="sv">${fmt(c.fee)}<sub>円</sub></div><div class="ssub">${c.feeNote?'※ 注記あり':'カード本体年会費'}</div></div>
+  </div>
+  <div class="fam">
+    <div class="faml">📊 ${S.amt}万円決済時のマイル数</div>
+    <div class="famrow">
+      <span class="famyr">${fmt(miles)}</span>
+      <span>${S.mile==='MB'?'pt':displayMile+'マイル'}</span>
+      <div class="fbar"><div class="fbari" data-p="${barPct}"></div></div>
+      <span style="font-size:10px;color:var(--text-dim)">${rate.toFixed(2)}%</span>
+    </div>
+  </div>
+  <div class="ftr">${tags}</div>
+  ${c.feeNote?`<div class="feenote">💡 ${c.feeNote}</div>`:''}
+  ${c.lounge?`<div class="ftr"><div class="lounge-bar"><span class="lb-ico">✈</span><div class="lb-body"><strong>ラウンジ：</strong>${c.lounge}</div></div></div>`:''}
+  <div class="cdesc">${c.desc}</div>
+  ${c.freeNight?`<div class="acc"><div class="acc-h" onclick="tgAcc(this)"><span class="acc-t">🏨 無料宿泊特典の詳細</span><span class="acc-a">▼</span></div><div class="acc-b"><div>${c.freeNight}</div></div></div>`:''}
+  <div class="bsec">
+    ${c.bonusCurrent?`<div class="bcur">🎁 <strong>現在の入会ボーナス：</strong>${c.bonusCurrent.p}｜${c.bonusCurrent.t}</div>`:''}
+    ${bhist?`<div class="bhist"><div class="bht">📅 過去のボーナス傾向</div>${bhist}</div>`:''}
+  </div>
+  <div class="acc"><div class="acc-h" onclick="tgAcc(this)"><span class="acc-t">📋 このカードの詳細・注記</span><span class="acc-a">▼</span></div><div class="acc-b">
+    ${c.feeNote?`<div class="rrow"><div class="rl">年会費注意点</div><div class="rv">${c.feeNote}</div></div>`:''}
+    <div class="rrow"><div class="rl">ポイントサイト or 紹介特典</div><div class="rv">${c.psType==='psite'?'✅ ポイントサイト経由推奨（モッピー・ハピタス等）':'👥 紹介特典経由推奨（AMEXリファーラル等）'}</div></div>
+    ${c.referral?`<div class="rrow"><div class="rl">紹介特典メモ</div><div class="rv">${c.referral.r}<br><span style="color:var(--text-dim)">${c.referral.c}</span></div></div>`:''}
+    ${c.alerts&&c.alerts.length>0?c.alerts.map(a=>`<div class="rrow"><div class="rl">⚠ アラート</div><div class="rv">${a.d}：${a.t}</div></div>`).join(''):''}
+    ${c.outlook?`<div class="rrow"><div class="rl">📈 将来見通し</div><div class="rv"><span class="risk ${c.outlook.risk==='low'?'lo':c.outlook.risk==='mid'?'md':'hi'}">${c.outlook.risk==='low'?'改悪リスク低':c.outlook.risk==='mid'?'改悪リスク中':'改悪リスク高'}</span>${c.outlook.items.map(o=>`<div class="oi"><span class="oy">${o.y}</span><span>${o.i} ${o.t}</span></div>`).join('')}</div></div>`:''}
+  </div></div>
 </div>`;
 }
 
 // ━━━━━━━━ Events ━━━━━━━━
-function updSlider(){
-  const sl=document.getElementById('as');
-  const p=(sl.value-sl.min)/(sl.max-sl.min)*100;
-  sl.style.background=`linear-gradient(to right,var(--sky) ${p}%,var(--border) ${p}%)`;
-  const mvs=document.getElementById('mvs');
-  if(mvs){const p2=(S.mileVal-2)/(10-2)*100;mvs.style.background=`linear-gradient(to right,var(--sky) ${p2}%,var(--border) ${p2}%)`;}
-}
-function onMileVal(el){
-  S.mileVal=parseFloat(el.value);
-  document.getElementById('mvd').innerHTML=`${S.mileVal}<span> 円/マイル</span>`;
-  const hint=S.mileVal<=3?'エコノミー目安':S.mileVal<=5?'ビジネスクラス目安':S.mileVal<=7?'ビジネス高効率目安':'ファースト/最高目安';
-  document.getElementById('mvhint').textContent=hint;
-  const p=(S.mileVal-2)/(10-2)*100;
-  el.style.background=`linear-gradient(to right,var(--sky) ${p}%,var(--border) ${p}%)`;
+function onAmt(el){
+  S.amt=+el.value;
+  document.getElementById('ad').innerHTML=`${S.amt}<span> 万円</span>`;
   render();
 }
-function onAmt(el){
-  S.amt=parseInt(el.value);
-  document.getElementById('ad').innerHTML=`${S.amt}<span> 万円</span>`;
-  updSlider();render();
-}
-function tgTag(el){
-  const k=el.dataset.k;S.tags[k]=!S.tags[k];el.classList.toggle('on',S.tags[k]);render();
-}
-function setSort(btn){
-  document.querySelectorAll('.sbtn').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');S.sort=btn.dataset.s;render();
+function onMileVal(el){
+  S.mileVal=+el.value;
+  const d=document.getElementById('mvd');
+  d.innerHTML=`${S.mileVal}<span> 円/マイル</span>`;
+  const h=S.mileVal<=3?'エコノミー目安':S.mileVal<=5?'ビジネスクラス目安':S.mileVal<=7?'ビジネス高効率目安':'ファースト/最高目安';
+  document.getElementById('mvhint').textContent=h;
+  render();
 }
 function tgBrand(el){
   const b=el.dataset.b;
-  if(b==='ALL'){S.brands=new Set(['ALL']);document.querySelectorAll('.bchip').forEach(c=>c.classList.toggle('on',c.dataset.b==='ALL'));}
+  if(b==='ALL'){S.brands=new Set(['ALL']);document.querySelectorAll('.bchip').forEach(c=>c.classList.remove('on'));el.classList.add('on');}
   else{
     S.brands.delete('ALL');
     document.querySelector('.bchip[data-b="ALL"]').classList.remove('on');
-    S.brands.has(b)?S.brands.delete(b):S.brands.add(b);
-    el.classList.toggle('on',S.brands.has(b));
+    if(S.brands.has(b)){S.brands.delete(b);el.classList.remove('on');}
+    else{S.brands.add(b);el.classList.add('on');}
     if(S.brands.size===0){S.brands.add('ALL');document.querySelector('.bchip[data-b="ALL"]').classList.add('on');}
   }
   render();
 }
-function toggleAcc(h){
-  const a=h.querySelector('.acc-a'),b=h.nextElementSibling;
-  b.classList.toggle('op');a.classList.toggle('op');
+function tgTag(el){
+  const k=el.dataset.k;
+  S.tags[k]=!S.tags[k];
+  el.classList.toggle('on',S.tags[k]);
+  render();
 }
-// ━━━━━━━━ Tooltip（こだわり条件ヘルプ） ━━━━━━━━
-const gTip=(()=>{
-  const el=document.createElement('div');
-  el.style.cssText=[
-    'position:fixed','z-index:9000','background:#0C2340','color:#fff',
-    'font-size:11px','line-height:1.6','padding:8px 11px','border-radius:7px',
-    'max-width:220px','box-shadow:0 4px 16px rgba(0,0,0,.3)',
-    'pointer-events:none','opacity:0','transition:opacity .15s','display:none',
-    'white-space:normal','word-break:break-word','overflow-wrap:break-word'
-  ].join(';');
-  document.body.appendChild(el);
-  return el;
-})();
-let _tipTimer=null;
-function _positionTip(anchor){
-  const r=anchor.getBoundingClientRect();
-  const tr=gTip.getBoundingClientRect(); // 実際のレンダリングサイズを使用
-  let left=r.left, top=r.top-tr.height-10;
-  if(left+tr.width>window.innerWidth-8) left=window.innerWidth-tr.width-8;
-  if(left<8) left=8;
-  if(top<8) top=r.bottom+8; // 上に入らない場合は下に表示
-  gTip.style.left=left+'px'; gTip.style.top=top+'px';
+function setSort(el){
+  S.sort=el.dataset.s;
+  document.querySelectorAll('.sbtn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  render();
 }
-function _showTip(wrap){
-  clearTimeout(_tipTimer);
-  // maxWidthをビューポートに合わせて動的設定
-  gTip.style.maxWidth=Math.min(220,window.innerWidth-20)+'px';
-  gTip.textContent=wrap.dataset.tip||'';
-  gTip.style.display='block'; gTip.style.opacity='0';
-  // ダブルrAFでブラウザのレイアウト計算完了後に位置決定
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    gTip.style.opacity='1'; _positionTip(wrap);
-  }));
+function tgAcc(el){
+  const b=el.nextElementSibling;
+  const a=el.querySelector('.acc-a');
+  b.classList.toggle('op');
+  if(a)a.classList.toggle('op');
 }
-function _hideTip(){clearTimeout(_tipTimer);_tipTimer=setTimeout(()=>{gTip.style.opacity='0';setTimeout(()=>{if(gTip.style.opacity==='0')gTip.style.display='none';},150);},80);}
-// デスクトップ：ホバーで表示
-document.querySelectorAll('.chip-wrap[data-tip]').forEach(w=>{
-  w.addEventListener('mouseenter',()=>_showTip(w));
-  w.addEventListener('mouseleave',_hideTip);
-});
-// スマートフォン：?ボタンをタップで表示・非表示
-document.querySelectorAll('.tip-btn').forEach(btn=>{
-  btn.addEventListener('click',e=>{
-    e.stopPropagation();
-    const wrap=btn.closest('.chip-wrap');
-    if(gTip.style.display==='block'&&gTip.textContent===(wrap.dataset.tip||'')){_hideTip();}
-    else{_showTip(wrap);}
-  });
-});
-// 外側クリックで閉じる
-document.addEventListener('click',e=>{if(!e.target.closest('.chip-wrap'))_hideTip();});
+document.getElementById('sm').addEventListener('change',e=>{S.mile=e.target.value;render();});
 
+// ━━━━━━━━ スライダー同期 ━━━━━━━━
+function updSlider(){
+  const amt=S.amt;
+  const mv=S.mileVal;
+  const aS=document.getElementById('as');
+  const mS=document.getElementById('mvs');
+  if(aS)aS.value=amt;
+  if(mS)mS.value=mv;
+}
+
+// ━━━━━━━━ Tooltip ━━━━━━━━
+(()=>{
+  let tip=null;
+  function showTip(e,txt){
+    if(!tip){tip=document.createElement('div');tip.style.cssText='position:fixed;background:#0C2340;color:#fff;font-size:11px;padding:8px 12px;border-radius:8px;max-width:240px;line-height:1.6;z-index:9999;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,.3)';document.body.appendChild(tip);}
+    tip.textContent=txt;
+    const x=Math.min(e.clientX+12,window.innerWidth-260);
+    const y=Math.max(e.clientY-70,8);
+    tip.style.left=x+'px';tip.style.top=y+'px';tip.style.display='block';
+  }
+  function hideTip(){if(tip)tip.style.display='none';}
+  document.querySelectorAll('.chip-wrap').forEach(wrap=>{
+    const txt=wrap.dataset.tip;
+    if(!txt)return;
+    wrap.querySelectorAll('.tip-btn').forEach(btn=>{
+      btn.addEventListener('mouseenter',e=>showTip(e,txt));
+      btn.addEventListener('mouseleave',hideTip);
+      btn.addEventListener('touchstart',e=>{e.preventDefault();showTip(e.touches[0],txt);},{ passive:false });
+      btn.addEventListener('touchend',()=>setTimeout(hideTip,2000));
+    });
+  });
+})();
+
+// ━━━━━━━━ 初期化（A-4: readUrlParamsを先に実行）━━━━━━━━
+readUrlParams();
 render();
 </script>
 </body>
