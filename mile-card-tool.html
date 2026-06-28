@@ -117,6 +117,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 .ch{padding:12px 14px 9px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .cn{font-size:14px;font-weight:700;color:var(--sky-dk);line-height:1.3}
 .ci{font-size:10px;color:var(--text-dim);margin-top:2px}
+.ct{font-size:11px;font-weight:600;color:#92400E;background:#FEF3C7;border-radius:4px;padding:1px 7px;margin-top:5px;display:inline-block;line-height:1.6;letter-spacing:.01em}
 .chr{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0}
 .rbadge{background:linear-gradient(135deg,var(--sunset),#E11D48);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:5px;white-space:nowrap}
 .sbtn2{display:inline-flex;align-items:center;gap:3px;padding:4px 10px;border-radius:6px;border:1.5px solid var(--sky);font-size:10px;font-weight:600;color:var(--sky-dk);background:var(--sky-xlt);cursor:pointer;text-decoration:none;transition:all .15s;white-space:nowrap;font-family:inherit}
@@ -460,7 +461,7 @@ function mbmi(pt){const b=Math.floor(pt/60000);return b*25000+Math.round((pt%600
 // ━━━━━━━━ カードデータ（19枚） ━━━━━━━━
 const CARDS=[
   {
-    id:'mb-pre',name:'マリオットBonvoy アメックスプレミアム',issuer:'American Express',
+    id:'mb-pre',name:'マリオットBonvoy アメックスプレミアム',issuer:'American Express',tagline:'40社超マルチ移行 × 最大1.25% — マイル先送り型の最終兵器',
     sq:'マリオットBonvoyアメックスプレミアムカード 公式サイト',
     dkt:'マリオット ボンヴォイ アメリカン エキスプレス プレミアム',
     psType:'referral',
@@ -479,7 +480,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年9〜12月',t:'同様の6ヶ月条件で75,000〜95,000MB pt。旧年会費比較で入会メリットが縮小。'},{p:'2025年前半',t:'同条件65,000〜95,000MB pt。改悪前（旧49,500円）の最後の好機。'}],
   },
   {
-    id:'saison-plat',name:'セゾンプラチナ ビジネスアメックス',issuer:'American Express（セゾン）',
+    id:'saison-plat',name:'セゾンプラチナ ビジネスアメックス',issuer:'American Express（セゾン）',tagline:'JAL最高水準1.125% + PP無制限 — JAL派唯一の選択肢',
     sq:'セゾンプラチナビジネスアメリカンエキスプレスカード 公式サイト',
     dkt:'セゾンプラチナ ビジネス アメックス',psType:'psite',
     fee:33000,feeNote:'※JAL1.125%はセゾンマイルクラブ（年5,500円）加入前提。実質年会費38,500円（カード33,000円＋マイルクラブ5,500円）。',ac:'linear-gradient(90deg,#E11D48,#F97316)',
@@ -496,7 +497,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年後半',t:'同様に初年度無料＋入会特典5,000〜10,000円相当。'},{p:'2025年前半',t:'初年度無料キャンペーン継続。最安値でJALマイルを積める時期。'}],
   },
   {
-    id:'amex-gold-pref',name:'アメックスゴールド・プリファード',issuer:'American Express',
+    id:'amex-gold-pref',name:'アメックスゴールド・プリファード',issuer:'American Express',tagline:'14社マルチ + 入会ボーナス最大 — 初年度爆積みの定番カード',
     sq:'アメックスゴールドプリファードカード 公式サイト',
     dkt:'アメリカンエキスプレス ゴールド プリファード',psType:'referral',
     fee:39600,feeNote:'ANA移行は「MRアナコース」年5,500円別途必要（年間上限40,000マイル）。JAL移行は2,500pt→1,000マイルと低効率（0.4%）。',ac:'linear-gradient(90deg,#F59E0B,#EF4444)',
@@ -517,7 +518,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年後半',t:'最大65,000〜110,000ptのキャンペーン。入会ボーナスが強力で最初の年はマイル大量獲得。'},{p:'2025年前半',t:'同様の大型キャンペーン。マルチ対応で後からマイル種別を決められる強み。'}],
   },
   {
-    id:'ana-amex-gold',name:'ANAアメックスゴールドカード',issuer:'American Express',
+    id:'ana-amex-gold',name:'ANAアメックスゴールドカード',issuer:'American Express',tagline:'入会ボーナス最大70,000マイル — ANA初年度一気積みの切り札',
     sq:'ANAアメリカンエキスプレスゴールドカード 公式サイト',
     dkt:'ANA アメリカンエキスプレス ゴールド',psType:'referral',
     fee:34100,feeNote:'※ポイント移行コース年6,600円込みで1.0%還元（実質40,700円）。',ac:'linear-gradient(90deg,#0EA5E9,#2563EB)',
@@ -534,7 +535,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年10〜2026年3月',t:'同様の最大70,000マイルキャンペーン。入会年は80,000〜90,000マイル超えが現実的。'},{p:'2025年前半',t:'最大60,000〜70,000マイル。移行コース費用を引いても圧倒的なボーナス量。'}],
   },
   {
-    id:'sora',name:'ソラチカゴールドカード',issuer:'JCB（ANA To Me CARD PASMO JCB Gold）',
+    id:'sora',name:'ソラチカゴールドカード',issuer:'JCB（ANA To Me CARD PASMO JCB Gold）',tagline:'ANA1.0% × 年会費11,000円 — 陸マイラーのコスパ最高基準',
     sq:'ソラチカゴールドカード ANA JCB 公式サイト',
     dkt:'ANA To Me CARD PASMO JCB ゴールド ソラチカ',psType:'psite',
     fee:11000,feeNote:null,ac:'linear-gradient(90deg,#0EA5E9,#22C55E)',
@@ -551,7 +552,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年11月〜2026年2月',t:'同様に最大19,000マイル相当。年会費11,000円対比のコスパが特に高い。'},{p:'2025年前半',t:'12,000〜15,000マイル相当の入会ボーナス。PP付帯カードとして破格のコスト。'}],
   },
   {
-    id:'ana-wide-g',name:'ANAワイドゴールドカード',issuer:'JCB / VISA / Mastercard',
+    id:'ana-wide-g',name:'ANAワイドゴールドカード',issuer:'JCB / VISA / Mastercard',tagline:'ANA直接付与・無期限 × 3ブランド — シンプル積立の定番',
     sq:'ANAワイドゴールドカード 公式サイト',
     dkt:'ANA ワイドゴールドカード',psType:'psite',
     fee:15400,feeNote:null,ac:'linear-gradient(90deg,#2563EB,#0EA5E9)',
@@ -568,7 +569,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年10〜12月',t:'JCBキャンペーンで入会3ヶ月以内50万円利用→約30,000マイル相当。'},{p:'2025年前半',t:'入会2,000＋利用ボーナス8,000〜15,000マイル。継続ボーナス2,000マイルは毎年。'}],
   },
   {
-    id:'mufg-plat',name:'三菱UFJカード・プラチナ・アメックス',issuer:'American Express（三菱UFJ）',
+    id:'mufg-plat',name:'三菱UFJカード・プラチナ・アメックス',issuer:'American Express（三菱UFJ）',tagline:'PP最安プラチナ22,000円 × 家族PP可 — KF/JAL高レート移行も',
     sq:'三菱UFJカードプラチナアメリカンエキスプレスカード 公式サイト',
     dkt:'三菱UFJカード プラチナ アメックス',psType:'psite',
     fee:22000,feeNote:null,ac:'linear-gradient(90deg,#7C3AED,#0EA5E9)',
@@ -585,7 +586,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年後半',t:'同様の条件で15,000〜25,000円相当。PP目的のサブカードとして最安コストで取得できる時期。'},{p:'2025年前半',t:'入会ボーナス10,000〜20,000円相当。22,000円の年会費に対してバランスの取れたキャンペーン。'}],
   },
   {
-    id:'jal-amex-plat',name:'JALアメックスプラチナカード',issuer:'American Express（JAL）',
+    id:'jal-amex-plat',name:'JALアメックスプラチナカード',issuer:'American Express（JAL）',tagline:'JAL1.0% + PP無制限 × AMEX — JAL派のAMEXブランド選択肢',
     sq:'JALアメリカンエキスプレスプラチナカード 公式サイト',
     dkt:'JAL アメリカンエキスプレス プラチナ',psType:'referral',
     fee:34100,feeNote:null,ac:'linear-gradient(90deg,#E11D48,#7C3AED)',
@@ -602,7 +603,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年後半',t:'入会ボーナス3,000〜5,000マイル。JAL派でAMEXを希望するニッチな需要に応えるカード。'},{p:'2025年前半',t:'同様の水準。JAL CLUB-Aゴールドと比較してブランドと特典で選択。'}],
   },
   {
-    id:'jal-club-a',name:'JAL CLUB-Aゴールドカード',issuer:'VISA / MC / JCB / Diners',
+    id:'jal-club-a',name:'JAL CLUB-Aゴールドカード',issuer:'VISA / MC / JCB / Diners',tagline:'JAL1.0% × 4ブランド対応 — 最もシンプルなJAL直積みカード',
     sq:'JAL CLUB-Aゴールドカード VISA 公式サイト',
     dkt:'JAL CLUB-A ゴールドカード',psType:'psite',
     fee:17600,feeNote:'ショッピングマイルプレミアム（年3,300円）自動付帯で100円=1マイルを実現。年会費に含む。',ac:'linear-gradient(90deg,#E11D48,#FB923C)',
@@ -619,7 +620,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年12月〜2026年4月',t:'VISA入会キャンペーンで最大50,000マイル。300万円/年なら合計80,000マイル超えも可能。'},{p:'2025年前半',t:'VISA入会ボーナス30,000〜40,000マイル。JAL一択の初心者に最もわかりやすいカード。'}],
   },
   {
-    id:'saison-gold',name:'セゾンゴールド アメックスカード',issuer:'American Express（セゾン）',
+    id:'saison-gold',name:'セゾンゴールド アメックスカード',issuer:'American Express（セゾン）',tagline:'JAL0.75% × 年11,000円 — セゾンプラチナへの低コスト入口',
     sq:'セゾンゴールドアメリカンエキスプレスカード 公式サイト',
     dkt:'セゾンゴールド アメックス',psType:'psite',
     fee:11000,feeNote:'※JAL0.75%はセゾンマイルクラブ（年9,900円）加入前提。実質年会費20,900円（カード11,000円＋マイルクラブ9,900円）。',ac:'linear-gradient(90deg,#E11D48,#7C3AED)',
@@ -636,7 +637,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年後半',t:'入会特典3,000〜5,000円相当。低コストでJALマイルを始める選択肢として注目される。'},{p:'2025年前半',t:'同水準。セゾンプラチナとの比較でコスト重視の選択として選ばれるケースが多い。'}],
   },
   {
-    id:'diners',name:'ダイナースクラブカード',issuer:'Citi（ダイナースクラブ）',
+    id:'diners',name:'ダイナースクラブカード',issuer:'Citi（ダイナースクラブ）',tagline:'ANA/JAL/KF全対応1.0% — グルメ特典付きマルチマイルカード',
     sq:'ダイナースクラブカード 公式サイト',
     dkt:'ダイナース クラブ カード',psType:'psite',
     fee:24200,feeNote:'ダイナースグローバルマイレージ（年6,600円）加入が1.0%換算の前提。年間移行上限40,000マイル/ANA。',ac:'linear-gradient(90deg,#374151,#6B7280)',
@@ -653,7 +654,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年後半',t:'入会ボーナス20,000〜30,000マイル相当。グローバルマイレージ加入で複数マイルに分散獲得可能。'},{p:'2025年前半',t:'同水準。マルチマイル対応の強みが評価される。'}],
   },
   {
-    id:'mb-std',name:'マリオットBonvoy アメックス（一般）',issuer:'American Express',
+    id:'mb-std',name:'マリオットBonvoy アメックス（一般）',issuer:'American Express',tagline:'マルチ対応・最大0.833% — MBプレミアムのコスト抑え版',
     sq:'マリオットBonvoyアメリカンエキスプレスカード 公式サイト',
     dkt:'マリオット ボンヴォイ アメリカンエキスプレス 一般',psType:'referral',
     fee:23100,feeNote:'2025年10月より公共料金・国税の還元率0.5%（改悪）。',ac:'linear-gradient(90deg,#7C3AED,#A78BFA)',
@@ -670,7 +671,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年後半',t:'同様の条件で35,000〜45,000MB pt。プレミアムの大型改悪後、コスト重視で一般に乗り換える動きも。'},{p:'2025年前半',t:'入会ボーナス30,000〜45,000MB pt。年会費23,100円に対して入会年は実質黒字になる水準。'}],
   },
   {
-    id:'hilton',name:'ヒルトンHonors アメックスカード',issuer:'American Express',
+    id:'hilton',name:'ヒルトンHonors アメックスカード',issuer:'American Express',tagline:'ヒルトンゴールド自動付帯 — MBと対になるホテル系入門カード',
     sq:'ヒルトンオナーズアメリカンエキスプレスカード 公式サイト',
     dkt:'ヒルトン オナーズ アメックス',psType:'referral',
     fee:16500,feeNote:'マイル換算効率：100円=3pt×10%（ポイント→マイル変換率）＝0.3マイル/100円（0.3%）と低効率。ホテル宿泊目的が前提のカード。',ac:'linear-gradient(90deg,#0EA5E9,#164E63)',
@@ -687,7 +688,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年後半',t:'45,000〜55,000ヒルトンポイントの入会ボーナス。マイルよりもヒルトン宿泊特典を狙う層に人気。'},{p:'2025年前半',t:'同水準。ヒルトンコンラッドSINGAPORE宿泊実現のためのポイント積算戦略として機能。'}],
   },
   {
-    id:'rakuten-pre',name:'楽天プレミアムカード',issuer:'楽天カード株式会社',
+    id:'rakuten-pre',name:'楽天プレミアムカード',issuer:'楽天カード株式会社',tagline:'楽天経済圏と相性良し × PP年5回 — コスパ型の定番カード',
     sq:'楽天プレミアムカード 公式サイト',
     dkt:'楽天プレミアム カード',psType:'psite',
     fee:11000,feeNote:null,ac:'linear-gradient(90deg,#E11D48,#F97316)',
@@ -704,7 +705,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年後半',t:'PP改悪後もコスト対比でPP取得手段として一定評価。入会特典3,000〜5,000楽天ポイント。'},{p:'2025年前半',t:'PP改悪前の最後の黄金期。無制限PP最後の取得機会として需要が集中した時期。'}],
   },
   {
-    id:'smcc-gold-nl',name:'三井住友カード ゴールド（NL）',issuer:'三井住友カード',
+    id:'smcc-gold-nl',name:'三井住友カード ゴールド（NL）',issuer:'三井住友カード',tagline:'年100万円で永年無料 — ANA派初心者のファーストステップ',
     sq:'三井住友カードゴールドNL 公式サイト',
     dkt:'三井住友 ゴールドNL',psType:'psite',
     fee:5500,feeNote:'初年度5,500円。年100万円以上利用で翌年以降永年無料。ただし年間ボーナスポイント（10,000pt相当）はゴールド特典として維持。200〜300万円決済なら条件達成容易。',ac:'linear-gradient(90deg,#16A34A,#0EA5E9)',
@@ -726,7 +727,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年後半',t:'入会ボーナス8,000〜12,000Vポイント。永年無料化条件の達成しやすさから低コスト派に根強い人気。'},{p:'2025年前半',t:'同水準。コスト最優先・ANAサブカードとしての利用が多い。'}],
   },
   {
-    id:'jcb-gold',name:'JCBゴールドカード',issuer:'JCB',
+    id:'jcb-gold',name:'JCBゴールドカード',issuer:'JCB',tagline:'JCBプラチナ招待への登竜門 — PP最安取得ルート',
     sq:'JCBゴールドカード 公式サイト',
     dkt:'JCBゴールド カード',psType:'psite',
     fee:11000,feeNote:null,ac:'linear-gradient(90deg,#16A34A,#0EA5E9)',
@@ -743,7 +744,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年後半',t:'入会特典15,000〜20,000円相当。JCBゴールドゆえの入会特典は手厚いが、通常決済でのマイル効率が課題。'},{p:'2025年前半',t:'同水準。ソラチカゴールドへの乗り換え導入として評価されるケースもある。'}],
   },
   {
-    id:'amex-green',name:'アメックスグリーンカード',issuer:'American Express',
+    id:'amex-green',name:'アメックスグリーンカード',issuer:'American Express',tagline:'ANA1.0% × 年13,200円 — AMEXブランド最安のスタートライン',
     sq:'アメリカンエキスプレスグリーンカード 公式サイト',
     dkt:'アメックス グリーン カード',psType:'referral',
     fee:13200,feeNote:'MRポイント→マイル移行コース加入が必要（有料）。ANA移行は1,000pt→1,000マイル（移行コースプレミアム：年6,600円）。',ac:'linear-gradient(90deg,#16A34A,#0EA5E9)',
@@ -764,7 +765,7 @@ const CARDS=[
   },
   // ── SQクリスフライヤー提携カード ──
   {
-    id:'sq-jcb-gold',name:'SQクリスフライヤーJCBゴールドカード',issuer:'JCB（シンガポール航空）',
+    id:'sq-jcb-gold',name:'SQクリスフライヤーJCBゴールドカード',issuer:'JCB（シンガポール航空）',tagline:'KFマイル直接付与1.0% — 変換費用ゼロのKF最短ルート',
     sq:'SQクリスフライヤーJCBゴールドカード 公式サイト',
     dkt:'シンガポール航空 KrisFlyer JCBゴールド',psType:'psite',
     fee:11000,feeNote:null,ac:'linear-gradient(90deg,#0C2340,#F97316)',
@@ -781,7 +782,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年後半',t:'入会特典3,000〜5,000KFマイル。KFマイル直接付与という希少性から陸マイラーのKF派に人気急上昇中。'},{p:'2025年前半',t:'同水準。シンガポール航空ビジネスクラス目標の人の最有力候補として注目される。'}],
   },
   {
-    id:'sq-smbc-visa',name:'SQクリスフライヤーVISAゴールドカード',issuer:'三井住友カード（シンガポール航空）',
+    id:'sq-smbc-visa',name:'SQクリスフライヤーVISAゴールドカード',issuer:'三井住友カード（シンガポール航空）',tagline:'KFマイル直接付与1.0% × VISA — 汎用性重視のKF最短ルート',
     sq:'SQクリスフライヤーVISAゴールドカード 公式サイト',
     dkt:'シンガポール航空 KrisFlyer VISA ゴールド',psType:'psite',
     fee:11000,feeNote:null,ac:'linear-gradient(90deg,#0C2340,#E11D48)',
@@ -1024,6 +1025,7 @@ function cardHTML(c,best){
   <div class="ch">
     <div>
       <div class="cn">${c.name}</div>
+      ${c.tagline?`<div class="ct">${c.tagline}</div>`:''}
       <div class="ci">${c.issuer}</div>
     </div>
     <div class="chr">
