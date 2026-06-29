@@ -286,6 +286,84 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 .url-share-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:7px;border:1.5px solid var(--border-dk);font-size:11px;font-weight:600;color:var(--text-mid);background:var(--surface);cursor:pointer;font-family:inherit;transition:all .15s}
 .url-share-btn:hover{border-color:var(--sky);color:var(--sky-dk);background:var(--sky-xlt)}
 .url-share-btn.copied{border-color:var(--emerald);color:var(--emerald);background:#F0FDF4}
+
+/* ━━━━━━━━ A-3: 目標カスタマイズ ━━━━━━━━ */
+.goal-tog{display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 11px;border-radius:8px;background:var(--sky-xlt);border:1.5px solid var(--sky-lt);margin-top:4px;transition:background .18s,border-color .18s;user-select:none;-webkit-tap-highlight-color:transparent}
+.goal-tog:hover,.goal-tog.open{background:var(--sky-lt);border-color:var(--sky)}
+.goal-tog-info{flex:1;min-width:0}
+.goal-tog-main{font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.goal-tog-sub{font-size:10px;color:var(--sky-dk);margin-top:1px}
+.goal-arr{font-size:11px;color:var(--sky-dk);flex-shrink:0;transition:transform .22s;line-height:1}
+.goal-arr.open{transform:rotate(180deg)}
+.goal-panel{display:none;padding:10px 0 2px}
+.goal-panel.open{display:block}
+.goal-row{margin-bottom:12px}
+.goal-row:last-child{margin-bottom:0}
+.goal-row-lbl{font-size:10px;font-weight:700;color:var(--text-mid);margin-bottom:5px;letter-spacing:.03em}
+.pax-chips{display:flex;gap:5px}
+.pax-chip{cursor:pointer;flex:1;text-align:center;padding:5px 4px;border-radius:8px;border:1.5px solid var(--border-dk);font-size:12px;font-weight:700;color:var(--text-mid);background:var(--surface);transition:all .15s;user-select:none;white-space:nowrap}
+.pax-chip:hover{border-color:var(--sky);color:var(--sky-dk)}
+.pax-chip.on{background:linear-gradient(135deg,var(--sky),var(--sky-dk));border-color:var(--sky);color:#fff}
+.goal-mpp-row{display:flex;align-items:center;gap:6px}
+.goal-mpp-inp{flex:1;padding:7px 9px;border:1.5px solid var(--border-dk);border-radius:7px;font-size:13px;font-family:'DM Mono',monospace;color:var(--text);background:var(--surface);min-width:0;text-align:right;transition:border-color .15s}
+.goal-mpp-inp:focus{outline:none;border-color:var(--sky);box-shadow:0 0 0 2px var(--sky-lt)}
+.goal-mpp-unit{font-size:10.5px;color:var(--text-dim);white-space:nowrap;flex-shrink:0}
+.goal-presets{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px}
+.goal-preset{cursor:pointer;padding:3px 9px;border-radius:5px;border:1px solid var(--border-dk);font-size:10px;color:var(--text-mid);background:var(--surface);transition:all .15s;white-space:nowrap;user-select:none;line-height:1.6}
+.goal-preset:hover{border-color:var(--sky);color:var(--sky-dk);background:var(--sky-xlt)}
+.goal-total-box{margin-top:10px;padding:9px 12px;background:linear-gradient(135deg,var(--sky-xlt),#EFF6FF);border:1.5px solid var(--sky-lt);border-radius:8px;text-align:center}
+.goal-total-num{font-family:'DM Mono',monospace;font-size:20px;font-weight:600;color:var(--sky-dk);line-height:1.2}
+.goal-total-sub{font-size:10px;color:var(--text-dim);margin-top:3px}
+
+/* ━━━━━━━━ A-2: カード比較モード ━━━━━━━━ */
+/* 各カードの比較ボタン */
+.cmp-btn{display:inline-flex;align-items:center;gap:3px;padding:4px 10px;border-radius:6px;border:1.5px solid var(--border-dk);font-size:10.5px;font-weight:600;color:var(--text-mid);background:var(--surface);cursor:pointer;transition:all .15s;font-family:inherit;user-select:none;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.cmp-btn:hover{border-color:var(--sky);color:var(--sky-dk);background:var(--sky-xlt)}
+.cmp-btn.on{background:linear-gradient(135deg,var(--sky),var(--sky-dk));border-color:var(--sky-dk);color:#fff}
+
+/* 画面下部固定バー */
+.cmp-bar{position:fixed;bottom:-90px;left:0;right:0;z-index:900;transition:bottom .28s cubic-bezier(.32,.72,0,1);background:linear-gradient(135deg,#0C2340 0%,#1E4976 100%);border-top:2.5px solid var(--sky);box-shadow:0 -4px 24px rgba(0,0,0,.3);padding:10px 14px;display:flex;align-items:center;gap:9px}
+.cmp-bar.show{bottom:0}
+.cmp-bar-cards{flex:1;display:flex;gap:7px;min-width:0;overflow:hidden}
+.cmp-bar-card{flex:1;min-width:0;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:6px;padding:5px 10px;font-size:11px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cmp-bar-card.empty{border-style:dashed;color:rgba(255,255,255,.4);font-size:10px;font-style:italic}
+.cmp-bar-actions{display:flex;gap:6px;flex-shrink:0}
+.cmp-clr-btn{padding:6px 10px;border-radius:7px;border:1.5px solid rgba(255,255,255,.25);color:rgba(255,255,255,.7);font-size:11px;font-weight:600;background:transparent;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
+.cmp-clr-btn:hover{border-color:rgba(255,255,255,.7);color:#fff}
+.cmp-go-btn{padding:8px 15px;border-radius:8px;background:linear-gradient(135deg,var(--sky),var(--violet));color:#fff;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;box-shadow:0 2px 10px rgba(37,99,235,.4)}
+.cmp-go-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 14px rgba(37,99,235,.5)}
+.cmp-go-btn:disabled{opacity:.35;cursor:not-allowed;transform:none}
+
+/* モーダル（ボトムシート） */
+.cmp-overlay{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .22s}
+.cmp-overlay.show{opacity:1;pointer-events:all}
+.cmp-modal{width:100%;max-width:800px;max-height:90dvh;background:var(--surface);border-radius:16px 16px 0 0;overflow-y:auto;transform:translateY(100%);transition:transform .28s cubic-bezier(.32,.72,0,1);box-shadow:0 -8px 40px rgba(0,0,0,.35);scrollbar-width:thin;scrollbar-color:var(--border-dk) transparent}
+.cmp-overlay.show .cmp-modal{transform:translateY(0)}
+.cmp-modal::-webkit-scrollbar{width:4px}
+.cmp-modal::-webkit-scrollbar-thumb{background:var(--border-dk);border-radius:2px}
+.cmp-mhd{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px 12px;background:linear-gradient(135deg,#0C2340 0%,#1E4976 100%);border-radius:16px 16px 0 0;position:sticky;top:0;z-index:2}
+.cmp-pull{width:36px;height:4px;background:rgba(255,255,255,.25);border-radius:2px;margin:0 auto 10px;flex-shrink:0;display:none}
+.cmp-mhd-ttl{font-size:15px;font-weight:700;color:#fff}
+.cmp-mhd-sub{font-size:10px;color:rgba(255,255,255,.65);margin-top:2px;line-height:1.4;word-break:break-all}
+.cmp-close{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;flex-shrink:0;font-family:inherit;line-height:1}
+.cmp-close:hover{background:rgba(255,255,255,.3)}
+
+/* 比較テーブル */
+.cmp-tbl{width:100%;border-collapse:collapse;table-layout:fixed}
+.cmp-tbl td{padding:9px 13px;border-bottom:1px solid var(--border);vertical-align:top;width:50%;word-break:break-word}
+.cmp-row-lbl{font-size:9.5px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.07em;background:var(--bg);padding:6px 13px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);word-break:normal}
+.cmp-card-hd{background:var(--sky-xlt);padding:11px 13px;border-bottom:2px solid var(--border-dk);text-align:center}
+.cmp-card-nm{font-size:12px;font-weight:700;color:var(--sky-dk);line-height:1.4}
+.cmp-card-tg{font-size:10px;color:var(--text-mid);margin-top:3px;line-height:1.4}
+.cmp-val{font-family:'DM Mono',monospace;font-size:17px;font-weight:600;color:var(--text);line-height:1.2}
+.cmp-val.pos{color:var(--emerald)}
+.cmp-val.neg{color:var(--rose)}
+.cmp-val.sky{color:var(--sky-dk)}
+.cmp-sub{font-size:10px;color:var(--text-dim);margin-top:2px;line-height:1.4}
+.cmp-feat{font-size:11.5px;color:var(--text-mid);line-height:1.5}
+.cmp-feat-sub{font-size:10px;color:var(--text-dim);margin-top:1px}
+.cmp-win{background:linear-gradient(to right,#F0FDF4,#FAFFFE);border-left:3px solid var(--emerald)}
+.cmp-hint{padding:11px 16px;font-size:10.5px;color:var(--text-mid);background:var(--bg);border-top:1px solid var(--border);line-height:1.65;text-align:center}
 </style>
 </head>
 <body>
@@ -419,6 +497,55 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
       </div>
       <div style="font-size:9.5px;color:var(--text-dim);margin-top:6px;line-height:1.55">
         ※ ボーナスは各社公表キャンペーンの最大値（目安）。条件・時期により異なります。実質おトク額・獲得マイル数ソートに反映。
+      </div>
+    </div>
+
+    <!-- ━━━━━━━━ A-3: 目標カスタマイズ ━━━━━━━━ -->
+    <div class="cs">
+      <div class="ctrl-lbl"><span class="n">8</span>目標カスタマイズ</div>
+      <!-- トグルボタン -->
+      <div class="goal-tog" id="goalTog" onclick="toggleGoal()">
+        <div class="goal-tog-info">
+          <div class="goal-tog-main" id="goalSummary">3名 × 109,000マイル/人</div>
+          <div class="goal-tog-sub">合計 <span id="goalTotal">327,000</span>マイル ｜ ✈ 目標を変更</div>
+        </div>
+        <span class="goal-arr" id="goalArr">▼</span>
+      </div>
+      <!-- 展開パネル -->
+      <div class="goal-panel" id="goalPanel">
+        <div class="goal-row">
+          <div class="goal-row-lbl">👥 人数（何名分貯める？）</div>
+          <div class="pax-chips">
+            <span class="pax-chip" data-p="1" onclick="setPax(this)">1名</span>
+            <span class="pax-chip" data-p="2" onclick="setPax(this)">2名</span>
+            <span class="pax-chip on" data-p="3" onclick="setPax(this)">3名</span>
+            <span class="pax-chip" data-p="4" onclick="setPax(this)">4名</span>
+          </div>
+        </div>
+        <div class="goal-row">
+          <div class="goal-row-lbl">✈ 必要マイル / 1人分</div>
+          <div class="goal-mpp-row">
+            <input type="number" class="goal-mpp-inp" id="goalMppInp"
+              value="109000" min="1000" max="500000" step="1000"
+              oninput="onGoalMpp(this)" onchange="onGoalMpp(this)">
+            <span class="goal-mpp-unit">マイル/人</span>
+          </div>
+          <div class="goal-presets">
+            <span class="goal-preset" onclick="applyPreset(109000)">KF SINビジネス往復</span>
+            <span class="goal-preset" onclick="applyPreset(95000)">ANA SINビジネス往復</span>
+            <span class="goal-preset" onclick="applyPreset(80000)">JAL SINビジネス往復</span>
+            <span class="goal-preset" onclick="applyPreset(35000)">KF SINエコノミー往復</span>
+            <span class="goal-preset" onclick="applyPreset(130000)">ANA ハワイビジネス往復</span>
+            <span class="goal-preset" onclick="applyPreset(10000)">国内線往復(ANA/JAL)</span>
+          </div>
+        </div>
+        <div class="goal-total-box">
+          <div class="goal-total-num" id="goalTotalLarge">327,000<span style="font-size:12px;font-weight:400;color:var(--text-dim)"> マイル</span></div>
+          <div class="goal-total-sub" id="goalTotalSub">3名合計の必要マイル</div>
+        </div>
+      </div>
+      <div style="font-size:9.5px;color:var(--text-dim);margin-top:6px;line-height:1.55">
+        ※「目標達成まで X年」の表示が全カードでリアルタイム更新されます。
       </div>
     </div>
     </div><!-- /panel-inner -->
@@ -884,9 +1011,72 @@ const CARDS=[
 const S={
   mile:'ALL',amt:200,mileVal:5,sort:'score',firstYear:false,
   brands:new Set(['ALL']),
-  tags:{pp:false,'no-exp':false,insurance:false,'low-fee':false,multi:false,'free-night':false}
+  tags:{pp:false,'no-exp':false,insurance:false,'low-fee':false,multi:false,'free-night':false},
+  // A-3: 目標カスタマイズ
+  goalPax:3,      // 人数（1〜4）
+  goalMpP:109000, // 必要マイル/人（デフォルト=KF SIN往復 54,500×2）
+  // A-2: カード比較モード
+  compare:new Set(), // 比較中カードID（最大2枚）
 };
 const fmt=n=>Math.round(n).toLocaleString('ja-JP');
+
+// ━━━━━━━━ A-3: 目標カスタマイズ関数 ━━━━━━━━
+// マイル種別ごとのデフォルト必要マイル/人（往復）
+function getDefaultMpP(){
+  return{ANA:95000,JAL:80000,KF:109000,MB:55000,ALL:109000}[S.mile]||109000;
+}
+// 合計目標マイル（人数×マイル/人）。MB は固定値を使用
+function getGoalMiles(){
+  if(S.mile==='MB')return GOAL.MB;
+  return S.goalPax*S.goalMpP;
+}
+// トグル開閉
+function toggleGoal(){
+  const panel=document.getElementById('goalPanel');
+  const arr=document.getElementById('goalArr');
+  const tog=document.getElementById('goalTog');
+  if(!panel)return;
+  const op=panel.classList.toggle('open');
+  arr.classList.toggle('open',op);
+  tog.classList.toggle('open',op);
+}
+// 人数チップ選択
+function setPax(el){
+  S.goalPax=+el.dataset.p;
+  document.querySelectorAll('.pax-chip').forEach(c=>c.classList.toggle('on',+c.dataset.p===S.goalPax));
+  updateGoalDisplay();
+  render();
+}
+// マイル/人 入力
+function onGoalMpp(el){
+  const v=parseInt(el.value)||0;
+  if(v>=1000){S.goalMpP=v;updateGoalDisplay();render();}
+}
+// プリセット適用
+function applyPreset(miles){
+  S.goalMpP=miles;
+  const inp=document.getElementById('goalMppInp');
+  if(inp)inp.value=miles;
+  updateGoalDisplay();
+  render();
+}
+// パネル表示の更新（トグルボタン・合計ボックス）
+function updateGoalDisplay(){
+  const total=getGoalMiles();
+  const gs=document.getElementById('goalSummary');
+  const gt=document.getElementById('goalTotal');
+  const gtl=document.getElementById('goalTotalLarge');
+  const gts=document.getElementById('goalTotalSub');
+  if(gs)gs.textContent=`${S.goalPax}名 × ${fmt(S.goalMpP)}マイル/人`;
+  if(gt)gt.textContent=fmt(total);
+  if(gtl)gtl.innerHTML=`${fmt(total)}<span style="font-size:12px;font-weight:400;color:var(--text-dim)"> マイル</span>`;
+  if(gts)gts.textContent=`${S.goalPax}名合計の必要マイル`;
+  // 入力欄も同期
+  const inp=document.getElementById('goalMppInp');
+  if(inp&&parseInt(inp.value)!==S.goalMpP)inp.value=S.goalMpP;
+  // 人数チップも同期
+  document.querySelectorAll('.pax-chip').forEach(c=>c.classList.toggle('on',+c.dataset.p===S.goalPax));
+}
 
 // ━━━━━━━━ URL Parameters（A-4追加）━━━━━━━━
 function readUrlParams(){
@@ -938,6 +1128,22 @@ function readUrlParams(){
       if(el)el.classList.add('on');
     });
   }
+  // A-3: 目標カスタマイズ
+  if(p.has('gpax')){
+    const v=parseInt(p.get('gpax'));
+    if(v>=1&&v<=4){
+      S.goalPax=v;
+      document.querySelectorAll('.pax-chip').forEach(c=>c.classList.toggle('on',+c.dataset.p===v));
+    }
+  }
+  if(p.has('gmpp')){
+    const v=parseInt(p.get('gmpp'));
+    if(v>=1000&&v<=500000){
+      S.goalMpP=v;
+      const inp=document.getElementById('goalMppInp');
+      if(inp)inp.value=v;
+    }
+  }
 }
 
 function updateUrl(){
@@ -949,6 +1155,10 @@ function updateUrl(){
   if(!S.brands.has('ALL'))p.set('brands',[...S.brands].join(','));
   const at=Object.keys(S.tags).filter(k=>S.tags[k]);
   if(at.length>0)p.set('tags',at.join(','));
+  // A-3: 目標カスタマイズ
+  if(S.goalPax!==3)p.set('gpax',S.goalPax);
+  const defMpP=getDefaultMpP();
+  if(S.goalMpP!==defMpP)p.set('gmpp',S.goalMpP);
   const qs=p.toString();
   history.replaceState(null,'',qs?'?'+qs:location.pathname);
 }
@@ -1068,7 +1278,7 @@ function cardHTML(c,best){
   const effectiveFee=getEffectiveFee(c);
   const rate=getRate(c);
   const profit=Math.round(totalMiles*S.mileVal-effectiveFee);
-  const goalMiles=GOAL[S.mile]||GOAL.ALL;
+  const goalMiles=getGoalMiles();
   const goalYrs=miles>0?(goalMiles/miles).toFixed(1):'—';
   const profitCls=profit>=0?'pos':'neg';
   const profitStr=(profit>=0?'+':'')+fmt(profit)+'円';
@@ -1136,12 +1346,16 @@ function cardHTML(c,best){
   // KPIスタット
   const kpiStat2=S.mile==='MB'
     ?`<div class="sc"><div class="sl_">ホテル泊換算</div><div class="sv sky" style="font-size:14px">${goalYrs}回泊分</div><div class="ssub">${goalDesc.split('（')[0]}</div></div>`
-    :`<div class="sc"><div class="sl_">目標達成まで</div><div class="sv sky">${goalYrs}年<sub>分</sub></div><div class="ssub">${goalDesc.slice(0,20)+'…'}</div></div>`;
+    :`<div class="sc"><div class="sl_">目標達成まで</div><div class="sv sky">${goalYrs}年<sub>分</sub></div><div class="ssub">${S.goalPax}名 × ${fmt(S.goalMpP)}M/人</div></div>`;
 
   // 申込みリンク
   const applyBtn=c.psType==='psite'
     ?`<a class="sbtn2" href="https://pc.moppy.jp/entry/invite.php?invite=gFgmA1d9" target="_blank" rel="noopener">🏅 モッピー経由で申込</a>`
     :`<a class="sbtn2" href="#" onclick="alert('紹介リンクを取得してから申込ください');return false">👥 紹介特典で申込</a>`;
+
+  // A-2: 比較ボタン
+  const isCompared=S.compare.has(c.id);
+  const cmpBtnHtml=`<button class="cmp-btn${isCompared?' on':''}" id="cmpBtn_${c.id}" onclick="toggleCompare('${c.id}')">${isCompared?'✓ 比較中':'＋ 比較に追加'}</button>`;
 
   return `
 <div class="card${best?' best':''}">
@@ -1155,6 +1369,7 @@ function cardHTML(c,best){
     <div class="chr">
       ${best?'<span class="rbadge">🏆 おすすめ1位</span>':''}
       ${applyBtn}
+      ${cmpBtnHtml}
     </div>
   </div>
   <div class="brand-row">${brandBadges}<span style="font-size:10px;color:var(--text-dim);margin-left:auto;align-self:center">年会費 <strong>${fmt(c.fee)}円</strong></span></div>
@@ -1258,6 +1473,9 @@ function updatePanelSummary(){
   const parts=[`${mn[S.mile]}`,`${S.amt}万円`,`${S.mileVal}円/M`];
   if(activeTags)parts.push(`絞込${activeTags}件`);
   if(S.firstYear)parts.push('初年度ON');
+  // A-3: デフォルトと異なる目標設定ならサマリーに表示
+  const defMpP=getDefaultMpP();
+  if(S.goalPax!==3||S.goalMpP!==defMpP)parts.push(`目標:${S.goalPax}名×${Math.round(S.goalMpP/1000)}kM`);
   el.textContent='— '+parts.join(' · ');
 }
 function tgAcc(el){
@@ -1266,7 +1484,13 @@ function tgAcc(el){
   b.classList.toggle('op');
   if(a)a.classList.toggle('op');
 }
-document.getElementById('sm').addEventListener('change',e=>{S.mile=e.target.value;render();});
+document.getElementById('sm').addEventListener('change',e=>{
+  S.mile=e.target.value;
+  // A-3: マイル種別変更時はデフォルト目標マイルに自動リセット
+  S.goalMpP=getDefaultMpP();
+  updateGoalDisplay();
+  render();
+});
 
 // ━━━━━━━━ スライダー同期 ━━━━━━━━
 function updSlider(){
@@ -1301,9 +1525,262 @@ function updSlider(){
   });
 })();
 
+// ━━━━━━━━ A-2: カード比較モード ━━━━━━━━
+function toggleCompare(id){
+  if(S.compare.has(id)){
+    S.compare.delete(id);
+  } else {
+    if(S.compare.size>=2){
+      // 最大2枚：先に追加した方を自動解除
+      const first=[...S.compare][0];
+      S.compare.delete(first);
+      const ob=document.getElementById('cmpBtn_'+first);
+      if(ob)syncCmpBtn(ob,false);
+    }
+    S.compare.add(id);
+  }
+  const btn=document.getElementById('cmpBtn_'+id);
+  if(btn)syncCmpBtn(btn,S.compare.has(id));
+  updateCompareBar();
+}
+function syncCmpBtn(btn,on){
+  btn.classList.toggle('on',on);
+  btn.textContent=on?'✓ 比較中':'＋ 比較に追加';
+}
+function updateCompareBar(){
+  const bar=document.getElementById('cmpBar');
+  const go=document.getElementById('cmpGoBtn');
+  const arr=[...S.compare];
+  if(!bar)return;
+  bar.classList.toggle('show',arr.length>0);
+  // バーが出ているとき下部に余白を追加してフッターが隠れないようにする
+  document.body.style.paddingBottom=arr.length>0?'70px':'';
+  for(let i=0;i<2;i++){
+    const slot=document.getElementById('cmpSlot'+i);
+    if(!slot)continue;
+    if(arr[i]){
+      const card=CARDS.find(c=>c.id===arr[i]);
+      slot.className='cmp-bar-card';
+      slot.textContent=card?card.name:'—';
+    } else {
+      slot.className='cmp-bar-card empty';
+      slot.textContent=i===0?'カードを選択...':'もう1枚追加...';
+    }
+  }
+  if(go)go.disabled=arr.length<2;
+}
+function clearCompare(){
+  [...S.compare].forEach(id=>{
+    const b=document.getElementById('cmpBtn_'+id);
+    if(b)syncCmpBtn(b,false);
+  });
+  S.compare.clear();
+  updateCompareBar();
+}
+function openCompareModal(){
+  const arr=[...S.compare];
+  if(arr.length<2)return;
+  const c0=CARDS.find(c=>c.id===arr[0]);
+  const c1=CARDS.find(c=>c.id===arr[1]);
+  if(!c0||!c1)return;
+  document.getElementById('cmpMhdSub').textContent=c0.name+' vs '+c1.name;
+  document.getElementById('cmpBody').innerHTML=buildCmpTable(c0,c1);
+  document.getElementById('cmpOverlay').classList.add('show');
+  document.body.style.overflow='hidden';
+}
+function closeCompareModal(){
+  document.getElementById('cmpOverlay').classList.remove('show');
+  document.body.style.overflow='';
+}
+function cmpOverlayClick(e){
+  if(e.target===document.getElementById('cmpOverlay'))closeCompareModal();
+}
+
+function buildCmpTable(c0,c1){
+  const m0=getMiles(c0),m1=getMiles(c1);
+  const b0=getBonusMiles(c0),b1=getBonusMiles(c1);
+  const t0=m0+b0,t1=m1+b1;
+  const f0=getEffectiveFee(c0),f1=getEffectiveFee(c1);
+  const p0=Math.round(t0*S.mileVal-f0),p1=Math.round(t1*S.mileVal-f1);
+  const r0=getRate(c0),r1=getRate(c1);
+  const gm=getGoalMiles();
+  const gy0=m0>0?(gm/m0).toFixed(1):'—';
+  const gy1=m1>0?(gm/m1).toFixed(1):'—';
+  const dm=S.mile==='ALL'?'ANA':S.mile;
+  const mu=S.mile==='MB'?'pt':(dm+'M');
+
+  // 優位判定（数値が高い/低いほど優秀）→ 勝ったセルに .cmp-win クラス
+  function wc(v0,v1,big=true){
+    if(typeof v0!=='number'||typeof v1!=='number'||v0===v1)return['',''];
+    return(big?v0>v1:v0<v1)?['cmp-win','']:['','cmp-win'];
+  }
+  const [wp0,wp1]=wc(p0,p1);
+  const [wr0,wr1]=wc(r0,r1);
+  const [wm0,wm1]=wc(t0,t1);
+  const [wf0,wf1]=wc(f0,f1,false);
+  const gy0n=parseFloat(gy0)||9999,gy1n=parseFloat(gy1)||9999;
+  const [wg0,wg1]=wc(gy0n,gy1n,false);
+
+  const ppL=pp=>pp==='yes'?'✈ PP無制限付帯':pp==='warn'?'⚡ PP有料/回数制限':'🏢 国内ラウンジのみ';
+  const yn=v=>v?'✅ あり':'— なし';
+  const psL=t=>t==='psite'?'✅ ポイントサイト経由推奨':'👥 紹介特典経由推奨';
+  const feeNote0=c0.bonusFeeWaiver?` (初年度−${fmt(c0.bonusFeeWaiver)}円)`:'';
+  const feeNote1=c1.bonusFeeWaiver?` (初年度−${fmt(c1.bonusFeeWaiver)}円)`:'';
+  const modeLabel=S.firstYear?'初年度':'年間';
+
+  return `
+<table class="cmp-tbl">
+  <!-- カードヘッダー -->
+  <tr>
+    <td class="cmp-card-hd ${wp0}">
+      <div class="cmp-card-nm">${c0.name}</div>
+      ${c0.tagline?`<div class="cmp-card-tg">${c0.tagline}</div>`:''}
+      <div style="font-size:10px;margin-top:5px;color:var(--text-dim)">${c0.issuer}</div>
+    </td>
+    <td class="cmp-card-hd ${wp1}">
+      <div class="cmp-card-nm">${c1.name}</div>
+      ${c1.tagline?`<div class="cmp-card-tg">${c1.tagline}</div>`:''}
+      <div style="font-size:10px;margin-top:5px;color:var(--text-dim)">${c1.issuer}</div>
+    </td>
+  </tr>
+
+  <!-- コスト・還元 -->
+  <tr><td colspan="2"><div class="cmp-row-lbl">💰 コスト・還元（${S.amt}万円/年・${modeLabel}）</div></td></tr>
+  <tr>
+    <td class="${wp0}">
+      <div class="cmp-val ${p0>=0?'pos':'neg'}">${p0>=0?'+':''}${fmt(p0)}<span style="font-size:11px"> 円</span></div>
+      <div class="cmp-sub">実質おトク額</div>
+    </td>
+    <td class="${wp1}">
+      <div class="cmp-val ${p1>=0?'pos':'neg'}">${p1>=0?'+':''}${fmt(p1)}<span style="font-size:11px"> 円</span></div>
+      <div class="cmp-sub">実質おトク額</div>
+    </td>
+  </tr>
+  <tr>
+    <td class="${wr0}">
+      <div class="cmp-val sky">${r0.toFixed(2)}<span style="font-size:11px"> %</span></div>
+      <div class="cmp-sub">マイル還元率</div>
+    </td>
+    <td class="${wr1}">
+      <div class="cmp-val sky">${r1.toFixed(2)}<span style="font-size:11px"> %</span></div>
+      <div class="cmp-sub">マイル還元率</div>
+    </td>
+  </tr>
+  <tr>
+    <td class="${wm0}">
+      <div class="cmp-val">${fmt(t0)}<span style="font-size:11px"> ${mu}</span></div>
+      <div class="cmp-sub">${modeLabel}獲得${S.firstYear?' (ボーナス込)':''}</div>
+    </td>
+    <td class="${wm1}">
+      <div class="cmp-val">${fmt(t1)}<span style="font-size:11px"> ${mu}</span></div>
+      <div class="cmp-sub">${modeLabel}獲得${S.firstYear?' (ボーナス込)':''}</div>
+    </td>
+  </tr>
+  <tr>
+    <td class="${wf0}">
+      <div class="cmp-val">${fmt(c0.fee)}<span style="font-size:11px"> 円</span></div>
+      <div class="cmp-sub">年会費${feeNote0}</div>
+    </td>
+    <td class="${wf1}">
+      <div class="cmp-val">${fmt(c1.fee)}<span style="font-size:11px"> 円</span></div>
+      <div class="cmp-sub">年会費${feeNote1}</div>
+    </td>
+  </tr>
+
+  <!-- 目標達成 -->
+  <tr><td colspan="2"><div class="cmp-row-lbl">✈ 目標達成（${S.goalPax}名 × ${fmt(S.goalMpP)}M/人 = 合計${fmt(gm)}M）</div></td></tr>
+  <tr>
+    <td class="${wg0}">
+      <div class="cmp-val sky">${gy0}<span style="font-size:11px"> 年</span></div>
+      <div class="cmp-sub">年間ペースで達成</div>
+    </td>
+    <td class="${wg1}">
+      <div class="cmp-val sky">${gy1}<span style="font-size:11px"> 年</span></div>
+      <div class="cmp-sub">年間ペースで達成</div>
+    </td>
+  </tr>
+
+  <!-- ブランド・特典 -->
+  <tr><td colspan="2"><div class="cmp-row-lbl">🌐 ブランド・特典</div></td></tr>
+  <tr>
+    <td><div class="cmp-feat">${c0.brands.join('・')}</div><div class="cmp-feat-sub">国際ブランド</div></td>
+    <td><div class="cmp-feat">${c1.brands.join('・')}</div><div class="cmp-feat-sub">国際ブランド</div></td>
+  </tr>
+  <tr>
+    <td><div class="cmp-feat">${ppL(c0.pp)}</div><div class="cmp-feat-sub">空港ラウンジ</div></td>
+    <td><div class="cmp-feat">${ppL(c1.pp)}</div><div class="cmp-feat-sub">空港ラウンジ</div></td>
+  </tr>
+  <tr>
+    <td><div class="cmp-feat">${c0.noExp?'⏳ マイル無期限':'⚠ 有効期限あり（3年）'}</div></td>
+    <td><div class="cmp-feat">${c1.noExp?'⏳ マイル無期限':'⚠ 有効期限あり（3年）'}</div></td>
+  </tr>
+  <tr>
+    <td><div class="cmp-feat">${yn(c0.ins)}</div><div class="cmp-feat-sub">旅行保険</div></td>
+    <td><div class="cmp-feat">${yn(c1.ins)}</div><div class="cmp-feat-sub">旅行保険</div></td>
+  </tr>
+  <tr>
+    <td><div class="cmp-feat">${yn(c0.multi)}</div><div class="cmp-feat-sub">マルチマイル対応</div></td>
+    <td><div class="cmp-feat">${yn(c1.multi)}</div><div class="cmp-feat-sub">マルチマイル対応</div></td>
+  </tr>
+  ${(c0.freeNight||c1.freeNight)?`<tr>
+    <td><div class="cmp-feat">${yn(c0.freeNight)}</div><div class="cmp-feat-sub">無料宿泊特典</div></td>
+    <td><div class="cmp-feat">${yn(c1.freeNight)}</div><div class="cmp-feat-sub">無料宿泊特典</div></td>
+  </tr>`:''}
+
+  <!-- 入会ボーナス -->
+  <tr><td colspan="2"><div class="cmp-row-lbl">🎁 入会ボーナス（現在）</div></td></tr>
+  <tr>
+    <td style="font-size:11px;color:var(--text-mid);line-height:1.55">
+      ${c0.bonusCurrent?`<strong style="color:var(--gold)">${c0.bonusCurrent.p}</strong><br>${c0.bonusCurrent.t}`:'情報なし'}
+    </td>
+    <td style="font-size:11px;color:var(--text-mid);line-height:1.55">
+      ${c1.bonusCurrent?`<strong style="color:var(--gold)">${c1.bonusCurrent.p}</strong><br>${c1.bonusCurrent.t}`:'情報なし'}
+    </td>
+  </tr>
+
+  <!-- 申込み -->
+  <tr><td colspan="2"><div class="cmp-row-lbl">📌 申込み方法</div></td></tr>
+  <tr>
+    <td><div class="cmp-feat">${psL(c0.psType)}</div></td>
+    <td><div class="cmp-feat">${psL(c1.psType)}</div></td>
+  </tr>
+</table>
+<div class="cmp-hint">🏆 緑のハイライトは優位な項目。実質おトク額は現在の設定（1マイル=${S.mileVal}円・${S.amt}万円/年）で計算。年会費注記・換算条件はカード詳細を必ずご確認ください。</div>
+`;}
+
 // ━━━━━━━━ 初期化（A-4: readUrlParamsを先に実行）━━━━━━━━
 readUrlParams();
+updateGoalDisplay(); // A-3: 目標パネルの初期表示
 render();
+// A-2: ESCキーでモーダルを閉じる
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCompareModal();});
 </script>
+
+<!-- ━━━━━━━━ A-2: 比較バー（画面下部固定）━━━━━━━━ -->
+<div class="cmp-bar" id="cmpBar">
+  <div class="cmp-bar-cards">
+    <span class="cmp-bar-card empty" id="cmpSlot0">カードを選択...</span>
+    <span class="cmp-bar-card empty" id="cmpSlot1">もう1枚追加...</span>
+  </div>
+  <div class="cmp-bar-actions">
+    <button class="cmp-clr-btn" onclick="clearCompare()">✕ リセット</button>
+    <button class="cmp-go-btn" id="cmpGoBtn" onclick="openCompareModal()" disabled>比較する →</button>
+  </div>
+</div>
+
+<!-- ━━━━━━━━ A-2: 比較モーダル ━━━━━━━━ -->
+<div class="cmp-overlay" id="cmpOverlay" onclick="cmpOverlayClick(event)">
+  <div class="cmp-modal" id="cmpModal">
+    <div class="cmp-mhd">
+      <div style="min-width:0;flex:1">
+        <div class="cmp-mhd-ttl">📊 カード比較</div>
+        <div class="cmp-mhd-sub" id="cmpMhdSub"></div>
+      </div>
+      <button class="cmp-close" onclick="closeCompareModal()">✕</button>
+    </div>
+    <div id="cmpBody"></div>
+  </div>
+</div>
+
 </body>
 </html>
