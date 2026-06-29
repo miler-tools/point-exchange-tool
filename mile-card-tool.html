@@ -57,6 +57,45 @@ body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP','Helvetic
   .panel::-webkit-scrollbar{width:4px}
   .panel::-webkit-scrollbar-thumb{background:var(--border-dk);border-radius:2px}
 }
+
+/* ━━━━━━━━ A-6 モバイルUX改善 ━━━━━━━━ */
+/* パネルトグル：デスクトップでは非表示 */
+.panel-tog{display:none}
+.panel-inner{display:block}
+
+/* トグルUI内部パーツ */
+.ptog-left{display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden}
+.ptog-ico{font-size:16px;flex-shrink:0}
+.ptog-lbl{font-size:13px;font-weight:700;color:var(--sky-dk);flex-shrink:0}
+.ptog-summary{font-size:10.5px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:2px}
+.ptog-arr{width:18px;height:18px;flex-shrink:0;color:var(--sky-dk);transition:transform .22s}
+.ptog-arr.open{transform:rotate(180deg)}
+
+@media(max-width:640px){
+  /* ─ スライダータッチ領域拡大 ─ */
+  input[type=range]{height:6px;padding:10px 0}
+  input[type=range]::-webkit-slider-thumb{width:26px;height:26px;box-shadow:0 2px 10px rgba(37,99,235,.5)}
+  input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:var(--border)}
+  input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--sky),var(--violet));border:2px solid #fff;box-shadow:0 2px 10px rgba(37,99,235,.5);cursor:pointer}
+
+  /* ─ パネルトグルボタン ─ */
+  .panel-tog{
+    display:flex;align-items:center;justify-content:space-between;
+    cursor:pointer;user-select:none;
+    margin:-16px -16px 0;padding:13px 16px;
+    border-radius:calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0;
+    background:linear-gradient(to right,var(--sky-xlt),#EFF6FF);
+    border-bottom:1px solid var(--border);
+    transition:background .15s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .panel-tog.open{background:var(--sky-lt);border-bottom-color:var(--sky)}
+  .panel-tog:active{background:var(--sky-lt)}
+
+  /* ─ パネル本体（折りたたみ対象）─ */
+  .panel-inner{display:none}
+  .panel-inner.open{display:block;padding-top:14px}
+}
 /* ① どこ得バナー */
 .dkt-banner{background:linear-gradient(135deg,#FFF7ED,#FFFBF5);border:2px solid #FED7AA;border-radius:10px;padding:13px 15px;margin:0 0 0 0;border-top:none}
 .dkt-title{font-size:12px;font-weight:700;color:#C2410C;margin-bottom:5px;display:flex;align-items:center;gap:6px}
@@ -266,6 +305,16 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 
 <div class="layout">
   <div class="panel">
+    <!-- A-6: モバイル折りたたみトグル（デスクトップでは非表示） -->
+    <div class="panel-tog" id="panelTog" onclick="togglePanel()">
+      <div class="ptog-left">
+        <span class="ptog-ico">⚙</span>
+        <span class="ptog-lbl">絞り込み設定</span>
+        <span class="ptog-summary" id="ptogSummary"></span>
+      </div>
+      <svg class="ptog-arr" id="ptogArr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" xmlns="http://www.w3.org/2000/svg"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="panel-inner" id="panelInner">
     <div class="cs">
       <div class="ctrl-lbl"><span class="n">1</span>目標マイル種別</div>
       <select id="sm" onchange="render()">
@@ -372,6 +421,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
         ※ ボーナスは各社公表キャンペーンの最大値（目安）。条件・時期により異なります。実質おトク額・獲得マイル数ソートに反映。
       </div>
     </div>
+    </div><!-- /panel-inner -->
   </div>
 
   <div>
@@ -1006,6 +1056,7 @@ function render(){
     document.querySelectorAll('.fbari[data-p]').forEach(el=>el.style.width=el.dataset.p+'%');
     updSlider();
     updateUrl(); // A-4: 状態変化のたびにURLを更新
+    updatePanelSummary(); // A-6: 折りたたみサマリー更新
   });
 }
 
@@ -1186,6 +1237,28 @@ function onFirstYear(){
   S.firstYear=!S.firstYear;
   document.getElementById('fyRow').classList.toggle('on',S.firstYear);
   render();
+}
+
+// ━━━━━━━━ A-6 モバイルUX：パネル折りたたみ ━━━━━━━━
+function togglePanel(){
+  const inner=document.getElementById('panelInner');
+  const tog=document.getElementById('panelTog');
+  const arr=document.getElementById('ptogArr');
+  if(!inner)return;
+  const isOpen=inner.classList.contains('open');
+  inner.classList.toggle('open',!isOpen);
+  tog.classList.toggle('open',!isOpen);
+  arr.classList.toggle('open',!isOpen);
+}
+function updatePanelSummary(){
+  const el=document.getElementById('ptogSummary');
+  if(!el)return;
+  const mn={ALL:'ALL',ANA:'ANA',JAL:'JAL',KF:'KF',MB:'MB'};
+  const activeTags=Object.keys(S.tags).filter(k=>S.tags[k]).length;
+  const parts=[`${mn[S.mile]}`,`${S.amt}万円`,`${S.mileVal}円/M`];
+  if(activeTags)parts.push(`絞込${activeTags}件`);
+  if(S.firstYear)parts.push('初年度ON');
+  el.textContent='— '+parts.join(' · ');
 }
 function tgAcc(el){
   const b=el.nextElementSibling;
