@@ -424,8 +424,8 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:2px solid 
       <button class="btn-xs" onclick="selNone()">全解除</button>
     </div>
     <div class="sb-actions" style="margin-top:4px">
-      <button class="btn-xs" onclick="savePtCustom()" style="background:#e3f2fd;border-color:#90caf9;color:#0d47a1" title="現在の選択を次回以降の初期表示として保存します">💾 初期表示として保存</button>
-      <button class="btn-xs" onclick="clearPtCustom()" title="保存した初期表示をクリアします">🗑 クリア</button>
+      <button class="btn-xs" onclick="savePtCustom()" style="background:#e3f2fd;border-color:#90caf9;color:#0d47a1" title="自動保存中。クリックして保存状態を確認できます">💾 自動保存中（確認）</button>
+      <button class="btn-xs" onclick="clearPtCustom()" title="保存した初期表示をクリアします">🗑 保存をクリア</button>
     </div>
     <div id="ptCustomStatus" style="font-size:9px;color:#0d47a1;margin-top:4px;line-height:1.4;min-height:11px"></div>
   </div>
@@ -1992,11 +1992,12 @@ function togCatAll(cat){
     document.querySelectorAll(`[data-pt="${p.id}"]`).forEach(e=>e.classList.toggle('active',ptSt[p.id]));
   });
   buildMatrix();
+  autoSavePt();
 }
 function togCat(cat,el){/* legacy - unused */}
-function togPt(id,el){ptSt[id]=!ptSt[id];document.querySelectorAll(`[data-pt='${id}']`).forEach(e=>e.classList.toggle('active',ptSt[id]));buildMatrix();}
-function selAll(){PTS.forEach(p=>ptSt[p.id]=true);Object.keys(catSt).forEach(k=>catSt[k]=true);document.querySelectorAll('.chip').forEach(c=>c.classList.add('active'));buildMatrix();}
-function selNone(){PTS.forEach(p=>ptSt[p.id]=false);Object.keys(catSt).forEach(k=>catSt[k]=false);document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));buildMatrix();}
+function togPt(id,el){ptSt[id]=!ptSt[id];document.querySelectorAll(`[data-pt='${id}']`).forEach(e=>e.classList.toggle('active',ptSt[id]));buildMatrix();autoSavePt();}
+function selAll(){PTS.forEach(p=>ptSt[p.id]=true);Object.keys(catSt).forEach(k=>catSt[k]=true);document.querySelectorAll('.chip').forEach(c=>c.classList.add('active'));buildMatrix();autoSavePt();}
+function selNone(){PTS.forEach(p=>ptSt[p.id]=false);Object.keys(catSt).forEach(k=>catSt[k]=false);document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));buildMatrix();autoSavePt();}
 function setLevel(lv){
   curLv=lv;
   document.querySelectorAll('.lv-btn').forEach(b=>b.classList.toggle('active',b.dataset.lv===lv));
@@ -2006,6 +2007,7 @@ function setLevel(lv){
     document.querySelectorAll(`[data-pt="${p.id}"]`).forEach(e=>e.classList.toggle('active',ptSt[p.id]));
   });
   buildMatrix();
+  autoSavePt();
 }
 
 // ════════════════════════════════
@@ -2797,6 +2799,15 @@ function updateAggCustomStatus(){
 function autoSaveAgg(){
   const ok = saveAggSettings();
   const el = document.getElementById('aggCustomStatus');
+  if(!el) return;
+  el.style.color = ok ? '#0d47a1' : '#c62828';
+  el.textContent = ok ? '✓ 自動保存済み' : '⚠ 保存に失敗しました（プライベートブラウジング等では使えません）';
+}
+
+// ─── Auto-save（表側: チップ操作・全選択/全解除・表示レベル変更のたびに自動でlocalStorageへ保存） ───
+function autoSavePt(){
+  const ok = savePtSelection();
+  const el = document.getElementById('ptCustomStatus');
   if(!el) return;
   el.style.color = ok ? '#0d47a1' : '#c62828';
   el.textContent = ok ? '✓ 自動保存済み' : '⚠ 保存に失敗しました（プライベートブラウジング等では使えません）';
