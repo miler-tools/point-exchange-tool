@@ -254,6 +254,14 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 .bht{font-size:9.5px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
 .bhi{display:flex;gap:8px;font-size:10.5px;color:var(--text-mid);margin-bottom:4px;line-height:1.4}
 .bhi:last-child{margin-bottom:0}
+.bstages{padding:9px 14px;border-bottom:1px solid #FDE68A;background:#FFFBF0}
+.bst-h{font-size:9.5px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.bst-item{display:flex;gap:7px;font-size:10.5px;color:var(--text-mid);margin-bottom:5px;line-height:1.4;align-items:flex-start}
+.bst-item:last-child{margin-bottom:0}
+.bst-num{flex:0 0 auto;width:15px;height:15px;border-radius:50%;background:var(--gold);color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.bst-cond{flex:1}
+.bst-pt{flex:0 0 auto;font-weight:700;color:#6B3A00;white-space:nowrap}
+.bst-note{font-size:9.5px;color:#8A6D00;margin-top:7px;padding-top:7px;border-top:1px dashed #FDE68A;line-height:1.5}
 .bhp{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);white-space:nowrap;flex-shrink:0}
 .cdesc{padding:9px 14px;font-size:11.5px;color:var(--text-mid);line-height:1.65}
 .feenote{padding:7px 14px;background:#FFF9EC;font-size:10.5px;color:var(--gold);border-top:1px solid #FDE68A}
@@ -370,7 +378,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 
 <div class="page-header">
   <h1>✈ マイル最強クレカ診断ツール <span class="nb">広告・提携なし</span></h1>
-  <p>19枚比較｜年間200〜300万円決済を想定した日本在住者向けマイル獲得シミュレーター｜2026年5月7日更新</p>
+  <p>19枚比較｜年間200〜300万円決済を想定した日本在住者向けマイル獲得シミュレーター｜2026年8月20日更新</p>
 </div>
 
 <!-- ── URLシェアボタン ── -->
@@ -668,7 +676,7 @@ function mbmi(pt){const b=Math.floor(pt/60000);return b*25000+Math.round((pt%600
 // ━━━━━━━━ カードデータ（19枚） ━━━━━━━━
 const CARDS=[
   {
-    id:'mb-pre',name:'マリオットBonvoy アメックスプレミアム',issuer:'American Express',tagline:'40社超マルチ移行 × 最大1.25% — マイル先送り型の最終兵器',bonusMilesApprox:95000,bonusMbPt:true,bonusFeeWaiver:0,
+    id:'mb-pre',name:'マリオットBonvoy アメックスプレミアム',issuer:'American Express',tagline:'40社超マルチ移行 × 最大1.25% — マイル先送り型の最終兵器',bonusMilesApprox:100000,bonusMbPt:true,bonusFeeWaiver:0,
     sq:'マリオットBonvoyアメックスプレミアムカード 公式サイト',
     dkt:'マリオット ボンヴォイ アメリカン エキスプレス プレミアム',
     psType:'referral',
@@ -682,9 +690,15 @@ const CARDS=[
     desc:'ANA/JAL/KF等40社以上に移行可能。年200万円でちょうど60,000pt→ボーナス込み25,000マイル（1.25%相当）。60,000ptに届かない端数分はボーナスなし換算（1.0%相当）。マイル種別を後から決めたい人の最適解。',
     alerts:[{d:'2025年10月改悪',t:'年会費49,500円→82,500円。無料宿泊条件150万円→400万円に改悪。公共料金・国税還元率0.5%に引き下げ。'}],
     outlook:{risk:'high',items:[{y:'2026〜2027年',i:'⚠️',t:'さらなる年会費引き上げ（100,000円超）や特典削減の可能性。AMEXとマリオットの提携更新時期に注意。'},{y:'安定要素',i:'✅',t:'MBポイント自体の多様な移行先は安定維持の見込み。'}]},
-    referral:{r:'AMEXのRefer a Friend経由で追加5,000〜15,000MB pt（過去実績）。陸マイラー系ブログ・X(旧Twitter)で紹介リンクが入手可能な場合あり。',c:'特典はキャンペーン時のみ。紹介者のカード種別により内容が変わる場合あり。'},
-    bonusCurrent:{p:'2026年1〜4月',t:'入会後6ヶ月以内150万円利用で合計最大95,000MB pt相当。200〜300万円/年なら条件達成の見込み大。'},
-    bonusHistory:[{p:'2025年9〜12月',t:'同様の6ヶ月条件で75,000〜95,000MB pt。旧年会費比較で入会メリットが縮小。'},{p:'2025年前半',t:'同条件65,000〜95,000MB pt。改悪前（旧49,500円）の最後の好機。'}],
+    referral:{r:'AMEXのRefer a Friend経由で追加5,000MB pt程度の上乗せ実績あり（公式95,000ptに対し紹介経由100,000pt等）。陸マイラー系ブログ・X(旧Twitter)で紹介リンクが入手可能な場合あり。',c:'特典はキャンペーン時のみ。紹介者のカード種別により内容が変わる場合あり。'},
+    bonusCurrent:{p:'2026年8月6日〜10月5日',t:'入会後6ヶ月以内に合計150万円利用で合計最大100,000MB pt。200〜300万円/年なら条件達成の見込み大。'},
+    bonusStages:[
+      {cond:'入会後3ヶ月以内に合計30万円以上のカード利用',pt:'+10,000pt'},
+      {cond:'入会後6ヶ月以内に合計150万円以上のカード利用（上記と合算可）',pt:'+45,000pt'},
+      {cond:'合計150万円利用時点の通常ポイント（100円=3pt）',pt:'+45,000pt'},
+    ],
+    bonusAsOf:'2026年8月20日',bonusApplyBy:'2026年8月6日〜10月5日のキャンペーン期間分',
+    bonusHistory:[{p:'2026年前半',t:'6ヶ月150万円条件で75,000〜95,000MB pt。8月改定で100,000ptまで増額。'},{p:'2025年後半',t:'同様の6ヶ月条件で75,000〜95,000MB pt。旧年会費比較で入会メリットが縮小。'}],
   },
   {
     id:'saison-plat',name:'セゾンプラチナ ビジネスアメックス',issuer:'American Express（セゾン）',tagline:'JAL最高水準1.125% + PP無制限 — JAL派唯一の選択肢',bonusMilesApprox:0,bonusMbPt:false,bonusMrPt:false,bonusFeeWaiver:33000,
@@ -720,9 +734,15 @@ const CARDS=[
     desc:'ANA/JAL/KFなど14社に移行可能なマルチカード。ANA1.0%（MRアナコース5,500円別途）、JALは0.4%と低効率のため注意。PP年2回無料・フリーステイ特典・レストラン優待あり。',
     alerts:[{d:'注意',t:'ANAマイルの年間移行上限は40,000マイル。年200万円（20,000マイル）では問題なし。JALへの移行は2,500pt→1,000マイルと効率が悪く非推奨。'}],
     outlook:{risk:'low',items:[{y:'安定要素',i:'✅',t:'2024年2月に新登場した比較的新しいカード。当面は改悪リスクは低い。'},{y:'注意点',i:'⚠️',t:'PP年2回無制限から回数制限への変更リスクあり（世界的トレンド）。'}]},
-    referral:{r:'AMEXのRefer a Friend経由で追加ポイント（5,000〜15,000pt）付与の過去実績あり。',c:'キャンペーン時のみ。現在の入会キャンペーンは合計110,000pt獲得可能（2026年4月〜5月末）。'},
-    bonusCurrent:{p:'2026年4〜5月末',t:'条件達成で合計110,000pt（≈110,000ANAマイル相当）。200〜300万円/年なら入会6ヶ月以内に条件達成見込み大。'},
-    bonusHistory:[{p:'2025年後半',t:'最大65,000〜110,000ptのキャンペーン。入会ボーナスが強力で最初の年はマイル大量獲得。'},{p:'2025年前半',t:'同様の大型キャンペーン。マルチ対応で後からマイル種別を決められる強み。'}],
+    referral:{r:'AMEXのRefer a Friend経由で追加ポイント（5,000〜15,000pt）付与の過去実績あり。',c:'キャンペーン時のみ。申込ルート（公式サイト／紹介プログラム）により獲得ポイント数が異なる場合あり。'},
+    bonusCurrent:{p:'2026年8月時点',t:'条件達成で合計105,000〜120,000pt程度（情報源・申込ルートにより幅あり）。200〜300万円/年の決済ペースなら6ヶ月以内の条件達成は十分見込める水準。'},
+    bonusStages:[
+      {cond:'入会後3ヶ月以内に合計50万円以上のカード利用',pt:'+20,000〜30,000pt'},
+      {cond:'入会後6ヶ月以内に合計100万円以上のカード利用（上記と合算可）',pt:'+65,000〜80,000pt'},
+      {cond:'合計100万円利用時点の通常ポイント（100円=1pt）',pt:'+10,000pt'},
+    ],
+    bonusAsOf:'2026年8月20日',bonusApplyBy:'2026年8月6日改定分（内容は今後も変更される可能性あり）',
+    bonusHistory:[{p:'2026年前半〜8月',t:'50万円/100万円の2段階＋通常ポイントの構成が継続。8月6日改定でボーナスが増額された模様。'},{p:'2025年後半',t:'最大65,000〜110,000ptのキャンペーン。入会ボーナスが強力で最初の年はマイル大量獲得。'}],
   },
   {
     id:'ana-amex-gold',name:'ANAアメックスゴールドカード',issuer:'American Express',tagline:'入会ボーナス最大70,000マイル — ANA初年度一気積みの切り札',bonusMilesApprox:70000,bonusMbPt:false,bonusMrPt:false,bonusFeeWaiver:0,
@@ -735,11 +755,18 @@ const CARDS=[
     pp:'warn',noExp:true,ins:true,multi:false,hotel:false,freeNight:null,
     lounge:'グローバル・ラウンジ・コレクション（PPスタンダード会員資格付帯）。年間2回まで無料、3回目以降$35/回。空港レストラン等ラウンジ以外の施設は利用不可。国内主要空港カードラウンジは追加費用なし。',
     desc:'入会ボーナスの爆発力が随一。ANA一択でPP付帯も欲しい人向け。移行コース（6,600円/年）が還元率1.0%の前提。',
-    alerts:[],
-    outlook:{risk:'mid',items:[{y:'注意点',i:'⚠️',t:'移行コスト年6,600円の値上げリスクあり。AMEXとANAの提携更新時に改定可能性。'},{y:'安定要素',i:'✅',t:'ANAアメックスとしての長期ブランド価値は安定。入会ボーナスの爆発力は維持見込み。'}]},
+    alerts:[{d:'重要',t:'2026年9月2日以降の申込分から、カードデザイン・特典・サービス・年会費が改定される予定（公式発表済み）。それ以前に申し込むか判断する際は、必ず改定内容を確認してください。'}],
+    outlook:{risk:'mid',items:[{y:'注意点',i:'⚠️',t:'2026年9月2日申込分からデザイン・特典・年会費の改定を公式に予告済み。移行コスト年6,600円の値上げリスクも継続。'},{y:'安定要素',i:'✅',t:'ANAアメックスとしての長期ブランド価値は安定。入会ボーナスの爆発力は維持見込み。'}]},
     referral:{r:'AMEXのRefer a Friend経由で追加1,000〜5,000マイル相当の付与実績あり。',c:'キャンペーン時のみ。ANA公式・AMEXアプリで入会キャンペーン最新情報を確認を。'},
-    bonusCurrent:{p:'2026年4月以降',t:'入会後3〜6ヶ月以内70万円以上利用で最大70,000マイル相当。200〜300万円/年なら条件達成がほぼ確実。'},
-    bonusHistory:[{p:'2025年10〜2026年3月',t:'同様の最大70,000マイルキャンペーン。入会年は80,000〜90,000マイル超えが現実的。'},{p:'2025年前半',t:'最大60,000〜70,000マイル。移行コース費用を引いても圧倒的なボーナス量。'}],
+    bonusCurrent:{p:'2026年8月時点（9月2日改定前）',t:'条件達成で合計68,000〜70,000マイル相当。200〜300万円/年なら入会3ヶ月以内の条件達成も狙える。'},
+    bonusStages:[
+      {cond:'新規入会で付与（本会員のみ）',pt:'+2,000マイル相当'},
+      {cond:'入会後3ヶ月以内に合計60万円以上のカード利用',pt:'+16,000pt'},
+      {cond:'入会後3ヶ月以内に合計100万円以上のカード利用（上記と合算可）',pt:'+12,000pt'},
+      {cond:'入会後3ヶ月以内に合計180万円以上のカード利用（上記と合算可）',pt:'+20,000pt'},
+    ],
+    bonusAsOf:'2026年8月20日',bonusApplyBy:'2026年9月2日以降の申込分は特典・年会費が改定予定',
+    bonusHistory:[{p:'2025年10〜2026年8月',t:'60万/100万/180万円の3段階＋入会ボーナスの構成が継続。入会年は70,000〜100,000マイル超えの報告例も。'},{p:'2025年前半',t:'最大60,000〜70,000マイル。移行コース費用を引いても圧倒的なボーナス量。'}],
   },
   {
     id:'sora',name:'ソラチカゴールドカード',issuer:'JCB（ANA To Me CARD PASMO JCB Gold）',tagline:'ANA1.0% × 年会費11,000円 — 陸マイラーのコスパ最高基準',bonusMilesApprox:19000,bonusMbPt:false,bonusMrPt:false,bonusFeeWaiver:0,
@@ -789,8 +816,14 @@ const CARDS=[
     alerts:[],
     outlook:{risk:'low',items:[{y:'安定要素',i:'✅',t:'三菱UFJとAMEXの長期提携。プラチナ最安PP付帯という独自ポジションは維持見込み。'},{y:'注意点',i:'⚠️',t:'グローバルポイントのマイル換算率（0.8%）が他に比べて低い点は改善が期待されるが不確定。'}]},
     referral:{r:'AMEXのRefer a Friendプログラム経由で追加ポイント付与の実績あり（3,000〜5,000円相当）。',c:'三菱UFJ発行のAMEX提携カードのため、通常AMEXのリファーラルとは別扱いになる場合あり。'},
-    bonusCurrent:{p:'2026年現在',t:'入会後3ヶ月以内に合計30万円以上利用で最大15,000円相当のポイント付与（キャンペーン時）。200〜300万円/年なら条件達成は容易。'},
-    bonusHistory:[{p:'2025年後半',t:'同様の条件で15,000〜25,000円相当。PP目的のサブカードとして最安コストで取得できる時期。'},{p:'2025年前半',t:'入会ボーナス10,000〜20,000円相当。22,000円の年会費に対してバランスの取れたキャンペーン。'}],
+    bonusCurrent:{p:'2026年8月時点',t:'ご入会月の2ヶ月後末までの利用金額に応じて最大15,000円相当のグローバルポイント（特典①）＋対象店舗20%還元・最大20,000円相当（特典②）。2026年9月30日までの入会が対象。'},
+    bonusStages:[
+      {cond:'入会月の2ヶ月後末までに合計1万円以上のカード利用',pt:'1,000円相当'},
+      {cond:'同期間に合計3万円以上のカード利用（上記と合算可）',pt:'3,000円相当'},
+      {cond:'同期間に合計10万円以上のカード利用（上記と合算可）',pt:'15,000円相当'},
+    ],
+    bonusAsOf:'2026年8月20日',bonusApplyBy:'2026年9月30日までの入会分',
+    bonusHistory:[{p:'2025年後半〜2026年8月',t:'1万/3万/10万円の3段階構成（2ヶ月以内）で最大15,000円相当。加えて対象店舗還元キャンペーンが併催される時期あり。'},{p:'2025年前半',t:'入会ボーナス10,000〜20,000円相当。22,000円の年会費に対してバランスの取れたキャンペーン。'}],
   },
   {
     id:'jal-amex-plat',name:'JALアメックスプラチナカード',issuer:'American Express（JAL）',tagline:'JAL1.0% + PP無制限 × AMEX — JAL派のAMEXブランド選択肢',bonusMilesApprox:5000,bonusMbPt:false,bonusMrPt:false,bonusFeeWaiver:0,
@@ -806,8 +839,9 @@ const CARDS=[
     alerts:[{d:'注意',t:'JALマイルの有効期限は3年。プラチナ会員ステータスにより搭乗ボーナスも加算される場合あり。'}],
     outlook:{risk:'low',items:[{y:'安定要素',i:'✅',t:'JALとAMEXの長期提携。JAL直接付与の安定性は高い。'},{y:'注意点',i:'⚠️',t:'AMEXブランドは一部加盟店で使えない場合あり。JALマイル有効期限3年の管理が必要。'}]},
     referral:{r:'AMEXのRefer a Friend経由で追加マイル付与の実績あり（1,000〜3,000マイル）。JALカードの友人紹介も別途あり。',c:'JAL提携AMEXのため、通常AMEXリファーラルとは別扱いになる場合あり。'},
-    bonusCurrent:{p:'2026年現在',t:'入会ボーナス最大5,000マイル＋利用特典。200〜300万円/年の通常決済で年間20,000〜30,000マイル。'},
-    bonusHistory:[{p:'2025年後半',t:'入会ボーナス3,000〜5,000マイル。JAL派でAMEXを希望するニッチな需要に応えるカード。'},{p:'2025年前半',t:'同様の水準。JAL CLUB-Aゴールドと比較してブランドと特典で選択。'}],
+    bonusCurrent:{p:'2026年8月時点',t:'JALカード共通の入会搭乗ボーナス（プラチナは初回搭乗時5,000マイル、1回のみ）が中心で、アメックスプロパー系カードのような「3ヶ月/6ヶ月・利用金額」型の段階的キャンペーンは通常実施されていません。別途、期間限定の特約店利用キャンペーン（例：入会月の3ヶ月後末までに30万円以上かつ特約店5回以上利用）が抽選等の形で実施されることがあります。'},
+    bonusAsOf:'2026年8月20日',bonusApplyBy:'期間限定の特約店キャンペーンは開催時期が変動するため要公式確認',
+    bonusHistory:[{p:'2025年後半〜2026年8月',t:'入会搭乗ボーナス5,000マイル（初回搭乗時）は継続。特約店利用の期間限定抽選キャンペーンが不定期に実施。'},{p:'2025年前半',t:'同様の水準。JAL CLUB-Aゴールドと比較してブランドと特典で選択。'}],
   },
   {
     id:'jal-club-a',name:'JAL CLUB-Aゴールドカード',issuer:'VISA / MC / JCB / Diners',tagline:'JAL1.0% × 4ブランド対応 — 最もシンプルなJAL直積みカード',bonusMilesApprox:50000,bonusMbPt:false,bonusMrPt:false,bonusFeeWaiver:0,
@@ -861,7 +895,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年後半',t:'入会ボーナス20,000〜30,000マイル相当。グローバルマイレージ加入で複数マイルに分散獲得可能。'},{p:'2025年前半',t:'同水準。マルチマイル対応の強みが評価される。'}],
   },
   {
-    id:'mb-std',name:'マリオットBonvoy アメックス（一般）',issuer:'American Express',tagline:'マルチ対応・最大0.833% — MBプレミアムのコスト抑え版',bonusMilesApprox:45000,bonusMbPt:true,bonusFeeWaiver:0,
+    id:'mb-std',name:'マリオットBonvoy アメックス（一般）',issuer:'American Express',tagline:'マルチ対応・最大0.833% — MBプレミアムのコスト抑え版',bonusMilesApprox:55000,bonusMbPt:true,bonusFeeWaiver:0,
     sq:'マリオットBonvoyアメリカンエキスプレスカード 公式サイト',
     dkt:'マリオット ボンヴォイ アメリカンエキスプレス 一般',psType:'referral',
     fee:23100,feeNote:'2025年10月より公共料金・国税の還元率0.5%（改悪）。',ac:'linear-gradient(90deg,#7C3AED,#A78BFA)',
@@ -874,11 +908,17 @@ const CARDS=[
     alerts:[{d:'2025年10月改悪',t:'公共料金・国税・事業用決済の還元率が1.0%→0.5%に引き下げ。通常決済は従来通り2pt/100円を維持。'}],
     outlook:{risk:'mid',items:[{y:'注意点',i:'⚠️',t:'プレミアムカードに続き一般カードも改悪。今後のさらなる還元率引き下げリスクあり。'},{y:'安定要素',i:'✅',t:'MBポイント自体の移行先（40社以上）の多様性は維持見込み。コスト対比ではプレミアムより合理的な場合あり。'}]},
     referral:{r:'AMEXのRefer a Friend経由で追加5,000〜10,000MB pt付与の過去実績あり。',c:'紹介者と被紹介者の両方にボーナスがある場合が多い。陸マイラー系コミュニティでリンクを探すと良い。'},
-    bonusCurrent:{p:'2026年現在',t:'入会後6ヶ月以内100万円利用で最大45,000MB pt（キャンペーン時）。200〜300万円/年なら条件達成は容易。'},
-    bonusHistory:[{p:'2025年後半',t:'同様の条件で35,000〜45,000MB pt。プレミアムの大型改悪後、コスト重視で一般に乗り換える動きも。'},{p:'2025年前半',t:'入会ボーナス30,000〜45,000MB pt。年会費23,100円に対して入会年は実質黒字になる水準。'}],
+    bonusCurrent:{p:'2026年8月6日〜10月5日',t:'入会後6ヶ月以内に合計100万円利用で最大55,000MB pt。200〜300万円/年なら条件達成は容易。'},
+    bonusStages:[
+      {cond:'入会後3ヶ月以内に合計30万円以上のカード利用',pt:'+5,000pt'},
+      {cond:'入会後6ヶ月以内に合計100万円以上のカード利用（上記と合算可）',pt:'+30,000pt'},
+      {cond:'合計100万円利用時点の通常ポイント（100円=2pt）',pt:'+20,000pt'},
+    ],
+    bonusAsOf:'2026年8月20日',bonusApplyBy:'2026年8月6日〜10月5日のキャンペーン期間分',
+    bonusHistory:[{p:'2026年前半',t:'6ヶ月100万円条件で35,000〜45,000MB pt。8月改定で55,000ptまで増額。'},{p:'2025年後半',t:'同様の条件で35,000〜45,000MB pt。プレミアムの大型改悪後、コスト重視で一般に乗り換える動きも。'}],
   },
   {
-    id:'hilton',name:'ヒルトンHonors アメックスカード',issuer:'American Express',tagline:'ヒルトンゴールド自動付帯 — MBと対になるホテル系入門カード',bonusMilesApprox:0,bonusMbPt:false,bonusMrPt:false,bonusFeeWaiver:0,
+    id:'hilton',name:'ヒルトンHonors アメックスカード',issuer:'American Express',tagline:'ヒルトンゴールド自動付帯 — MBと対になるホテル系入門カード',bonusMilesApprox:16000,bonusMbPt:false,bonusMrPt:false,bonusFeeWaiver:0,
     sq:'ヒルトンオナーズアメリカンエキスプレスカード 公式サイト',
     dkt:'ヒルトン オナーズ アメックス',psType:'referral',
     fee:16500,feeNote:'マイル換算効率：100円=3pt×10%（ポイント→マイル変換率）＝0.3マイル/100円（0.3%）と低効率。ホテル宿泊目的が前提のカード。',ac:'linear-gradient(90deg,#0EA5E9,#164E63)',
@@ -890,9 +930,14 @@ const CARDS=[
     desc:'マイル還元率は低い（0.3%）が、ヒルトンポイント（100円=3pt）で直接ホテル予約するなら強力。シンガポールのHilton Singapore Orchard・Conrad Singapore Orchardで高コスパな宿泊が可能。マイル目的のカードではない点に注意。',
     alerts:[],
     outlook:{risk:'mid',items:[{y:'注意点',i:'⚠️',t:'ヒルトンの動的価格制導入でポイント価値が変動。マイル換算は非効率のため、ホテル利用が多い人向け。'},{y:'安定要素',i:'✅',t:'AMEXとヒルトンの提携は安定。ヒルトンポイントの多様な利用法は維持見込み。'}]},
-    referral:{r:'AMEXのRefer a Friend経由で追加5,000〜10,000ヒルトンポイント付与の実績あり。',c:'ヒルトン会員番号との紐付けが必要。陸マイラー系コミュニティで紹介リンクを入手できる場合あり。'},
-    bonusCurrent:{p:'2026年現在',t:'入会後6ヶ月以内に条件達成で最大55,000ヒルトンポイント（キャンペーン時）。シンガポール中級ホテル1泊分相当。'},
-    bonusHistory:[{p:'2025年後半',t:'45,000〜55,000ヒルトンポイントの入会ボーナス。マイルよりもヒルトン宿泊特典を狙う層に人気。'},{p:'2025年前半',t:'同水準。ヒルトンコンラッドSINGAPORE宿泊実現のためのポイント積算戦略として機能。'}],
+    referral:{r:'AMEXのRefer a Friend経由で追加ヒルトンポイント付与の実績あり。',c:'ヒルトン会員番号との紐付けが必要。陸マイラー系コミュニティで紹介リンクを入手できる場合あり。'},
+    bonusCurrent:{p:'2026年8月時点',t:'入会後3ヶ月以内の条件達成で合計16,000ヒルトン・オナーズ・ボーナスポイント（公式サイト記載）。ボーナスポイントは入会後5〜6ヶ月を目途に加算。'},
+    bonusStages:[
+      {cond:'入会後3ヶ月以内に合計30万円のカード利用',pt:'+10,000pt（入会ボーナス）'},
+      {cond:'同利用分の通常ポイント（100円=2pt）',pt:'+6,000pt'},
+    ],
+    bonusAsOf:'2026年8月20日',bonusApplyBy:null,
+    bonusHistory:[{p:'2026年前半〜8月',t:'3ヶ月30万円条件で合計16,000pt（入会ボーナス10,000pt＋通常ポイント6,000pt）。'},{p:'2025年後半',t:'紹介経由では上乗せで44,000pt獲得の報告例あり（プレミアムカードの場合）。一般カードは条件・ポイント数が異なる点に注意。'}],
   },
   {
     id:'rakuten-pre',name:'楽天プレミアムカード',issuer:'楽天カード株式会社',tagline:'楽天経済圏と相性良し × PP年5回 — コスパ型の定番カード',bonusMilesApprox:2500,bonusMbPt:false,bonusMrPt:false,bonusFeeWaiver:0,
@@ -951,7 +996,7 @@ const CARDS=[
     bonusHistory:[{p:'2025年後半',t:'入会特典15,000〜20,000円相当。JCBゴールドゆえの入会特典は手厚いが、通常決済でのマイル効率が課題。'},{p:'2025年前半',t:'同水準。ソラチカゴールドへの乗り換え導入として評価されるケースもある。'}],
   },
   {
-    id:'amex-green',name:'アメックスグリーンカード',issuer:'American Express',tagline:'ANA1.0% × 年13,200円 — AMEXブランド最安のスタートライン',bonusMilesApprox:40000,bonusMrPt:true,bonusFeeWaiver:0,
+    id:'amex-green',name:'アメックスグリーンカード',issuer:'American Express',tagline:'ANA1.0% × 年13,200円 — AMEXブランド最安のスタートライン',bonusMilesApprox:35000,bonusMrPt:true,bonusFeeWaiver:0,
     sq:'アメリカンエキスプレスグリーンカード 公式サイト',
     dkt:'アメックス グリーン カード',psType:'referral',
     fee:13200,feeNote:'MRポイント→マイル移行コース加入が必要（有料）。ANA移行は1,000pt→1,000マイル（移行コースプレミアム：年6,600円）。',ac:'linear-gradient(90deg,#16A34A,#0EA5E9)',
@@ -967,8 +1012,14 @@ const CARDS=[
     alerts:[],
     outlook:{risk:'low',items:[{y:'安定要素',i:'✅',t:'AMEXグリーンは入門カードとして安定。改悪リスクは低い。'},{y:'注意点',i:'⚠️',t:'旅行保険は自動付帯ではなく、利用付帯のみ。旅行保険重視の方はゴールドクラスを選択推奨。'}]},
     referral:{r:'AMEXのRefer a Friend経由で追加3,000〜10,000pt付与の実績あり。',c:'グリーン・ゴールド・プラチナと紹介対象カードが異なる場合あり。AMEXアプリで確認を。'},
-    bonusCurrent:{p:'2026年現在',t:'入会後3ヶ月以内30万円利用で最大40,000pt相当（キャンペーン時）。200〜300万円/年なら条件達成は容易。'},
-    bonusHistory:[{p:'2025年後半',t:'入会特典30,000〜40,000pt。低コストでAMEXを始める選択肢として一定の支持あり。'},{p:'2025年前半',t:'同水準。コストを抑えてマルチマイル対応のAMEXを持ちたい人の入門カードとして機能。'}],
+    bonusCurrent:{p:'2026年8月時点',t:'条件達成で合計20,000〜35,000pt程度。加盟店ボーナス（上限15,000pt）を満額取れるかで幅が出る。200〜300万円/年なら基本2段階は容易に達成可能。'},
+    bonusStages:[
+      {cond:'入会後3ヶ月以内に合計20万円以上のカード利用',pt:'+5,000pt'},
+      {cond:'入会後6ヶ月以内に合計50万円以上のカード利用（上記と合算可）',pt:'+15,000pt'},
+      {cond:'入会後8ヶ月以内、対象加盟店での利用1,000円ごと（上限あり）',pt:'+最大15,000pt'},
+    ],
+    bonusAsOf:'2026年8月20日',bonusApplyBy:null,
+    bonusHistory:[{p:'2025年後半',t:'入会特典20,000〜35,000pt。低コストでAMEXを始める選択肢として一定の支持あり。'},{p:'2025年前半',t:'同水準。コストを抑えてマルチマイル対応のAMEXを持ちたい人の入門カードとして機能。'}],
   },
   // ── SQクリスフライヤー提携カード ──
   {
@@ -1160,7 +1211,11 @@ function updateUrl(){
   const defMpP=getDefaultMpP();
   if(S.goalMpP!==defMpP)p.set('gmpp',S.goalMpP);
   const qs=p.toString();
-  history.replaceState(null,'',qs?'?'+qs:location.pathname);
+  try{
+    history.replaceState(null,'',qs?'?'+qs:location.pathname);
+  }catch(e){
+    // プレビュー用サンドボックス（srcdoc等）ではreplaceStateがSecurityErrorになる場合があるため無視
+  }
 }
 
 function copyUrl(){
@@ -1343,6 +1398,15 @@ function cardHTML(c,best){
     ?c.bonusHistory.map(b=>`<div class="bhi"><span class="bhp">${b.p}</span><span>${b.t}</span></div>`).join('')
     :'';
 
+  // 入会ボーナスの段階的条件（アメックス系カードなど、複数ステップに分かれる場合）
+  const bstages=c.bonusStages&&c.bonusStages.length>0
+    ?`<div class="bstages">
+        <div class="bst-h">🪜 入会ボーナスの達成条件（段階別）</div>
+        ${c.bonusStages.map((s,i)=>`<div class="bst-item"><span class="bst-num">${i+1}</span><span class="bst-cond">${s.cond}</span><span class="bst-pt">${s.pt}</span></div>`).join('')}
+        ${c.bonusAsOf?`<div class="bst-note">📌 ${c.bonusAsOf}${c.bonusApplyBy?`／${c.bonusApplyBy}`:''}時点の公開情報をもとに作成。キャンペーン内容は変更されることが多いため、申込前に必ず公式サイトで最新条件をご確認ください。</div>`:''}
+      </div>`
+    :'';
+
   // KPIスタット
   const kpiStat2=S.mile==='MB'
     ?`<div class="sc"><div class="sl_">ホテル泊換算</div><div class="sv sky" style="font-size:14px">${goalYrs}回泊分</div><div class="ssub">${goalDesc.split('（')[0]}</div></div>`
@@ -1396,6 +1460,7 @@ function cardHTML(c,best){
   ${c.freeNight?`<div class="acc"><div class="acc-h" onclick="tgAcc(this)"><span class="acc-t">🏨 無料宿泊特典の詳細</span><span class="acc-a">▼</span></div><div class="acc-b"><div>${c.freeNight}</div></div></div>`:''}
   <div class="bsec">
     ${c.bonusCurrent?`<div class="bcur">🎁 <strong>現在の入会ボーナス：</strong>${c.bonusCurrent.p}｜${c.bonusCurrent.t}</div>`:''}
+    ${bstages}
     ${bhist?`<div class="bhist"><div class="bht">📅 過去のボーナス傾向</div>${bhist}</div>`:''}
   </div>
   <div class="acc"><div class="acc-h" onclick="tgAcc(this)"><span class="acc-t">📋 このカードの詳細・注記</span><span class="acc-a">▼</span></div><div class="acc-b">
