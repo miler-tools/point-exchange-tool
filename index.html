@@ -327,6 +327,25 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:2px solid 
 .calc-unit{font-size:10px;color:var(--text3);white-space:nowrap}
 .calc-arrow{font-size:16px;color:#185fa5;font-weight:700;padding:0 2px}
 
+/* 目標マイル数セル：ホバーで▲▼が出て、クリックだけでstep分の増減ができるスピナー */
+.spin-wrap{position:relative;display:inline-block}
+.spin-wrap .calc-input{padding-right:20px}
+.spin-btn{
+  position:absolute;right:1px;width:17px;height:11px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:8px;line-height:1;color:#888;background:rgba(0,0,0,0.04);
+  border:none;border-radius:2px;cursor:pointer;padding:0;
+  opacity:0;transition:opacity .15s,color .15s,background .15s;
+}
+.spin-wrap:hover .spin-btn,.spin-btn:focus-visible{opacity:1}
+.spin-btn:hover{color:#fff;background:#185fa5}
+.spin-btn.spin-up{top:1px}
+.spin-btn.spin-down{bottom:1px}
+@media (hover:none){
+  /* タッチ端末はホバー判定できないため常時表示 */
+  .spin-btn{opacity:0.55}
+}
+
 /* 結果エリア */
 .calc-results{
   background:var(--bg2);border-radius:var(--rsm);padding:10px 12px;
@@ -458,7 +477,11 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:2px solid 
           <option value="jal">JALマイル</option>
           <option value="marriott">マリオットBonvoyポイント</option>
         </select>
-        <input class="calc-input" id="aggGoal" type="number" min="0" step="10000" value="285000" oninput="runAgg();autoSaveAgg()" style="width:110px">
+        <span class="spin-wrap">
+          <input class="calc-input" id="aggGoal" type="number" min="0" step="10000" value="285000" oninput="runAgg();autoSaveAgg()" style="width:110px">
+          <button type="button" class="spin-btn spin-up" tabindex="-1" onclick="bumpAggGoal(1,1)" aria-label="目標①のマイル数を増やす">▲</button>
+          <button type="button" class="spin-btn spin-down" tabindex="-1" onclick="bumpAggGoal(1,-1)" aria-label="目標①のマイル数を減らす">▼</button>
+        </span>
         <span style="font-size:11px;color:#4a7a4a" id="aggGoalUnit">マイル</span>
       </div>
       <div style="display:flex;justify-content:center;margin:-3px 0">
@@ -472,7 +495,11 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:2px solid 
           <option value="jal" selected>JALマイル</option>
           <option value="marriott">マリオットBonvoyポイント</option>
         </select>
-        <input class="calc-input" id="aggGoal2" type="number" min="0" step="10000" value="0" oninput="runAgg();autoSaveAgg()" style="width:110px">
+        <span class="spin-wrap">
+          <input class="calc-input" id="aggGoal2" type="number" min="0" step="10000" value="0" oninput="runAgg();autoSaveAgg()" style="width:110px">
+          <button type="button" class="spin-btn spin-up" tabindex="-1" onclick="bumpAggGoal(2,1)" aria-label="目標②のマイル数を増やす">▲</button>
+          <button type="button" class="spin-btn spin-down" tabindex="-1" onclick="bumpAggGoal(2,-1)" aria-label="目標②のマイル数を減らす">▼</button>
+        </span>
         <span style="font-size:11px;color:#4a7a4a" id="aggGoalUnit2">マイル</span>
         <span style="font-size:9.5px;color:#7a5500">（0のままなら目標②は無効。両方入力すると、各ポイントはまず換算レートが高い方へ優先的に交換され、そちらが100%到達した時点で残りは自動的にもう一方へ切り替わります）</span>
       </div>
@@ -2763,6 +2790,19 @@ function swapAggTargets() {
   runAgg();
   autoSaveAgg();
 }
+
+// 目標①・②のマイル数セルの▲▼クリックで、step刻みで増減する（キーボード入力不要）
+function bumpAggGoal(which, dir) {
+  const el = document.getElementById(which === 2 ? 'aggGoal2' : 'aggGoal');
+  if (!el) return;
+  const step = parseFloat(el.step) || 10000;
+  const cur = parseFloat(el.value) || 0;
+  const next = Math.max(0, cur + dir * step);
+  el.value = next;
+  runAgg();
+  autoSaveAgg();
+}
+
 
 // 初期表示に含めるID（ヤマダ・現金・dmoneyは除外）
 const AGG_DEFAULT_IDS = ['moppy','hapitas','fancrew'];
