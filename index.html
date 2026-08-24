@@ -383,7 +383,7 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:2px solid 
 <body>
 <div class="hdr">
   <h1>✈️ マイル集約電卓・マイル交換レート一覧</h1>
-  <span class="hdr-sub">レート最終更新: 2026年7月7日 ／ 交換前に必ず各社公式サイトをご確認ください</span>
+  <span class="hdr-sub">レート最終更新: 2026年8月24日 ／ 交換前に必ず各社公式サイトをご確認ください</span>
 </div>
 
 <!-- 静的説明テキスト（Googlebot向け・ツール概要を静的HTMLで提供） -->
@@ -449,20 +449,34 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:2px solid 
     </div>
     <div class="calc-body open" id="aggBody">
 
-      <!-- 目標マイル種別 + 目標値設定 -->
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:8px 10px;background:#f1f8e9;border-radius:6px;border:1px solid #c5e1a5;flex-wrap:wrap">
-        <span style="font-size:11px;font-weight:700;color:#2e7d32;white-space:nowrap">目標マイル種別</span>
-        <select id="aggTarget" onchange="changeAggTarget()" style="font-size:12px;padding:4px 7px;border:1px solid #a5d6a7;border-radius:4px;background:#fff;font-weight:700;color:#1a3a1a">
+      <!-- 目標マイル種別 + 目標値設定（2目標同時設定） -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;padding:8px 10px;background:#f1f8e9;border-radius:6px;border:1px solid #c5e1a5;flex-wrap:wrap">
+        <span style="font-size:11px;font-weight:700;color:#185fa5;white-space:nowrap">🎯 目標①</span>
+        <select id="aggTarget" onchange="changeAggTarget()" style="font-size:12px;padding:4px 7px;border:1px solid #90caf9;border-radius:4px;background:#fff;font-weight:700;color:#1a3a1a">
           <option value="kris">KrisFlyer（KF）マイル</option>
           <option value="ana" selected>ANAマイル</option>
           <option value="jal">JALマイル</option>
           <option value="marriott">マリオットBonvoyポイント</option>
         </select>
-        <span style="font-size:11px;font-weight:700;color:#2e7d32;white-space:nowrap;margin-left:8px">目標数</span>
-        <input class="calc-input" id="aggGoal" type="number" min="0" step="10000" value="285000" oninput="runAgg();autoSaveAgg()" style="width:120px">
+        <input class="calc-input" id="aggGoal" type="number" min="0" step="10000" value="285000" oninput="runAgg();autoSaveAgg()" style="width:110px">
         <span style="font-size:11px;color:#4a7a4a" id="aggGoalUnit">マイル</span>
-        <span style="font-size:10px;color:#4a7a4a" id="aggGoalNote">（例: ANAビジネスクラス特典航空券 目安）</span>
       </div>
+      <div style="display:flex;justify-content:center;margin:-3px 0">
+        <button onclick="swapAggTargets()" title="目標①と目標②を入れ替え" style="font-size:11px;font-weight:700;color:#5a5a5a;background:#fff;border:1px solid var(--border2);border-radius:99px;padding:2px 12px;cursor:pointer;line-height:1.6">⇅ 入れ替え</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 10px;background:#fce4ec;border-radius:6px;border:1px solid #f48fb1;flex-wrap:wrap">
+        <span style="font-size:11px;font-weight:700;color:#c62828;white-space:nowrap">🎯 目標②</span>
+        <select id="aggTarget2" onchange="changeAggTarget2()" style="font-size:12px;padding:4px 7px;border:1px solid #ef9a9a;border-radius:4px;background:#fff;font-weight:700;color:#1a3a1a">
+          <option value="kris">KrisFlyer（KF）マイル</option>
+          <option value="ana">ANAマイル</option>
+          <option value="jal" selected>JALマイル</option>
+          <option value="marriott">マリオットBonvoyポイント</option>
+        </select>
+        <input class="calc-input" id="aggGoal2" type="number" min="0" step="10000" value="0" oninput="runAgg();autoSaveAgg()" style="width:110px">
+        <span style="font-size:11px;color:#4a7a4a" id="aggGoalUnit2">マイル</span>
+        <span style="font-size:9.5px;color:#7a5500">（0のままなら目標②は無効。両方入力すると、各ポイントはまず換算レートが高い方へ優先的に交換され、そちらが100%到達した時点で残りは自動的にもう一方へ切り替わります）</span>
+      </div>
+
 
       <!-- 為替レート設定 -->
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:7px 10px;background:var(--bg2);border-radius:6px;border:0.5px solid var(--border2);flex-wrap:wrap">
@@ -487,41 +501,27 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:2px solid 
       </div>
       <div id="aggCustomStatus" style="font-size:9px;color:#0d47a1;margin-bottom:10px;line-height:1.4;min-height:11px"></div>
 
-      <!-- 合計・進捗表示 -->
-      <div style="background:#f1f8e9;border:1px solid #a5d6a7;border-radius:8px;padding:12px 14px;margin-bottom:10px">
+      <!-- 合計・進捗表示（目標①） -->
+      <div style="background:#f1f8e9;border:1px solid #a5d6a7;border-radius:8px;padding:12px 14px;margin-bottom:8px">
+        <div style="font-size:10px;font-weight:700;color:#185fa5;margin-bottom:6px" id="aggBoxTitle1">🎯 目標① 進捗</div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
-          <div style="flex:1;min-width:120px">
+          <div style="flex:1;min-width:110px">
             <div style="font-size:10px;color:#4a7a4a;margin-bottom:2px" id="aggTotalLabel">合計換算値</div>
-            <div style="font-size:26px;font-weight:800;color:#1a5c1a" id="aggTotal">0</div>
+            <div style="font-size:24px;font-weight:800;color:#1a5c1a" id="aggTotal">0</div>
             <div style="font-size:10px;color:#6a8a6a" id="aggTotalSub">マイル</div>
           </div>
-          <div style="flex:1;min-width:120px">
+          <div style="flex:1;min-width:110px">
             <div style="font-size:10px;color:#4a7a4a;margin-bottom:2px">目標まであと</div>
-            <div style="font-size:26px;font-weight:800;color:#c62828" id="aggRemain">—</div>
-            <div style="font-size:10px;color:#6a8a6a">マイル不足</div>
+            <div style="font-size:24px;font-weight:800;color:#c62828" id="aggRemain">—</div>
+            <div style="font-size:10px;color:#6a8a6a">不足</div>
           </div>
-          <div style="flex:1;min-width:120px">
+          <div style="flex:1;min-width:110px">
             <div style="font-size:10px;color:#4a7a4a;margin-bottom:2px">目標達成率</div>
-            <div style="font-size:26px;font-weight:800;color:#185fa5" id="aggPct">0%</div>
+            <div style="font-size:24px;font-weight:800;color:#185fa5" id="aggPct">0%</div>
             <div style="font-size:10px;color:#6a8a6a">進捗</div>
           </div>
         </div>
-        <!-- 不足分補填の現金参考額 -->
-        <!-- CTA① -->
-        <div id="aggCtaHint" style="display:none;background:linear-gradient(135deg,#fff8e1 0%,#ffecb3 100%);border:2px solid #ff8f00;border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:11px;color:#5a3e00;line-height:1.7">
-          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-            <div style="flex:1;min-width:180px">
-              💡 <strong style="color:#bf3800">まだモッピー未登録の方へ</strong><br>
-              <span style="font-size:10.5px">紹介コード経由で登録 → 翌々月末までに5,000P獲得で<strong>＋2,000P（約1,000マイル相当）</strong>がプレゼント。スタート時の不足分を縮められます。</span>
-            </div>
-            <a href="https://pc.moppy.jp/entry/invite.php?invite=gFgmA1d9" target="_blank" rel="noopener noreferrer nofollow" onclick="window.open(this.href,&apos;_blank&apos;,&apos;noopener&apos;);return false;" style="display:inline-block;background:#ff6b00;color:#fff;font-size:12px;font-weight:bold;padding:8px 16px;border-radius:6px;text-decoration:none;white-space:nowrap;box-shadow:0 2px 6px rgba(255,107,0,0.3);cursor:pointer">
-              +2,000Pを受け取る →
-            </a>
-          </div>
-        </div>
         <div id="aggCashHint" style="display:none;background:#fff8e1;border:1px solid #ffe082;border-radius:6px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:#5a3e00;line-height:1.8"></div>
-        <!-- 上限・所要日数の警告バナー -->
-        <div id="aggCapWarning" style="display:none;background:#fff3e0;border:2px solid #ff8f00;border-radius:6px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:#5a3000;line-height:1.8"></div>
         <!-- 進捗バー -->
         <div style="background:#c8e6c9;border-radius:99px;height:16px;overflow:hidden;position:relative">
           <div id="aggBar" style="height:100%;border-radius:99px;background:#2e7d32;width:0%;transition:width 0.5s;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;min-width:0">
@@ -534,8 +534,56 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:2px solid 
         </div>
       </div>
 
+      <!-- 合計・進捗表示（目標②） -->
+      <div id="aggBox2" style="display:none;background:#fce4ec;border:1px solid #f48fb1;border-radius:8px;padding:12px 14px;margin-bottom:10px">
+        <div style="font-size:10px;font-weight:700;color:#c62828;margin-bottom:6px" id="aggBoxTitle2">🎯 目標② 進捗</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+          <div style="flex:1;min-width:110px">
+            <div style="font-size:10px;color:#7a4a5a;margin-bottom:2px" id="aggTotalLabel2">合計換算値</div>
+            <div style="font-size:24px;font-weight:800;color:#7a1a1a" id="aggTotal2">0</div>
+            <div style="font-size:10px;color:#8a6a6a" id="aggTotalSub2">マイル</div>
+          </div>
+          <div style="flex:1;min-width:110px">
+            <div style="font-size:10px;color:#7a4a5a;margin-bottom:2px">目標まであと</div>
+            <div style="font-size:24px;font-weight:800;color:#c62828" id="aggRemain2">—</div>
+            <div style="font-size:10px;color:#8a6a6a">不足</div>
+          </div>
+          <div style="flex:1;min-width:110px">
+            <div style="font-size:10px;color:#7a4a5a;margin-bottom:2px">目標達成率</div>
+            <div style="font-size:24px;font-weight:800;color:#c62828" id="aggPct2">0%</div>
+            <div style="font-size:10px;color:#8a6a6a">進捗</div>
+          </div>
+        </div>
+        <div id="aggCashHint2" style="display:none;background:#fff8e1;border:1px solid #ffe082;border-radius:6px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:#5a3e00;line-height:1.8"></div>
+        <!-- 進捗バー -->
+        <div style="background:#f8bbd0;border-radius:99px;height:16px;overflow:hidden;position:relative">
+          <div id="aggBar2" style="height:100%;border-radius:99px;background:#c62828;width:0%;transition:width 0.5s;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;min-width:0">
+            <span id="aggBarLabel2" style="font-size:9px;color:#fff;font-weight:700;white-space:nowrap"></span>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:#7a4a5a;margin-top:3px">
+          <span>0</span>
+          <span id="aggGoalLabel2">0 マイル</span>
+        </div>
+      </div>
+
+      <!-- CTA①（モッピー未登録者向け・共通） -->
+      <div id="aggCtaHint" style="display:none;background:linear-gradient(135deg,#fff8e1 0%,#ffecb3 100%);border:2px solid #ff8f00;border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:11px;color:#5a3e00;line-height:1.7">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <div style="flex:1;min-width:180px">
+            💡 <strong style="color:#bf3800">まだモッピー未登録の方へ</strong><br>
+            <span style="font-size:10.5px">紹介コード経由で登録 → 翌々月末までに5,000P獲得で<strong>＋2,000P（約1,000マイル相当）</strong>がプレゼント。スタート時の不足分を縮められます。</span>
+          </div>
+          <a href="https://pc.moppy.jp/entry/invite.php?invite=gFgmA1d9" target="_blank" rel="noopener noreferrer nofollow" onclick="window.open(this.href,&apos;_blank&apos;,&apos;noopener&apos;);return false;" style="display:inline-block;background:#ff6b00;color:#fff;font-size:12px;font-weight:bold;padding:8px 16px;border-radius:6px;text-decoration:none;white-space:nowrap;box-shadow:0 2px 6px rgba(255,107,0,0.3);cursor:pointer">
+            +2,000Pを受け取る →
+          </a>
+        </div>
+      </div>
+      <!-- 上限・所要日数の警告バナー（両目標共通） -->
+      <div id="aggCapWarning" style="display:none;background:#fff3e0;border:2px solid #ff8f00;border-radius:6px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:#5a3000;line-height:1.8"></div>
+
       <!-- 内訳テーブル -->
-      <div style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:5px">換算内訳</div>
+      <div style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:5px">換算内訳（有利な方へ優先充当し、100%到達後は残りを自動的にもう一方へ振分）</div>
       <div id="aggBreakdown" style="background:var(--bg2);border-radius:6px;padding:8px 10px;font-size:11px;color:var(--text2)">
         <div style="color:var(--text3);text-align:center;padding:6px 0">ポイントを入力してください</div>
       </div>
@@ -713,11 +761,12 @@ d('moppy','ana',{rate:500/1750,url:'https://www.google.com/search?q=モッピー
   history:[{d:'2020-01',r:null},{d:'2026-02',r:1/3},{d:'2026-06',r:500/1750}],
   change:'down',verified:true,
   notices:['⚠️ 2026年6月1日より改悪: 1,750P→500マイル（≈28.6%）。旧レート: 3P→1マイル（33.3%）。','最低1,750P。手数料無料。1〜3日で反映。','みずほ/nimocaルート等の間接交換(70%)の方がレートは高い。']});
-id('moppy','ana',{rate:0.70,
-  route:[{from:'モッピー',to:'Vポイント',rate:1.0,url:'https://www.google.com/search?q=モッピー+ポイント交換+公式'},{from:'Vポイント',to:'JRキューポ',rate:1.0,url:'https://www.google.com/search?q=JRキューポ+永久不滅ポイント+交換+公式'},{from:'JRキューポ',to:'永久不滅P(1,000P→200P)',rate:0.2,url:'https://www.jrkyushu.co.jp/jq/support/faq/7-4.html'},{from:'永久不滅P',to:'ANAマイル(みずほ・100P→350マイル)',rate:3.5,url:'https://www.google.com/search?q=永久不滅ポイント+ANAマイル+交換レート+セゾンカード'}],
+id('moppy','ana',{rate:0.93*1.0*0.2*3.5,
+  route:[{from:'モッピー',to:'Vポイント',rate:0.93,url:'https://www.google.com/search?q=モッピー+Vポイント+交換+手数料'},{from:'Vポイント',to:'JRキューポ',rate:1.0,url:'https://www.google.com/search?q=JRキューポ+永久不滅ポイント+交換+公式'},{from:'JRキューポ',to:'永久不滅P(1,000P→200P)',rate:0.2,url:'https://www.jrkyushu.co.jp/jq/support/faq/7-4.html'},{from:'永久不滅P',to:'ANAマイル(みずほ・100P→350マイル)',rate:3.5,url:'https://www.google.com/search?q=永久不滅ポイント+ANAマイル+交換レート+セゾンカード'}],
   url:'https://www.google.com/search?q=モッピー+ポイント交換+公式',
-  history:[{d:'2020-01',r:0.70},{d:'2022-01',r:0.70},{d:'2024-01',r:0.70},{d:'2026-02',r:0.70}],
-  notices:['【70%ルート】みずほルート(JQカードセゾン+みずほマイレージクラブカード/ANA)。ただし2026年1月21日でみずほマイレージクラブカード/ANAは新規発行終了。既存保有者のみ継続利用可。','【60%ルート】★初心者向け★ モッピー→Vポイント(100%)→ANAマイル(60%)。三井住友カード発行のANAカード(年会費2,200円・初年度無料)保有が条件。これからポイ活を始める方の現実的な選択肢。','【33.3%ルート】2026年2月から、カード不要のモッピー→ANA直接交換も可能(別途記載)。','JRキューポ→永久不滅Pは1,000P→200P（永久不滅Pは1P=5円のため金額としては等価交換）。永久不滅P→ANAマイル(みずほ)は100P→350マイル（1P=5円換算で70%）。']});
+  history:[{d:'2020-01',r:0.70},{d:'2022-01',r:0.70},{d:'2024-01',r:0.70},{d:'2026-02',r:0.70},{d:'2026-04',r:0.93*1.0*0.2*3.5}],
+  change:'down',
+  notices:['⚠️ 2026年8月改定: 2026年4月のモッピー→Vポイント手数料改定（8%→7%、実質93%）を反映し、複合レートを70%→約65.1%に修正。','【約65.1%ルート】みずほルート(JQカードセゾン+みずほマイレージクラブカード/ANA)。ただし2026年1月21日でみずほマイレージクラブカード/ANAは新規発行終了。既存保有者のみ継続利用可。','【60%ルート】★初心者向け★ モッピー→Vポイント(93%)→ANAマイル(60%)。三井住友カード発行のANAカード(年会費2,200円・初年度無料)保有が条件。これからポイ活を始める方の現実的な選択肢。','【33.3%ルート】2026年2月から、カード不要のモッピー→ANA直接交換も可能(別途記載)。','JRキューポ→永久不滅Pは1,000P→200P（永久不滅Pは1P=5円のため金額としては等価交換）。永久不滅P→ANAマイル(みずほ)は100P→350マイル（1P=5円換算で70%）。']});
 
 d('moppy','jal',{rate:0.80,url:'https://pc.moppy.jp/campaign/special/jalmile.php',
   history:[{d:'2017-01',r:0.333},{d:'2018-05',r:0.80},{d:'2026-06',r:0.80}],
@@ -739,25 +788,25 @@ id('moppy','jal',{rate:1.0*0.60,
 d('moppy','dpoint',{rate:1.0,url:'https://www.google.com/search?q=モッピー+ポイント交換+公式',
   history:[{d:'2020-01',r:1},{d:'2023-01',r:1},{d:'2026-01',r:1}],
   verified:true,notices:['リアルタイム交換。手数料無料。']});
-d('moppy','rakuten',{rate:1.0,url:'https://www.google.com/search?q=モッピー+ポイント交換+公式',
-  history:[{d:'2020-01',r:1},{d:'2023-01',r:1},{d:'2026-01',r:1}],
-  verified:true,notices:[]});
+d('moppy','rakuten',{rate:0.90,url:'https://www.google.com/search?q=モッピー+楽天ポイント+交換+手数料',
+  history:[{d:'2020-01',r:1},{d:'2023-01',r:1},{d:'2026-01',r:1},{d:'2026-04',r:0.90}],
+  change:'down',verified:true,notices:['⚠️ 2026年4月1日13:00交換申請分より、これまで手数料無料だった交換に10%の手数料が新設（実質レート90%）。モッピー公式お知らせで確認済み。']});
 d('moppy','ponta',{rate:1.0,url:'https://www.google.com/search?q=モッピー+ポイント交換+公式',
   history:[{d:'2020-01',r:1},{d:'2023-01',r:1},{d:'2026-01',r:1}],
   verified:true,notices:[]});
-d('moppy','vpoint',{rate:1.0,url:'https://www.google.com/search?q=モッピー+ポイント交換+公式',
-  history:[{d:'2022-01',r:1},{d:'2024-04',r:1},{d:'2026-01',r:1}],
-  verified:true,notices:['旧Tポイント。2024年4月Vポイントへ統合。']});
+d('moppy','vpoint',{rate:0.93,url:'https://www.google.com/search?q=モッピー+Vポイント+交換+手数料',
+  history:[{d:'2022-01',r:1},{d:'2024-04',r:1},{d:'2026-01',r:1},{d:'2026-04',r:0.93}],
+  change:'down',verified:true,notices:['旧Tポイント。2024年4月Vポイントへ統合。','⚠️ 2026年4月1日13:00交換申請分より交換手数料が導入/改定：8%→7%（実質レート93%）。モッピー公式お知らせで確認済み。']});
 d('moppy','nanaco',{rate:1.0,url:'https://www.google.com/search?q=モッピー+ポイント交換+公式',
   history:[{d:'2020-01',r:1},{d:'2023-01',r:1},{d:'2026-01',r:1}],
   verified:true,notices:['1,000P単位。']});
 // モッピー→ソラシドマイル（ソラシドルート）: モッピー→Vポイント(リアルタイム等価)→ソラシドマイル(100%)
-id('moppy','solaseed',{rate:1.0*1.0,
-  route:[{from:'モッピー',to:'Vポイント',rate:1.0,url:'https://www.google.com/search?q=モッピー+ポイント交換+公式'},{from:'Vポイント',to:'ソラシドマイル(要Solaseed Airカード)',rate:1.0,url:'https://www.smbc-card.com/mem/cardinfo/25/cardinfo4010961.jsp'}],
+id('moppy','solaseed',{rate:0.93*1.0,
+  route:[{from:'モッピー',to:'Vポイント',rate:0.93,url:'https://www.google.com/search?q=モッピー+Vポイント+交換+手数料'},{from:'Vポイント',to:'ソラシドマイル(要Solaseed Airカード)',rate:1.0,url:'https://www.smbc-card.com/mem/cardinfo/25/cardinfo4010961.jsp'}],
   url:'https://www.google.com/search?q=モッピー+ソラシドマイル+交換ルート',
-  history:[{d:'2024-01',r:1.0*2.0},{d:'2025-12',r:1.0*1.0},{d:'2026-01',r:1.0*1.0}],
+  history:[{d:'2024-01',r:1.0*2.0},{d:'2025-12',r:1.0*1.0},{d:'2026-01',r:1.0*1.0},{d:'2026-04',r:0.93*1.0}],
   change:'down',
-  notices:['モッピー→Vポイントはリアルタイム交換（等価）。Vポイント→ソラシドマイルは2025年12月の改定後100%（要Solaseed Airカード）。','2025年11月末までは200%だったため合計200%のルートとして陸マイラー界隈で有名だったが、2025年12月1日以降は合計100%。','Solaseed Airカードの保有・Vpass登録が必須条件（未保有の場合はこのルート自体が利用不可）。']});
+  notices:['モッピー→Vポイントは2026年4月改定後、7%の手数料あり（実質93%）。Vポイント→ソラシドマイルは2025年12月の改定後100%（要Solaseed Airカード）。','2025年11月末までは200%だったため合計200%のルートとして陸マイラー界隈で有名だったが、2025年12月1日以降は合計93%（2026年4月のVポイント手数料改定を反映）。','Solaseed Airカードの保有・Vpass登録が必須条件（未保有の場合はこのルート自体が利用不可）。']});
 // モッピー→マリオット 2023/10改悪: 1,300P→1,000pt
 d('moppy','marriott',{rate:1000/1300,url:'https://www.google.com/search?q=モッピー+マリオットBonvoy+交換レート+改定',
   history:[{d:'2021-01',r:1.0},{d:'2022-01',r:1.0},{d:'2023-10',r:1000/1300},{d:'2026-01',r:1000/1300}],
@@ -2660,6 +2709,7 @@ const AGG_TARGET_META = {
 
 let aggRowData = [];
 let aggTarget = 'ana';
+let aggTarget2 = 'jal';
 
 function changeAggTarget() {
   aggTarget = document.getElementById('aggTarget').value;
@@ -2669,9 +2719,46 @@ function changeAggTarget() {
   document.querySelector('.calc-header[onclick="toggleAgg()"]').style.background = meta.bg;
   document.getElementById('aggGoalUnit').textContent = meta.unit;
   document.getElementById('aggTotalSub').textContent = meta.unit;
-  document.getElementById('aggNote').textContent = '※ ' + meta.note + '。月間・年間・24時間ごとの交換上限や反映所要日数は、対象ルートについて可能な範囲で電卓に反映済みです（詳細は内訳表・入力欄の⚠バッジを参照）。換算前に公式サイトをご確認ください。';
+  document.getElementById('aggBoxTitle1').textContent = '🎯 目標①（' + meta.label + '）進捗';
+  document.getElementById('aggNote').textContent = '※ ' + AGG_TARGET_META[aggTarget].note + ' ／ ' + AGG_TARGET_META[aggTarget2].note + '。月間・年間・24時間ごとの交換上限や反映所要日数は、対象ルートについて可能な範囲で電卓に反映済みです（詳細は内訳表・入力欄の⚠バッジを参照）。各ポイントは有利な方（換算レートが高い方）へ優先的に交換し、その目標が100%に到達した時点で残りを自動的にもう一方へ振り分けます。換算前に公式サイトをご確認ください。';
   // ⚠ 保有ポイント量は保持（種別切替でもリセットしない）
   // 換算率は選択中のaggTargetのAGG_RATESに基づき自動更新される
+  renderAggRows();
+  runAgg();
+  autoSaveAgg();
+}
+
+function changeAggTarget2() {
+  aggTarget2 = document.getElementById('aggTarget2').value;
+  const meta = AGG_TARGET_META[aggTarget2];
+  document.getElementById('aggGoalUnit2').textContent = meta.unit;
+  document.getElementById('aggTotalSub2').textContent = meta.unit;
+  document.getElementById('aggBoxTitle2').textContent = '🎯 目標②（' + meta.label + '）進捗';
+  document.getElementById('aggNote').textContent = '※ ' + AGG_TARGET_META[aggTarget].note + ' ／ ' + AGG_TARGET_META[aggTarget2].note + '。月間・年間・24時間ごとの交換上限や反映所要日数は、対象ルートについて可能な範囲で電卓に反映済みです（詳細は内訳表・入力欄の⚠バッジを参照）。各ポイントは有利な方（換算レートが高い方）へ優先的に交換し、その目標が100%に到達した時点で残りを自動的にもう一方へ振り分けます。換算前に公式サイトをご確認ください。';
+  renderAggRows();
+  runAgg();
+  autoSaveAgg();
+}
+
+// 目標①と目標②の「マイル種別＋目標数」をワンクリックで丸ごと入れ替える
+function swapAggTargets() {
+  const goalEl = document.getElementById('aggGoal');
+  const goal2El = document.getElementById('aggGoal2');
+  const targetEl = document.getElementById('aggTarget');
+  const target2El = document.getElementById('aggTarget2');
+
+  const newTarget1 = aggTarget2, newTarget2 = aggTarget;
+  const newGoal1 = parseFloat(goal2El?.value) || 0;
+  const newGoal2 = parseFloat(goalEl?.value) || 0;
+
+  aggTarget = newTarget1;
+  aggTarget2 = newTarget2;
+  if (targetEl) targetEl.value = aggTarget;
+  if (target2El) target2El.value = aggTarget2;
+  if (goalEl) goalEl.value = newGoal1;
+  if (goal2El) goal2El.value = newGoal2;
+
+  applyAggUI();
   renderAggRows();
   runAgg();
   autoSaveAgg();
@@ -2718,6 +2805,8 @@ function saveAggSettings(){
     const data = {
       aggTarget: aggTarget,
       aggGoal: parseFloat(document.getElementById('aggGoal')?.value) || 0,
+      aggTarget2: aggTarget2,
+      aggGoal2: parseFloat(document.getElementById('aggGoal2')?.value) || 0,
       usdJpyRate: parseFloat(document.getElementById('usdJpyRate')?.value) || 160,
       aggRowData: aggRowData.map(r => ({ id: r.id, amount: r.amount, usedThisYear: r.usedThisYear || 0 })),
     };
@@ -2813,9 +2902,10 @@ function autoSavePt(){
   el.textContent = ok ? '✓ 自動保存済み' : '⚠ 保存に失敗しました（プライベートブラウジング等では使えません）';
 }
 
-// 工場出荷時のデフォルトUI設定（aggTargetを既定のANAに戻す）
+// 工場出荷時のデフォルトUI設定（aggTargetを既定のANA/JALに戻す）
 function applyAggUI(){
   const meta = AGG_TARGET_META[aggTarget];
+  const meta2 = AGG_TARGET_META[aggTarget2];
   const panel = document.querySelector('#aggBody')?.closest('.calc-panel');
   if(panel) panel.style.borderColor = meta.color;
   const hdr = document.querySelector('.calc-header[onclick="toggleAgg()"]');
@@ -2824,8 +2914,16 @@ function applyAggUI(){
   if(goalUnit) goalUnit.textContent = meta.unit;
   const totalSub = document.getElementById('aggTotalSub');
   if(totalSub) totalSub.textContent = meta.unit;
+  const boxTitle1 = document.getElementById('aggBoxTitle1');
+  if(boxTitle1) boxTitle1.textContent = '🎯 目標①（' + meta.label + '）進捗';
+  const goalUnit2 = document.getElementById('aggGoalUnit2');
+  if(goalUnit2) goalUnit2.textContent = meta2.unit;
+  const totalSub2 = document.getElementById('aggTotalSub2');
+  if(totalSub2) totalSub2.textContent = meta2.unit;
+  const boxTitle2 = document.getElementById('aggBoxTitle2');
+  if(boxTitle2) boxTitle2.textContent = '🎯 目標②（' + meta2.label + '）進捗';
   const note = document.getElementById('aggNote');
-  if(note) note.textContent = '※ ' + meta.note + '。月間・年間・24時間ごとの交換上限や反映所要日数は、対象ルートについて可能な範囲で電卓に反映済みです（詳細は内訳表・入力欄の⚠バッジを参照）。換算前に公式サイトをご確認ください。';
+  if(note) note.textContent = '※ ' + meta.note + ' ／ ' + meta2.note + '。月間・年間・24時間ごとの交換上限や反映所要日数は、対象ルートについて可能な範囲で電卓に反映済みです（詳細は内訳表・入力欄の⚠バッジを参照）。各ポイントは有利な方（換算レートが高い方）へ優先的に交換し、その目標が100%に到達した時点で残りを自動的にもう一方へ振り分けます。換算前に公式サイトをご確認ください。';
 }
 
 function initAgg() {
@@ -2833,6 +2931,8 @@ function initAgg() {
   if (saved && saved.aggTarget && AGG_RATES[saved.aggTarget]) {
     // 保存済みの初期値を復元
     aggTarget = saved.aggTarget;
+    // 旧バージョン（目標②なし）で保存されたデータとの後方互換
+    aggTarget2 = (saved.aggTarget2 && AGG_RATES[saved.aggTarget2]) ? saved.aggTarget2 : (aggTarget === 'jal' ? 'ana' : 'jal');
     aggRowData = Array.isArray(saved.aggRowData) && saved.aggRowData.length
       ? saved.aggRowData.map(r => ({ id: r.id, amount: parseFloat(r.amount) || 0, usedThisYear: parseFloat(r.usedThisYear) || 0 }))
       : AGG_DEFAULT_IDS.map(id => {
@@ -2843,11 +2943,16 @@ function initAgg() {
     if (targetEl) targetEl.value = aggTarget;
     const goalEl = document.getElementById('aggGoal');
     if (goalEl && saved.aggGoal != null && saved.aggGoal > 0) goalEl.value = saved.aggGoal;
+    const target2El = document.getElementById('aggTarget2');
+    if (target2El) target2El.value = aggTarget2;
+    const goal2El = document.getElementById('aggGoal2');
+    if (goal2El && saved.aggGoal2 != null && saved.aggGoal2 > 0) goal2El.value = saved.aggGoal2;
     const usdEl = document.getElementById('usdJpyRate');
     if (usdEl && saved.usdJpyRate != null && saved.usdJpyRate > 0) usdEl.value = saved.usdJpyRate;
   } else {
     // 工場出荷時デフォルト
     aggTarget = 'ana';
+    aggTarget2 = 'jal';
     aggRowData = AGG_DEFAULT_IDS.map(id => {
       const def = AGG_RATES[aggTarget].find(r => r.id === id);
       return { id, amount: def ? def.default : 0, usedThisYear: 0 };
@@ -2858,31 +2963,170 @@ function initAgg() {
   runAgg();
 }
 
+// 目標②が有効か（目標数が入力されており、目標①と異なる種別のとき）
+function aggDualActive(){
+  const goal2 = parseFloat(document.getElementById('aggGoal2')?.value) || 0;
+  return goal2 > 0 && aggTarget2 !== aggTarget;
+}
+
+// ════════════════════════════════
+// ウォーターフォール振分エンジン
+// 各ポイントは「換算レートが高い方（有利な方）」へ優先的に割り当て、
+// その目標が100%到達した時点で、残りは自動的にもう一方（不利な方）へ振り分ける。
+// aggRowData の並び順（上から順）で処理する。
+// ════════════════════════════════
+function computeAggAllocation(){
+  const meta1 = AGG_TARGET_META[aggTarget];
+  const meta2 = AGG_TARGET_META[aggTarget2];
+  const goal1 = parseFloat(document.getElementById('aggGoal')?.value) || 0;
+  const goal2 = parseFloat(document.getElementById('aggGoal2')?.value) || 0;
+  const dualActive = aggDualActive();
+
+  let total1 = 0, total2 = 0;
+  const capWarnings = [];
+  const capInfos = [];
+  let maxDays = 0, maxDaysLabel = '';
+  const breakdown = []; // aggRowDataとインデックスを揃える（amount:0や未登録の行も1件ずつ積む）
+
+  aggRowData.forEach(row => {
+    const ptsDef = PTS.find(p => p.id === row.id);
+    const name = ptsDef ? ptsDef.name : row.id;
+
+    if (!row.amount) { breakdown.push({ name, amount: 0, unit: 'ポイント', parts: [] }); return; }
+
+    const def1 = AGG_RATES[aggTarget].find(r => r.id === row.id);
+    const def2 = dualActive ? AGG_RATES[aggTarget2].find(r => r.id === row.id) : null;
+    const rate1 = def1 ? def1.rate : 0;
+    const rate2 = def2 ? def2.rate : 0;
+
+    // ── 単一目標モード（目標②未設定）: 従来どおり全量を目標①へ ──
+    if (!dualActive) {
+      if (rate1 <= 0) { breakdown.push({ name, amount: row.amount, unit: def1 ? def1.unit : 'ポイント', parts: [] }); return; }
+      const r = computeRowConversion(row, def1, meta1, capWarnings, capInfos, name);
+      total1 += r.converted;
+      if (def1.daysMax && def1.daysMax > maxDays) { maxDays = def1.daysMax; maxDaysLabel = name; }
+      breakdown.push({ name, amount: row.amount, unit: r.unit, parts: [{ target: 1, meta: meta1, def: def1, converted: r.converted, srcAmount: row.amount, capNote: r.rowNote }] });
+      return;
+    }
+
+    if (rate1 <= 0 && rate2 <= 0) { breakdown.push({ name, amount: row.amount, unit: 'ポイント', parts: [] }); return; }
+
+    // ── 有利な方（primary）・不利な方（secondary）を決定 ──
+    let primary;
+    if (rate1 <= 0) primary = 2;
+    else if (rate2 <= 0) primary = 1;
+    else primary = rate1 >= rate2 ? 1 : 2;
+    const primaryDef      = primary === 1 ? def1  : def2;
+    const primaryMeta     = primary === 1 ? meta1 : meta2;
+    const primaryGoal     = primary === 1 ? goal1 : goal2;
+    const primaryRunning  = primary === 1 ? total1 : total2;
+    const secondaryDef    = primary === 1 ? def2  : def1;
+    const secondaryMeta   = primary === 1 ? meta2 : meta1;
+
+    // まず全量をprimaryに入れた場合を試算（ログは記録しない仮計算）
+    const fullPrimary = computeRowConversion(row, primaryDef, primaryMeta, [], [], name);
+    const remainCapacity = primaryGoal > 0 ? Math.max(0, primaryGoal - primaryRunning) : Infinity;
+
+    if (fullPrimary.converted <= remainCapacity) {
+      // ── 分割不要：全量primaryへ（primary目標はまだ100%未満）──
+      const r = computeRowConversion(row, primaryDef, primaryMeta, capWarnings, capInfos, name);
+      if (primary === 1) total1 += r.converted; else total2 += r.converted;
+      if (primaryDef.daysMax && primaryDef.daysMax > maxDays) { maxDays = primaryDef.daysMax; maxDaysLabel = name; }
+      breakdown.push({ name, amount: row.amount, unit: r.unit, parts: [{ target: primary, meta: primaryMeta, def: primaryDef, converted: r.converted, srcAmount: row.amount, capNote: r.rowNote }] });
+      return;
+    }
+
+    // ── primaryが途中で満タンになる：残り枠ぶんだけprimaryへ、残りはsecondaryへ（二分探索で分割点を決定）──
+    let lo = 0, hi = row.amount, bestX = 0;
+    for (let i = 0; i < 40 && lo <= hi; i++) {
+      const mid = Math.floor((lo + hi) / 2);
+      const testConv = computeRowConversion({ amount: mid, usedThisYear: row.usedThisYear }, primaryDef, primaryMeta, [], [], name).converted;
+      if (testConv <= remainCapacity) { bestX = mid; lo = mid + 1; } else { hi = mid - 1; }
+    }
+    const xPrimary = bestX;
+    const xSecondary = row.amount - xPrimary;
+    const parts = [];
+
+    if (xPrimary > 0) {
+      const rP = computeRowConversion({ amount: xPrimary, usedThisYear: row.usedThisYear }, primaryDef, primaryMeta, capWarnings, capInfos, name);
+      if (primary === 1) total1 += rP.converted; else total2 += rP.converted;
+      if (primaryDef.daysMax && primaryDef.daysMax > maxDays) { maxDays = primaryDef.daysMax; maxDaysLabel = name; }
+      parts.push({ target: primary, meta: primaryMeta, def: primaryDef, converted: rP.converted, srcAmount: xPrimary, capNote: rP.rowNote });
+    }
+    if (xSecondary > 0) {
+      if (secondaryDef && secondaryDef.rate > 0) {
+        const rS = computeRowConversion({ amount: xSecondary, usedThisYear: row.usedThisYear }, secondaryDef, secondaryMeta, capWarnings, capInfos, name);
+        if (primary === 1) total2 += rS.converted; else total1 += rS.converted;
+        if (secondaryDef.daysMax && secondaryDef.daysMax > maxDays) { maxDays = secondaryDef.daysMax; maxDaysLabel = name; }
+        parts.push({ target: primary === 1 ? 2 : 1, meta: secondaryMeta, def: secondaryDef, converted: rS.converted, srcAmount: xSecondary, capNote: rS.rowNote });
+      } else {
+        parts.push({ target: 0, meta: secondaryMeta, def: null, converted: 0, srcAmount: xSecondary, capNote: null });
+      }
+    }
+    breakdown.push({ name, amount: row.amount, unit: parts[0] ? parts[0].def?.unit || 'ポイント' : 'ポイント', parts });
+  });
+
+  return { meta1, meta2, goal1, goal2, dualActive, total1, total2, breakdown, capWarnings, capInfos, maxDays, maxDaysLabel };
+}
+
 function renderAggRows() {
   const container = document.getElementById('aggRows');
   if (!container) return;
-  const rates = AGG_RATES[aggTarget];
-  const meta = AGG_TARGET_META[aggTarget];
+  const meta1 = AGG_TARGET_META[aggTarget];
+  const meta2 = AGG_TARGET_META[aggTarget2];
+  const dualActive = aggDualActive();
+  const alloc = computeAggAllocation();
   container.innerHTML = '';
   aggRowData.forEach((row, idx) => {
-    // AGG_RATESにあればそこから、なければPTSから名前を取得しrate:0
-    const def = rates.find(r => r.id === row.id);
+    const item = alloc.breakdown[idx] || { parts: [] };
+    const parts = item.parts || [];
     const ptsDef = PTS.find(p => p.id === row.id);
-    const unit = def ? def.unit : (ptsDef ? 'ポイント' : 'ポイント');
-    const rate = def ? def.rate : 0;
-    const pctStr = rate > 0 ? '→' + meta.label + '換算: ' + (rate * 100).toFixed(1) + '%' : '→換算ルートなし（ゼロ計上）';
-    const pctColor = rate > 0 ? meta.color : '#aaa';
+    // 表示用の素の換算率（①・②それぞれ、振分結果に関係なく参考表示）
+    const def1raw = AGG_RATES[aggTarget].find(r => r.id === row.id);
+    const def2raw = dualActive ? AGG_RATES[aggTarget2].find(r => r.id === row.id) : null;
+    const rate1raw = def1raw ? def1raw.rate : 0;
+    const rate2raw = def2raw ? def2raw.rate : 0;
+    const unit = parts[0] ? (parts[0].def ? parts[0].def.unit : 'ポイント') : (def1raw ? def1raw.unit : (ptsDef ? 'ポイント' : 'ポイント'));
+
+    let pctStr, pctColor;
+    if (!parts.length) {
+      pctStr = dualActive
+        ? `${meta1.label}:${rate1raw>0?(rate1raw*100).toFixed(1)+'%':'—'}／${meta2.label}:${rate2raw>0?(rate2raw*100).toFixed(1)+'%':'—'}（どちらもルートなし）`
+        : '→換算ルートなし（ゼロ計上）';
+      pctColor = '#aaa';
+    } else if (!dualActive) {
+      const p = parts[0];
+      pctStr = '→' + p.meta.label + '換算: ' + (p.def.rate * 100).toFixed(1) + '%';
+      pctColor = p.meta.color;
+    } else if (parts.length === 1) {
+      const p = parts[0];
+      const r1Str = rate1raw > 0 ? (rate1raw*100).toFixed(1)+'%' : '—';
+      const r2Str = rate2raw > 0 ? (rate2raw*100).toFixed(1)+'%' : '—';
+      pctStr = `${meta1.label}:${r1Str}／${meta2.label}:${r2Str} → ★全額${p.meta.label}へ`;
+      pctColor = p.meta.color;
+    } else {
+      // 2分割されている行
+      const segs = parts.map(p => `${p.meta.label} ${p.srcAmount.toLocaleString()}${unit}分`).join(' → ');
+      pctStr = `★分割振分: ${segs}（①が100%到達したため②へ自動切替）`;
+      pctColor = '#7a5500';
+    }
     // selectはPTS全体から生成
     const options = PTS.map(p => `<option value="${p.id}"${p.id===row.id?' selected':''}>${p.name}</option>`).join('');
 
-    // ─ 上限・所要日数バッジ（⚠壁がある場合のみ表示）─
+    // ─ 上限・所要日数バッジ（実際に振分先となった各パートの定義を使用）─
     const capBadges = [];
-    if (def && def.monthlyCapPoints) capBadges.push(`⚠ 月間上限${def.monthlyCapPoints.toLocaleString()}${def.unit}`);
-    if (def && def.dailyCapPoints)   capBadges.push(`⚠ 24h上限${def.dailyCapPoints.toLocaleString()}${def.unit}`);
-    if (def && def.annualCapMiles)   capBadges.push(`⚠ 年間上限${def.annualCapMiles.toLocaleString()}${meta.unit}`);
-    if (def && def.daysMax)          capBadges.push(`⏱ 反映目安:最大${def.daysMax}日`);
+    let daysNoteTitle = '';
+    let annualCapPart = null;
+    parts.forEach(p => {
+      const d = p.def;
+      if (!d) return;
+      if (d.monthlyCapPoints) capBadges.push(`⚠ ${p.meta.label}: 月間上限${d.monthlyCapPoints.toLocaleString()}${d.unit}`);
+      if (d.dailyCapPoints)   capBadges.push(`⚠ ${p.meta.label}: 24h上限${d.dailyCapPoints.toLocaleString()}${d.unit}`);
+      if (d.annualCapMiles)   { capBadges.push(`⚠ ${p.meta.label}: 年間上限${d.annualCapMiles.toLocaleString()}${p.meta.unit}`); annualCapPart = p; }
+      if (d.daysMax)          { capBadges.push(`⏱ ${p.meta.label}: 反映目安最大${d.daysMax}日`); daysNoteTitle = d.daysNote || daysNoteTitle; }
+    });
     const capBadgeHtml = capBadges.length
-      ? `<span style="font-size:9px;color:#bf3800;background:#fff3e0;border:1px solid #ffcc80;border-radius:3px;padding:1px 5px;white-space:nowrap" title="${def.daysNote || ''}">${capBadges.join(' ／ ')}</span>`
+      ? `<span style="font-size:9px;color:#bf3800;background:#fff3e0;border:1px solid #ffcc80;border-radius:3px;padding:1px 5px;white-space:nowrap" title="${daysNoteTitle}">${capBadges.join(' ／ ')}</span>`
       : '';
 
     const div = document.createElement('div');
@@ -2897,13 +3141,14 @@ function renderAggRows() {
         <button onclick="removeAggRow(${idx})" style="margin-left:auto;font-size:10px;padding:2px 7px;border:1px solid var(--border2);border-radius:4px;background:var(--bg);cursor:pointer;color:var(--text3)">✕</button>
       </div>
     `;
-    // 年間上限があるルートは「今年すでに移行済みのマイル数」を追加入力させる
-    if (def && def.annualCapMiles) {
+    // 年間上限があるルートは「今年すでに移行済みのマイル数」を追加入力させる（実際に振分先となった目標に対しての枠）
+    if (annualCapPart) {
+      const d = annualCapPart.def, m = annualCapPart.meta;
       rowHtml += `
       <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding-left:2px">
-        <span style="font-size:9px;color:#7a5500">↳ 今年(暦年)すでに移行済み:</span>
+        <span style="font-size:9px;color:#7a5500">↳ 今年(暦年)すでに移行済み（${m.label}）:</span>
         <input type="number" min="0" step="1000" value="${row.usedThisYear || 0}" style="width:90px;font-size:11px;padding:3px 6px;border:1px solid #ffcc80;border-radius:4px;background:var(--bg);color:var(--text);text-align:right" oninput="changeAggUsed(${idx},this.value)">
-        <span style="font-size:9px;color:#7a5500">${meta.unit}（残り枠: ${Math.max(0, def.annualCapMiles - (row.usedThisYear||0)).toLocaleString()} ${meta.unit}）</span>
+        <span style="font-size:9px;color:#7a5500">${m.unit}（残り枠: ${Math.max(0, d.annualCapMiles - (row.usedThisYear||0)).toLocaleString()} ${m.unit}）</span>
       </div>`;
     }
     div.innerHTML = rowHtml;
@@ -2943,6 +3188,7 @@ function addAggRow() {
 function resetAgg() {
   // 工場出荷時デフォルトに戻す（localStorageは触らない）
   aggTarget = 'ana';
+  aggTarget2 = 'jal';
   aggRowData = AGG_DEFAULT_IDS.map(id => {
     const def = AGG_RATES[aggTarget].find(r => r.id === id);
     return { id, amount: def ? def.default : 0, usedThisYear: 0 };
@@ -2951,6 +3197,10 @@ function resetAgg() {
   if (targetEl) targetEl.value = aggTarget;
   const goalEl = document.getElementById('aggGoal');
   if (goalEl) goalEl.value = 285000;
+  const target2El = document.getElementById('aggTarget2');
+  if (target2El) target2El.value = aggTarget2;
+  const goal2El = document.getElementById('aggGoal2');
+  if (goal2El) goal2El.value = 0;
   const usdEl = document.getElementById('usdJpyRate');
   if (usdEl) usdEl.value = 160;
   applyAggUI();
@@ -2964,87 +3214,89 @@ function toggleAgg() {
   arrow.classList.toggle('open', isOpen);
 }
 
-function runAgg() {
-  const rates = AGG_RATES[aggTarget];
-  const meta = AGG_TARGET_META[aggTarget];
-  const goal = parseFloat(document.getElementById('aggGoal')?.value) || 0;
-  const usdJpy = parseFloat(document.getElementById('usdJpyRate')?.value) || 160;
-  let total = 0;
-  const breakdown = [];
-  const capWarnings = [];   // 年間上限超過など「使えないマイル」が出ている場合の警告
-  const capInfos = [];      // 月間上限による按分など、情報提供レベルの注記
-  let maxDays = 0;
-  let maxDaysLabel = '';
-
-  aggRowData.forEach(row => {
-    const def = rates.find(r => r.id === row.id);
-    const ptsDef = PTS.find(p => p.id === row.id);
-    if (!row.amount) return;
-    const rate = def ? def.rate : 0;
-    const name = def ? def.name : (ptsDef ? ptsDef.name : row.id);
-    const unit = def ? def.unit : 'ポイント';
-    let route = def ? def.route : '換算ルートなし（AGG_RATESに未登録）';
-    let converted;
-    let rowNote = null;   // このセルだけに出す注記（内訳テーブルに表示）
-
-    if (def && def.monthlyCapPoints) {
-      // ── 月間上限があるルート: 上限内は本来レート、超過分は代替(overflow)レートで按分計算 ──
-      const capped = Math.min(row.amount, def.monthlyCapPoints);
-      const overflow = Math.max(0, row.amount - def.monthlyCapPoints);
-      const overflowRate = def.overflowRate || 0;
-      converted = Math.round(capped * rate + overflow * overflowRate);
-      if (overflow > 0) {
-        const monthsForFull = Math.ceil(row.amount / def.monthlyCapPoints);
-        if (overflowRate > 0) {
-          rowNote = `⚠ 月間上限${def.monthlyCapPoints.toLocaleString()}${unit}のため、${capped.toLocaleString()}${unit}は${(rate*100).toFixed(0)}%、残り${overflow.toLocaleString()}${unit}は${def.overflowLabel || '代替ルート'}(${(overflowRate*100).toFixed(0)}%)で計算しています。全額を${(rate*100).toFixed(0)}%で交換するには${monthsForFull}ヶ月に分割する必要があります。`;
-        } else {
-          rowNote = `⚠ 月間上限${def.monthlyCapPoints.toLocaleString()}${unit}のため、今月反映できるのは${capped.toLocaleString()}${unit}分のみ。残り${overflow.toLocaleString()}${unit}は他の交換ルートがないため今月は反映されません（合計${monthsForFull}ヶ月に分けて交換する必要があります）。`;
-        }
-        capInfos.push(`${name}: ${rowNote}`);
+// 1行分の保有ポイントを、決まった振分先(def)で換算する共通ロジック（上限・按分ロジックは従来どおり）
+function computeRowConversion(row, def, meta, capWarnings, capInfos, name){
+  const rate = def ? def.rate : 0;
+  const unit = def ? def.unit : 'ポイント';
+  let converted;
+  let rowNote = null;
+  if (def && def.monthlyCapPoints) {
+    const capped = Math.min(row.amount, def.monthlyCapPoints);
+    const overflow = Math.max(0, row.amount - def.monthlyCapPoints);
+    const overflowRate = def.overflowRate || 0;
+    converted = Math.round(capped * rate + overflow * overflowRate);
+    if (overflow > 0) {
+      const monthsForFull = Math.ceil(row.amount / def.monthlyCapPoints);
+      if (overflowRate > 0) {
+        rowNote = `⚠ 月間上限${def.monthlyCapPoints.toLocaleString()}${unit}のため、${capped.toLocaleString()}${unit}は${(rate*100).toFixed(0)}%、残り${overflow.toLocaleString()}${unit}は${def.overflowLabel || '代替ルート'}(${(overflowRate*100).toFixed(0)}%)で計算しています。全額を${(rate*100).toFixed(0)}%で交換するには${monthsForFull}ヶ月に分割する必要があります。`;
+      } else {
+        rowNote = `⚠ 月間上限${def.monthlyCapPoints.toLocaleString()}${unit}のため、今月反映できるのは${capped.toLocaleString()}${unit}分のみ。残り${overflow.toLocaleString()}${unit}は他の交換ルートがないため今月は反映されません（合計${monthsForFull}ヶ月に分けて交換する必要があります）。`;
       }
-    } else if (def && def.annualCapMiles) {
-      // ── 年間上限があるルート: 「今年すでに使った分」を差し引いた残り枠だけを合計に計上 ──
-      const raw = Math.round(row.amount * rate);
-      const used = row.usedThisYear || 0;
-      const remaining = Math.max(0, def.annualCapMiles - used);
-      converted = Math.min(raw, remaining);
-      if (raw > remaining) {
-        const over = raw - remaining;
-        rowNote = `⚠ 年間上限${def.annualCapMiles.toLocaleString()}${meta.unit}（残り枠${remaining.toLocaleString()}${meta.unit}）を${over.toLocaleString()}${meta.unit}超過。超過分は今年は反映されず、来年扱いになります。`;
-        capWarnings.push(`${name}: ${rowNote}`);
-      }
-    } else {
-      converted = Math.round(row.amount * rate);
+      capInfos.push(`${name}（${meta.label}）: ${rowNote}`);
     }
-
-    // ── 24時間あたりの交換上限があるルート: 完了までの最短所要日数を注記 ──
-    if (def && def.dailyCapPoints && row.amount > def.dailyCapPoints) {
-      const daysNeeded = Math.ceil(row.amount / def.dailyCapPoints);
-      const extra = `⏱ 24時間あたり上限${def.dailyCapPoints.toLocaleString()}${unit}のため、全量の交換完了までに最短${daysNeeded}日かかります。`;
-      rowNote = rowNote ? rowNote + ' ' + extra : extra;
-      capInfos.push(`${name}: ${extra}`);
+  } else if (def && def.annualCapMiles) {
+    const raw = Math.round(row.amount * rate);
+    const used = row.usedThisYear || 0;
+    const remaining = Math.max(0, def.annualCapMiles - used);
+    converted = Math.min(raw, remaining);
+    if (raw > remaining) {
+      const over = raw - remaining;
+      rowNote = `⚠ 年間上限${def.annualCapMiles.toLocaleString()}${meta.unit}（残り枠${remaining.toLocaleString()}${meta.unit}）を${over.toLocaleString()}${meta.unit}超過。超過分は今年は反映されず、来年扱いになります。`;
+      capWarnings.push(`${name}（${meta.label}）: ${rowNote}`);
     }
+  } else {
+    converted = Math.round(row.amount * rate);
+  }
+  if (def && def.dailyCapPoints && row.amount > def.dailyCapPoints) {
+    const daysNeeded = Math.ceil(row.amount / def.dailyCapPoints);
+    const extra = `⏱ 24時間あたり上限${def.dailyCapPoints.toLocaleString()}${unit}のため、全量の交換完了までに最短${daysNeeded}日かかります。`;
+    rowNote = rowNote ? rowNote + ' ' + extra : extra;
+    capInfos.push(`${name}（${meta.label}）: ${extra}`);
+  }
+  return { converted, rowNote, unit, rate };
+}
 
-    if (def && def.daysMax && def.daysMax > maxDays) {
-      maxDays = def.daysMax;
-      maxDaysLabel = name;
-    }
+// 不足分の現金購入参考額（マリオット経由 or 直接購入）を1目標分ぶん組み立てる
+function buildCashHint(targetId, meta, remain, usdJpy){
+  let hints = [];
+  if (targetId === 'kris' || targetId === 'ana' || targetId === 'jal') {
+    const milePerLot = 25000, usdPerLot = 750;
+    const jpyPerLot = Math.round(usdPerLot * usdJpy);
+    const lotsNeeded = Math.ceil(remain / milePerLot);
+    const totalUsd = lotsNeeded * usdPerLot, totalJpy = lotsNeeded * jpyPerLot, totalMilesIfBuy = lotsNeeded * milePerLot;
+    const milePerLot30 = Math.floor(milePerLot * 1.3), milePerLot50 = Math.floor(milePerLot * 1.5);
+    const lots30 = Math.ceil(remain / milePerLot30), lots50 = Math.ceil(remain / milePerLot50);
+    const jpy30 = lots30 * jpyPerLot, jpy50 = lots50 * jpyPerLot;
+    hints.push(`<b>マリオット購入→${meta.label}換算（最低60,000pt単位）</b>`);
+    hints.push(`不足 ${remain.toLocaleString()} ${meta.unit} に対して必要口数と参考額:`);
+    hints.push(`・通常時: ${lotsNeeded}口（${(lotsNeeded*60000).toLocaleString()}pt）≈ <b>$${totalUsd.toLocaleString()}（${totalJpy.toLocaleString()}円）</b> → +${totalMilesIfBuy.toLocaleString()} ${meta.unit}`);
+    hints.push(`・30%増量セール時: ${lots30}口（${(lots30*60000).toLocaleString()}pt）≈ <b>$${(lots30*usdPerLot).toLocaleString()}（${jpy30.toLocaleString()}円）</b> → +${(lots30*milePerLot30).toLocaleString()} ${meta.unit}`);
+    hints.push(`・50%増量セール時: ${lots50}口（${(lots50*60000).toLocaleString()}pt）≈ <b>$${(lots50*usdPerLot).toLocaleString()}（${jpy50.toLocaleString()}円）</b> → +${(lots50*milePerLot50).toLocaleString()} ${meta.unit}`);
+    hints.push(`<span style="font-size:10px;color:#7a5500">※ 1USD=${usdJpy}円換算。増量セールは不定期開催。購入前に公式サイトで要確認。</span>`);
+  } else if (targetId === 'marriott') {
+    const usdNeeded = (remain / 1000) * 12.5;
+    const jpyNeeded = Math.round(usdNeeded * usdJpy);
+    hints.push(`<b>マリオット公式購入</b>`);
+    hints.push(`不足 ${remain.toLocaleString()} pt を補うには約 $${usdNeeded.toFixed(0)}（≈ <b>${jpyNeeded.toLocaleString()} 円</b>、1USD=${usdJpy}円換算）`);
+    hints.push(`定期的に30〜50%増量セールあり。セール時は必要額が大幅減。`);
+  }
+  return hints;
+}
 
-    total += converted;
-    breakdown.push({ name, amount: row.amount, unit, converted, route, rate, capNote: rowNote, daysMax: def ? def.daysMax : null });
-  });
-
-  const totalEl = document.getElementById('aggTotal');
-  const remainEl = document.getElementById('aggRemain');
-  const pctEl = document.getElementById('aggPct');
-  const barEl = document.getElementById('aggBar');
-  const barLabelEl = document.getElementById('aggBarLabel');
-  const goalLabelEl = document.getElementById('aggGoalLabel');
-  const bdEl = document.getElementById('aggBreakdown');
-  const totalLabelEl = document.getElementById('aggTotalLabel');
-  const cashHintEl = document.getElementById('aggCashHint');
+// 進捗ボックス（目標①/②）1つ分のUIを更新する共通処理
+function renderGoalBox(suffix, targetId, meta, total, goal, usdJpy){
+  const totalEl = document.getElementById('aggTotal' + suffix);
+  const remainEl = document.getElementById('aggRemain' + suffix);
+  const pctEl = document.getElementById('aggPct' + suffix);
+  const barEl = document.getElementById('aggBar' + suffix);
+  const barLabelEl = document.getElementById('aggBarLabel' + suffix);
+  const goalLabelEl = document.getElementById('aggGoalLabel' + suffix);
+  const totalLabelEl = document.getElementById('aggTotalLabel' + suffix);
+  const totalSubEl = document.getElementById('aggTotalSub' + suffix);
+  const cashHintEl = document.getElementById('aggCashHint' + suffix);
 
   if (totalLabelEl) totalLabelEl.textContent = '合計' + meta.label + '換算値';
+  if (totalSubEl) totalSubEl.textContent = meta.unit;
   if (totalEl) { totalEl.textContent = total.toLocaleString(); totalEl.style.color = meta.color; }
   if (goalLabelEl) goalLabelEl.textContent = goal > 0 ? goal.toLocaleString() + ' ' + meta.unit : '（目標未設定）';
 
@@ -3058,65 +3310,34 @@ function runAgg() {
     else { remainEl.textContent = remain.toLocaleString(); remainEl.style.color = '#c62828'; }
   }
   if (pctEl) { pctEl.textContent = goal > 0 ? pctRound.toFixed(1) + '%' : '—'; pctEl.style.color = meta.color; }
-  if (barEl) {
-    barEl.style.width = pctRound + '%';
-    barEl.style.background = pct >= 100 ? '#1a5c1a' : meta.color;
-  }
+  if (barEl) { barEl.style.width = pctRound + '%'; barEl.style.background = pct >= 100 ? '#1a5c1a' : meta.color; }
   if (barLabelEl) barLabelEl.textContent = pctRound >= 10 ? pctRound.toFixed(1) + '%' : '';
 
-  // 現金購入参考額（不足分を補うのに必要な額）
   if (cashHintEl) {
     if (goal > 0 && total < goal && remain > 0) {
-      let hints = [];
-      // KF/ANA/JAL目標: マリオット購入→マイル換算で補填する場合
-      // KF: マリオット60,000pt単位で25,000KFマイル
-      // ANA: マリオット60,000pt単位で25,000ANAマイル
-      // JAL: マリオット60,000pt単位で25,000JALマイル
-      // marriott: 直接購入
-      if (aggTarget === 'kris' || aggTarget === 'ana' || aggTarget === 'jal') {
-        // マリオット経由: 60,000pt→25,000マイル。1口(60,000pt)=$750USD
-        const milePerLot = 25000;
-        const usdPerLot = 750;
-        const jpyPerLot = Math.round(usdPerLot * usdJpy);
-        const lotsNeeded = Math.ceil(remain / milePerLot);
-        const totalUsd = lotsNeeded * usdPerLot;
-        const totalJpy = lotsNeeded * jpyPerLot;
-        const totalMilesIfBuy = lotsNeeded * milePerLot;
-        // セール時（30%・50%増量）の必要口数と必要額
-        const milePerLot30 = Math.floor(milePerLot * 1.3); // 30%増量: 32,500マイル/口
-        const milePerLot50 = Math.floor(milePerLot * 1.5); // 50%増量: 37,500マイル/口
-        const lots30 = Math.ceil(remain / milePerLot30);
-        const lots50 = Math.ceil(remain / milePerLot50);
-        const jpy30 = lots30 * jpyPerLot;
-        const jpy50 = lots50 * jpyPerLot;
-        hints.push(`<b>マリオット購入→${meta.label}換算（最低60,000pt単位）</b>`);
-        hints.push(`不足 ${remain.toLocaleString()} ${meta.unit} に対して必要口数と参考額:`);
-        hints.push(`・通常時: ${lotsNeeded}口（${(lotsNeeded*60000).toLocaleString()}pt）≈ <b>$${totalUsd.toLocaleString()}（${totalJpy.toLocaleString()}円）</b> → +${totalMilesIfBuy.toLocaleString()} ${meta.unit}`);
-        hints.push(`・30%増量セール時: ${lots30}口（${(lots30*60000).toLocaleString()}pt）≈ <b>$${(lots30*usdPerLot).toLocaleString()}（${jpy30.toLocaleString()}円）</b> → +${(lots30*milePerLot30).toLocaleString()} ${meta.unit}`);
-        hints.push(`・50%増量セール時: ${lots50}口（${(lots50*60000).toLocaleString()}pt）≈ <b>$${(lots50*usdPerLot).toLocaleString()}（${jpy50.toLocaleString()}円）</b> → +${(lots50*milePerLot50).toLocaleString()} ${meta.unit}`);
-        hints.push(`<span style="font-size:10px;color:#7a5500">※ 1USD=${usdJpy}円換算。増量セールは不定期開催。購入前に公式サイトで要確認。</span>`);
-      } else if (aggTarget === 'marriott') {
-        // マリオット直接購入: 1,000pt=$12.5USD
-        const ptNeeded = remain;
-        const usdNeeded = (ptNeeded / 1000) * 12.5;
-        const jpyNeeded = Math.round(usdNeeded * usdJpy);
-        hints.push(`<b>マリオット公式購入</b>`);
-        hints.push(`不足 ${ptNeeded.toLocaleString()} pt を補うには約 $${usdNeeded.toFixed(0)}（≈ <b>${jpyNeeded.toLocaleString()} 円</b>、1USD=${usdJpy}円換算）`);
-        hints.push(`定期的に30〜50%増量セールあり。セール時は必要額が大幅減。`);
-      }
-      if (hints.length) {
-        cashHintEl.style.display = 'block';
-        cashHintEl.innerHTML = '💴 <b>不足分の現金購入参考額</b><br>' + hints.join('<br>');
-      } else {
-        cashHintEl.style.display = 'none';
-      }
+      const hints = buildCashHint(targetId, meta, remain, usdJpy);
+      if (hints.length) { cashHintEl.style.display = 'block'; cashHintEl.innerHTML = '💴 <b>不足分の現金購入参考額</b><br>' + hints.join('<br>'); }
+      else cashHintEl.style.display = 'none';
     } else {
       cashHintEl.style.display = 'none';
     }
   }
+  return { remain, pctRound };
+}
 
+function runAgg() {
+  const usdJpy = parseFloat(document.getElementById('usdJpyRate')?.value) || 160;
+  const alloc = computeAggAllocation();
+  const { meta1, meta2, goal1, goal2, dualActive, total1, total2, breakdown, capWarnings, capInfos, maxDays, maxDaysLabel } = alloc;
+
+  renderGoalBox('', aggTarget, meta1, total1, goal1, usdJpy);
+  document.getElementById('aggBox2').style.display = dualActive ? 'block' : 'none';
+  if (dualActive) renderGoalBox('2', aggTarget2, meta2, total2, goal2, usdJpy);
+
+  const bdEl = document.getElementById('aggBreakdown');
   if (bdEl) {
-    if (!breakdown.length) {
+    const hasAny = breakdown.some(b => b.amount > 0);
+    if (!hasAny) {
       bdEl.innerHTML = '<div style="color:var(--text3);text-align:center;padding:6px 0">ポイントを入力してください</div>';
       const capWarnElEmpty = document.getElementById('aggCapWarning');
       if (capWarnElEmpty) capWarnElEmpty.style.display = 'none';
@@ -3124,31 +3345,60 @@ function runAgg() {
       if (aggCtaEmpty) aggCtaEmpty.style.display = 'none';
       return;
     }
+    const winCol = dualActive ? `<th style="text-align:center;padding:3px 5px;color:var(--text2)">振分先</th>` : '';
     let html = `<table style="width:100%;border-collapse:collapse;font-size:11px">`;
-    html += `<tr style="border-bottom:1px solid var(--border2)"><th style="text-align:left;padding:3px 5px;color:var(--text2)">ポイント種別</th><th style="text-align:right;padding:3px 5px;color:var(--text2)">保有数</th><th style="text-align:right;padding:3px 5px;color:var(--text2)">換算率</th><th style="text-align:right;padding:3px 5px;color:var(--text2)">${meta.label}換算</th></tr>`;
+    html += `<tr style="border-bottom:1px solid var(--border2)"><th style="text-align:left;padding:3px 5px;color:var(--text2)">ポイント種別</th><th style="text-align:right;padding:3px 5px;color:var(--text2)">保有数</th>${winCol}<th style="text-align:right;padding:3px 5px;color:var(--text2)">換算率</th><th style="text-align:right;padding:3px 5px;color:var(--text2)">換算値</th></tr>`;
     breakdown.forEach(b => {
-      const rateStr = b.rate > 0 ? (b.rate * 100).toFixed(1) + '%' : '—';
-      const noteHtml = b.capNote ? `<br><span style="font-size:9px;color:#bf3800">${b.capNote}</span>` : (b.daysMax ? `<br><span style="font-size:9px;color:var(--text3)">⏱ 反映目安:最大${b.daysMax}日</span>` : '');
-      html += `<tr style="border-bottom:1px solid var(--border)">
-        <td style="padding:4px 5px;color:var(--text)">${b.name}<br><span style="font-size:9px;color:var(--text3)">${b.route}</span>${noteHtml}</td>
-        <td style="padding:4px 5px;text-align:right;color:var(--text)">${b.amount.toLocaleString()} ${b.unit}</td>
-        <td style="padding:4px 5px;text-align:right;color:var(--text)">${rateStr}</td>
-        <td style="padding:4px 5px;text-align:right;font-weight:700;color:${b.rate>0?meta.color:'#aaa'}">${b.converted > 0 ? b.converted.toLocaleString() + ' ' + meta.unit : '—'}</td>
-      </tr>`;
+      if (!b.amount) return;
+      if (!b.parts.length) {
+        // どちらにもルートなし
+        const winCell = dualActive ? `<td style="padding:4px 5px;text-align:center;font-size:9.5px;font-weight:700;color:#aaa">—</td>` : '';
+        html += `<tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:4px 5px;color:var(--text)">${b.name}<br><span style="font-size:9px;color:var(--text3)">換算ルートなし</span></td>
+          <td style="padding:4px 5px;text-align:right;color:var(--text)">${b.amount.toLocaleString()} ${b.unit}</td>
+          ${winCell}
+          <td style="padding:4px 5px;text-align:right;color:var(--text)">—</td>
+          <td style="padding:4px 5px;text-align:right;font-weight:700;color:#aaa">—</td>
+        </tr>`;
+        return;
+      }
+      b.parts.forEach((p, pi) => {
+        const rateStr = p.def && p.def.rate > 0 ? (p.def.rate * 100).toFixed(1) + '%' : '—';
+        const noteHtml = p.capNote ? `<br><span style="font-size:9px;color:#bf3800">${p.capNote}</span>` : (p.def && p.def.daysMax ? `<br><span style="font-size:9px;color:var(--text3)">⏱ 反映目安:最大${p.def.daysMax}日</span>` : '');
+        const routeHtml = p.def ? `<br><span style="font-size:9px;color:var(--text3)">${p.def.route}</span>` : '';
+        const nameCell = b.parts.length > 1
+          ? `${b.name}<br><span style="font-size:9px;color:var(--text3)">（分割 ${pi+1}/${b.parts.length}: ${p.srcAmount.toLocaleString()} ${b.unit}分）</span>${routeHtml}${noteHtml}`
+          : `${b.name}${routeHtml}${noteHtml}`;
+        const amountCell = pi === 0 ? `${b.amount.toLocaleString()} ${b.unit}` : '';
+        const winLabel = dualActive ? (p.target === 0 ? '—' : (p.target === 2 ? '②' + meta2.label : '①' + meta1.label)) : null;
+        const winCell = dualActive ? `<td style="padding:4px 5px;text-align:center;font-size:9.5px;font-weight:700;color:${p.meta.color}">${winLabel}</td>` : '';
+        html += `<tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:4px 5px;color:var(--text)">${nameCell}</td>
+          <td style="padding:4px 5px;text-align:right;color:var(--text)">${amountCell}</td>
+          ${winCell}
+          <td style="padding:4px 5px;text-align:right;color:var(--text)">${rateStr}</td>
+          <td style="padding:4px 5px;text-align:right;font-weight:700;color:${p.converted>0?p.meta.color:'#aaa'}">${p.converted > 0 ? p.converted.toLocaleString() : '—'}</td>
+        </tr>`;
+      });
     });
-    html += `<tr style="background:${meta.bg}"><td colspan="3" style="padding:5px 5px;font-weight:700;color:var(--text)">合計</td><td style="padding:5px 5px;text-align:right;font-weight:800;font-size:13px;color:${meta.color}">${total.toLocaleString()} ${meta.unit}</td></tr>`;
-    if (goal > 0) {
-      if (total < goal) {
-        html += `<tr style="background:#fce4ec"><td colspan="3" style="padding:5px 5px;font-weight:700;color:#7a1a1a">目標まであと</td><td style="padding:5px 5px;text-align:right;font-weight:800;font-size:13px;color:#c62828">${(goal - total).toLocaleString()} ${meta.unit}</td></tr>`;
-      } else {
-        html += `<tr style="background:#e8f5e9"><td colspan="3" style="padding:5px 5px;font-weight:700;color:#1a5c1a">目標達成！余剰</td><td style="padding:5px 5px;text-align:right;font-weight:800;font-size:13px;color:#1a5c1a">${(total - goal).toLocaleString()} ${meta.unit}</td></tr>`;
+    const colspanBase = dualActive ? 4 : 3;
+    html += `<tr style="background:${meta1.bg}"><td colspan="${colspanBase}" style="padding:5px 5px;font-weight:700;color:var(--text)">目標①合計（${meta1.label}）</td><td style="padding:5px 5px;text-align:right;font-weight:800;font-size:13px;color:${meta1.color}">${total1.toLocaleString()} ${meta1.unit}</td></tr>`;
+    if (goal1 > 0) {
+      if (total1 < goal1) html += `<tr style="background:#fce4ec"><td colspan="${colspanBase}" style="padding:5px 5px;font-weight:700;color:#7a1a1a">目標①まであと</td><td style="padding:5px 5px;text-align:right;font-weight:800;font-size:13px;color:#c62828">${(goal1 - total1).toLocaleString()} ${meta1.unit}</td></tr>`;
+      else html += `<tr style="background:#e8f5e9"><td colspan="${colspanBase}" style="padding:5px 5px;font-weight:700;color:#1a5c1a">目標①達成！余剰</td><td style="padding:5px 5px;text-align:right;font-weight:800;font-size:13px;color:#1a5c1a">${(total1 - goal1).toLocaleString()} ${meta1.unit}</td></tr>`;
+    }
+    if (dualActive) {
+      html += `<tr style="background:${meta2.bg}"><td colspan="${colspanBase}" style="padding:5px 5px;font-weight:700;color:var(--text)">目標②合計（${meta2.label}）</td><td style="padding:5px 5px;text-align:right;font-weight:800;font-size:13px;color:${meta2.color}">${total2.toLocaleString()} ${meta2.unit}</td></tr>`;
+      if (goal2 > 0) {
+        if (total2 < goal2) html += `<tr style="background:#fce4ec"><td colspan="${colspanBase}" style="padding:5px 5px;font-weight:700;color:#7a1a1a">目標②まであと</td><td style="padding:5px 5px;text-align:right;font-weight:800;font-size:13px;color:#c62828">${(goal2 - total2).toLocaleString()} ${meta2.unit}</td></tr>`;
+        else html += `<tr style="background:#e8f5e9"><td colspan="${colspanBase}" style="padding:5px 5px;font-weight:700;color:#1a5c1a">目標②達成！余剰</td><td style="padding:5px 5px;text-align:right;font-weight:800;font-size:13px;color:#1a5c1a">${(total2 - goal2).toLocaleString()} ${meta2.unit}</td></tr>`;
       }
     }
     html += '</table>';
     bdEl.innerHTML = html;
   }
 
-  // 上限・所要日数の警告バナー
+  // 上限・所要日数の警告バナー（両目標共通）
   const capWarnEl = document.getElementById('aggCapWarning');
   if (capWarnEl) {
     const lines = [];
@@ -3162,20 +3412,17 @@ function runAgg() {
     if (maxDays > 0) {
       lines.push(`<span style="color:#7a5500">※ この合計には反映まで最大${maxDays}日程度かかるルート（${maxDaysLabel}等）が含まれています。「今すぐ使えるマイル」ではない点にご注意ください。</span>`);
     }
-    if (lines.length) {
-      capWarnEl.style.display = 'block';
-      capWarnEl.innerHTML = lines.join('<br>');
-    } else {
-      capWarnEl.style.display = 'none';
-    }
+    if (lines.length) { capWarnEl.style.display = 'block'; capWarnEl.innerHTML = lines.join('<br>'); }
+    else capWarnEl.style.display = 'none';
   }
 
-  // CTA①表示制御
+  // CTA①表示制御（いずれかの目標が未達成なら表示）
   const aggCta = document.getElementById('aggCtaHint');
   if (aggCta) {
     const hasInput = aggRowData.some(r => r.amount > 0);
-    const notReached = goal > 0 && total < goal;
-    aggCta.style.display = (hasInput && notReached) ? 'block' : 'none';
+    const notReached1 = goal1 > 0 && total1 < goal1;
+    const notReached2 = dualActive && goal2 > 0 && total2 < goal2;
+    aggCta.style.display = (hasInput && (notReached1 || notReached2)) ? 'block' : 'none';
   }
 }
 
