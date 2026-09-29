@@ -806,12 +806,16 @@ const PTS=[
   {id:'waon',    name:'WAONポイント',    cat:'common',lv:'standard'},
   {id:'au',      name:'auポイント',      cat:'common',lv:'niche'},
   {id:'gpoint',  name:'Gポイント',       cat:'common',lv:'niche'},
+  {id:'epos',    name:'エポスポイント',   cat:'common',lv:'standard'},
+  {id:'eikyuu',  name:'永久不滅ポイント', short:'永久不滅P', cat:'common',lv:'standard'},
   {id:'ana',     name:'ANAマイル',      cat:'mile',  lv:'major'},
   {id:'jal',     name:'JALマイル',      cat:'mile',  lv:'major'},
   {id:'kris',    name:'KrisFlyer(SQ)',  cat:'mile',  lv:'standard'},
   {id:'delta',   name:'デルタSkyMiles', cat:'mile',  lv:'standard'},
   {id:'avios',   name:'Avios(BA)',      cat:'mile',  lv:'standard'},
   {id:'united',  name:'ユナイテッドMP', cat:'mile',  lv:'niche'},
+  {id:'alaska',  name:'Alaska Mileage Plan', short:'Alaska', cat:'mile', lv:'niche'},
+  {id:'aeroplan',name:'Aeroplan(エアカナダ)', short:'Aeroplan', cat:'mile', lv:'niche'},
   {id:'solaseed',name:'ソラシドマイル', short:'ソラシド', cat:'mile', lv:'niche'},
   {id:'anacoin', name:'ANA SKYコイン', cat:'coin',  lv:'major'},
   {id:'marriott',name:'マリオットBonvoy',short:'Marriott',cat:'hotel', lv:'major'},
@@ -1072,6 +1076,29 @@ id('fancrew','kris',{rate:0,
   url:'https://www.google.com/search?q=Gポイント+マリオットBonvoy+ポイント交換',
   history:[{d:'2023-10',r:0.9*(1000/1300)/10*(25000/60000)},{d:'2026-07',r:0}],
   notices:['⚠ よくある誤情報にご注意: 「Gポイント経由でマリオットBonvoy→KFに交換できる（約2.9%）」という情報が一部で見られますが、Gポイント公式の交換先一覧にマリオットBonvoyは含まれていません。この中継ルート自体が存在しないため、間接ルートもありません。']});
+
+// ─── エポスポイント（2026年9月時点で新規追加・要継続検証） ───
+// 2026年3月31日をもってゴールド/プラチナカード限定のANAマイル優遇レート(60%)が終了し、
+// 2026年4月1日以降は全カード種別でANA/JALともに一律50%に統一。
+d('epos','ana',{rate:0.50,url:'https://www.google.com/search?q=エポスポイント+ANAマイル+交換+公式',
+  history:[{d:'2022-01',r:0.50},{d:'2024-01',r:0.60},{d:'2026-03',r:0.60},{d:'2026-04',r:0.50}],
+  change:'down',verified:true,
+  notices:['1,000P→500マイル(50%)。最低1,000P、500P単位。反映まで2〜3日程度。','⚠️ 2026年3月31日まではゴールド・プラチナカード会員限定で60%（1,000P→600マイル）の優遇レートがあったが、2026年4月1日より廃止され、カード種別を問わず一律50%に統一された。','移行手数料無料。']});
+d('epos','jal',{rate:0.50,url:'https://www.google.com/search?q=エポスポイント+JALマイル+交換+公式',
+  history:[{d:'2022-01',r:0.50},{d:'2026-01',r:0.50}],
+  verified:true,
+  notices:['1,000P→500マイル(50%)。最低1,000P、500P単位。反映まで1ヶ月程度。カード種別による差はなし。','📅 不定期でレートアップキャンペーンが開催されることがある（直近実績: 2026年9月1〜30日交換分対象で+20%増量、実質60%）。参加登録などの条件は都度公式サイトで要確認。']});
+// エポスポイント→ANA SKYコイン: ANA公式(ポイントから交換する)で確認。直接100%はマイル経由(50%)より高レート。
+d('epos','anacoin',{rate:1.0,url:'https://www.ana.co.jp/ja/jp/guide/amc/skycoin/point/',
+  history:[{d:'2022-01',r:1.0},{d:'2026-01',r:1.0}],verified:true,
+  notices:['✅ ANA公式サイトで確認: 1エポスポイントごとに1コイン（100%）。1,000ポイント以上500ポイント単位。交換完了まで約2日。','ANAマイル経由（直接50%→コイン1:1）より大幅に高レート。SKYコインが目的なら本ルートが最良。']});
+// エポスの交換メニューにKrisFlyerは含まれておらず、直接交換は構造上不可。マリオットBonvoyへの交換ルートも持たない。
+d('epos','kris',{rate:0,url:'https://www.google.com/search?q=エポスポイント+KrisFlyer+マイル+交換',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['KFへの直接換算ルートなし。エポスポイント→ANA/JALマイル経由でも、いずれもKrisFlyerへの変換経路が存在しないためKF目標には貢献できません。','マリオットBonvoyへの交換ルートも持たないため、マリオット経由のブリッジも利用できません。','KFマイルを目指す場合は、ANAまたはJAL目標への切替を推奨します。']});
+d('epos','marriott',{rate:0,url:'https://www.google.com/search?q=エポスポイント+マリオットBonvoy+交換',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['マリオットBonvoyへの直接換算ルートなし。エポスポイントからマリオットへの変換経路は存在しません。','マリオット経由でKFマイルに集約したい場合は、先にANAまたはJALマイルへ変換（各50%）した上で、それぞれのマイル目標として集計することを推奨します。']});
 
 // ─── AMEXメンバーシップリワード ───
 // ※MRプラス=「メンバーシップ・リワード・プラス」（年間参加費3,300円税込）
@@ -1373,6 +1400,30 @@ d('pex','marriott',{rate:0,url:'https://pex.jp/exchange',
   history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
   notices:['マリオットBonvoyへの直接・間接換算ルートなし。PeXからマリオットへの変換経路は存在しません。']});
 
+// ─── 永久不滅ポイント（セゾン/UCカード・単体起点として追加） ───
+// これまでJRキューポ経由の中間ホップとしてのみ登場していたが、セゾン/UCカードの利用で
+// 直接貯めている保有者向けに、単体の起点としても電卓・マトリクスに登場させる。
+// ANA公式サイト(tameru_saison)で確認: 1ポイントごとに3マイル、200ポイント(600マイル)単位、手数料無料。
+d('eikyuu','ana',{rate:3.0,url:'https://www.ana.co.jp/ja/jp/shoppingandlife/point/tameru_saison/',
+  history:[{d:'2022-01',r:3.0},{d:'2026-01',r:3.0}],
+  verified:true,
+  notices:['✅ ANA公式サイトで確認: 永久不滅ポイント1ポイント(=5円相当)ごとに3マイル（実質60%）。200ポイント(600マイル)以上、200ポイント単位。移行手数料無料。積算まで約3週間。','⚠️「みずほマイレージクラブカード/ANA」の既存カード会員に限り、100ポイント→350マイル（実質70%）にアップする優遇レートがある。ただし同カードは2026年1月21日をもって新規発行を終了しており、これから永久不滅ポイントを貯め始める方は上記の通常レート(60%)が対象。']});
+// 永久不滅ポイント→JALマイル: セゾン公式で確認。ANAと異なりカード種別・保有カードによる優遇差はない。
+d('eikyuu','jal',{rate:2.5,url:'https://www.saisoncard.co.jp/credictionary/dictionary/article121.html',
+  history:[{d:'2022-01',r:2.5},{d:'2026-01',r:2.5}],
+  verified:true,
+  notices:['セゾン公式で確認: 永久不滅ポイント200ポイント(=1,000円相当)→500JALマイル（実質50%）。移行手数料無料。積算まで3〜4週間。','📅 不定期（年数回程度）で+20%のレートアップキャンペーンが実施され、その間は200ポイント→600マイル（実質60%）にアップする。直近実績は2025年12月開催。公式サイトで開催有無を要確認。']});
+// 永久不滅ポイント→ANA SKYコイン: ANA公式(ポイントから交換する)で確認。マイル経由(60%=3.0)よりコイン直接交換(90%)の方が高レート。
+d('eikyuu','anacoin',{rate:4.5,url:'https://www.ana.co.jp/ja/jp/guide/amc/skycoin/point/',
+  history:[{d:'2022-01',r:4.5},{d:'2026-01',r:4.5}],verified:true,
+  notices:['✅ ANA公式サイトで確認: 永久不滅ポイント1ポイントごとに4.5コイン（実質90%）。200／1,000／3,000ポイント単位。セゾンカードの会員専用サービス「Netアンサー」での手続きが必要。','ANAマイル経由（直接60%→コイン1:1）より大幅に高レート。SKYコインが目的なら本ルートが最良。']});
+d('eikyuu','kris',{rate:0,url:'https://www.google.com/search?q=永久不滅ポイント+KrisFlyer+マイル+交換',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['KFへの直接換算ルートなし。永久不滅ポイント→ANA/JALマイル経由でも、いずれもKrisFlyerへの変換経路が存在しないためKF目標には貢献できません。','マリオットBonvoyへの交換ルートも持たないため、マリオット経由のブリッジも利用できません。','KFマイルを目指す場合は、ANAまたはJAL目標への切替を推奨します。']});
+d('eikyuu','marriott',{rate:0,url:'https://www.google.com/search?q=永久不滅ポイント+マリオットBonvoy+交換',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['マリオットBonvoyへの直接換算ルートなし。永久不滅ポイントからマリオットへの変換経路は存在しません。','マリオット経由でKFマイルに集約したい場合は、先にANAまたはJALマイルへ変換（60%/50%）した上で、それぞれのマイル目標として集計することを推奨します。']});
+
 // ─── 共通ポイント相互 ───
 // ⚠️ 重大な修正: dポイント⇔Pontaポイントの相互交換サービスは2020年9月30日23:30をもって終了済み（NTTドコモ・ロイヤリティマーケティング公式発表、複数メディアで確認）。
 // KDDIとロイヤリティマーケティングの資本業務提携（au経済圏へのPonta統合）に伴う終了とされる。以降、直接の相互交換ルートは存在しない。
@@ -1632,6 +1683,16 @@ d('marriott','delta',{rate:20000/60000,url:'https://www.marriott.com/ja/loyalty/
 d('marriott','united',{rate:30000/60000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/points-to-miles.mi',
   history:[{d:'2019-01',r:25000/60000},{d:'2022-01',r:30000/60000},{d:'2024-01',r:30000/60000},{d:'2026-07',r:30000/60000}],
   change:'up',verified:true,notices:['ユナイテッドはボーナスが5,000多い。60,000pt=30,000マイル(50%)。','2026年7月、マリオット公式・複数の独立ブログで再確認済み（数値に変更なし）。']});
+// マリオットBonvoy→Alaska Mileage Plan（アラスカ航空）: 標準の3:1＋60,000pt単位5,000マイルボーナス対象（除外リストにAlaskaは含まれない）
+d('marriott','alaska',{rate:25000/60000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/points-to-miles.mi',
+  history:[{d:'2019-01',r:25000/60000},{d:'2024-01',r:25000/60000},{d:'2026-07',r:25000/60000}],
+  verified:true,
+  notices:['60,000pt単位で+5,000マイルボーナス→合計25,000マイル(41.7%)。ANA/JAL/KFと同水準。60,000pt未満は3:1(33.3%)。','⚠ 日本語ブログの一部で「Alaskaはボーナス対象外」という誤情報が見られるが、マリオット公式のボーナス除外対象はAAdvantage(アメリカン航空)・Avianca LifeMiles・デルタSkyMilesの3社のみで、Alaska Mileage Planはボーナス対象に含まれる（複数の英語圏の一次情報で確認）。','Alaska Mileage Planは提携航空会社が多く（oneworldを含む）、特典航空券の狙い目として陸マイラーの間で人気が高い。','交換上限240,000pt/回、1日あたり3,000〜240,000pt。申請間隔48時間以上。マイル反映まで数日程度。']});
+// マリオットBonvoy→Aeroplan（エアカナダ）: 標準の3:1＋60,000pt単位5,000マイルボーナス対象
+d('marriott','aeroplan',{rate:25000/60000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/points-to-miles.mi',
+  history:[{d:'2019-01',r:25000/60000},{d:'2024-01',r:25000/60000},{d:'2026-07',r:25000/60000}],
+  verified:true,
+  notices:['60,000pt単位で+5,000マイルボーナス→合計25,000マイル(41.7%)。ANA/JAL/KF/Alaskaと同水準。60,000pt未満は3:1(33.3%)。','Aeroplan(エアカナダ)はStar Allianceに加盟しており、ANAと同じアライアンス内での特典航空券活用にも使える点が特徴。','交換上限240,000pt/回、1日あたり3,000〜240,000pt。申請間隔48時間以上。マイル反映まで数日程度。']});
 d('marriott','dpoint',{rate:0,url:'https://www.marriott.com/ja/loyalty/partners/points-transfer.mi',
   history:[{d:'2019-01',r:0.25},{d:'2021-01',r:0.27},{d:'2024-01',r:0.27},{d:'2026-07',r:0}],
   verified:true,
