@@ -442,7 +442,7 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:2px solid 
 <body>
 <div class="hdr">
   <h1>✈️ マイル集約電卓・マイル交換レート一覧</h1>
-  <span class="hdr-sub">レート最終更新: 2026年9月30日 ／ 交換前に必ず各社公式サイトをご確認ください</span>
+  <span class="hdr-sub">レート最終更新: 2026年10月7日 ／ 交換前に必ず各社公式サイトをご確認ください</span>
 </div>
 
 <!-- 静的説明テキスト（Googlebot向け・ツール概要を静的HTMLで提供） -->
@@ -721,6 +721,7 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:2px solid 
       <span>「<strong style="color:var(--text2)">不可</strong>」＝調査済みで、直接・間接とも交換ルートが存在しないと判明したもの</span>
       <span>「<strong style="color:var(--text2)">斜線</strong>」＝FROMとTOが同一ポイントのため対象外（調査不要）</span>
       <span>数値表示（0.0%〜）＝調査済みで判明した実際の交換レート</span>
+      <span>※レートは「1円相当あたり」で統一（げん玉・ポイントインカム・ECナビ・PeX・ファンくるは10P=1円、ポイントタウンは20P=1円。電卓では入力ポイント数を自動で円換算して計算します）</span>
   </div>
 
   <!-- CTA③ -->
@@ -794,13 +795,13 @@ const CATS={
 const PTS=[
   {id:'moppy',   name:'モッピー',         cat:'site',  lv:'major'},
   {id:'hapitas', name:'ハピタス',         cat:'site',  lv:'major'},
-  {id:'fancrew', name:'ファンくる',       cat:'site',  lv:'major'},
+  {id:'fancrew', name:'ファンくる',       cat:'site',  lv:'major', yen:0.1},
   {id:'dmoney',  name:'ドットマネー',     cat:'site',  lv:'major'},
-  {id:'gendama', name:'げん玉',           cat:'site',  lv:'standard'},
-  {id:'pincm',   name:'ポイントインカム', cat:'site',  lv:'standard'},
-  {id:'ecnavi',  name:'ECナビ',           cat:'site',  lv:'standard'},
-  {id:'ptown',   name:'ポイントタウン',   cat:'site',  lv:'niche'},
-  {id:'pex',     name:'PeX',             cat:'site',  lv:'niche'},
+  {id:'gendama', name:'げん玉',           cat:'site',  lv:'standard', yen:0.1},
+  {id:'pincm',   name:'ポイントインカム', cat:'site',  lv:'standard', yen:0.1},
+  {id:'ecnavi',  name:'ECナビ',           cat:'site',  lv:'standard', yen:0.1},
+  {id:'ptown',   name:'ポイントタウン',   cat:'site',  lv:'niche', yen:0.05},
+  {id:'pex',     name:'PeX',             cat:'site',  lv:'niche', yen:0.1},
   {id:'dpoint',  name:'dポイント',        cat:'common',lv:'major'},
   {id:'rakuten', name:'楽天ポイント',     cat:'common',lv:'major'},
   {id:'ponta',   name:'Pontaポイント',   cat:'common',lv:'major'},
@@ -812,7 +813,7 @@ const PTS=[
   {id:'au',      name:'auポイント',      cat:'common',lv:'niche'},
   {id:'gpoint',  name:'Gポイント',       cat:'common',lv:'niche'},
   {id:'epos',    name:'エポスポイント',   cat:'common',lv:'standard'},
-  {id:'eikyuu',  name:'永久不滅ポイント', short:'永久不滅P', cat:'common',lv:'standard'},
+  {id:'eikyuu',  name:'永久不滅ポイント', short:'永久不滅P', cat:'common',lv:'standard', yen:5},
   {id:'ana',     name:'ANAマイル',      cat:'mile',  lv:'major'},
   {id:'jal',     name:'JALマイル',      cat:'mile',  lv:'major'},
   {id:'kris',    name:'KrisFlyer(SQ)',  cat:'mile',  lv:'standard'},
@@ -852,10 +853,10 @@ function id(f,t,o){
 
 // ─── ポイントサイト ───
 // モッピー 2026/02/02より直接ANA交換開始、2026/06/01より改悪(1,750P→500マイル=28.6%)
-d('moppy','ana',{rate:500/1750,url:'https://www.google.com/search?q=モッピー+ANAマイル+直接交換+2026',
+d('moppy','ana',{rate:500/1750,url:'https://www.ana.co.jp/ja/jp/shoppingandlife/point/tameru-moppy/',
   history:[{d:'2020-01',r:null},{d:'2026-02',r:1/3},{d:'2026-06',r:500/1750}],
   change:'down',verified:true,
-  notices:['⚠️ 2026年6月1日より改悪: 1,750P→500マイル（≈28.6%）。旧レート: 3P→1マイル（33.3%）。','最低1,750P。手数料無料。1〜3日で反映。','みずほ/nimocaルート等の間接交換(70%)の方がレートは高い。']});
+  notices:['⚠️ 2026年6月1日より改悪: 1,750P→500マイル（≈28.6%）。旧レート: 3P→1マイル（33.3%）。','✅ 2026年10月、ANA公式提携ページで確認: 2026年6月1日申請分から「1,750ポイントごとに500マイル」（最低1,750P）。旧: 1,500P単位で500マイル。手数料無料。1〜3日で反映。','みずほ/nimocaルート等の間接交換(70%)の方がレートは高い。']});
 id('moppy','ana',{rate:1.0*1.0*0.2*3.5,
   route:[{from:'モッピー',to:'ドットマネー',rate:1.0,url:'https://www.google.com/search?q=モッピー+ドットマネー+交換+公式'},{from:'ドットマネー',to:'Vポイント',rate:1.0,url:'https://www.google.com/search?q=ドットマネー+Vポイント+交換+手数料'},{from:'Vポイント',to:'JRキューポ',rate:1.0,url:'https://www.google.com/search?q=JRキューポ+永久不滅ポイント+交換+公式'},{from:'JRキューポ',to:'永久不滅P(1,000P→200P)',rate:0.2,url:'https://www.jrkyushu.co.jp/jq/support/faq/7-4.html'},{from:'永久不滅P',to:'ANAマイル(みずほ・100P→350マイル)',rate:3.5,url:'https://www.google.com/search?q=永久不滅ポイント+ANAマイル+交換レート+セゾンカード'}],
   url:'https://www.google.com/search?q=モッピー+ポイント交換+公式',
@@ -869,7 +870,8 @@ d('moppy','jal',{rate:0.80,url:'https://pc.moppy.jp/campaign/special/jalmile.php
     '⚠️ 表示レート80%はドリームキャンペーン適用時の実質レートです。通常交換（キャンペーン非適用時）は50%（2P→1マイル・最低1,000P）。',
     '【ドリームキャンペーン(ほぼ通年開催)の仕組み】12,000P交換→6,000JALマイル付与＋翌月末に4,500Pスカイボーナス（モッピーポイント）返還。実質コスト7,500Pで6,000マイル＝実質80%。',
     '条件：①交換当月に広告利用のみで10,000P以上獲得、②ゴールド会員。月1回まで。',
-    '2018年5月開始以来ほぼ通年開催・繰り返し延長中。公式ページで最新期間を要確認。',
+    '2018年5月開始以来ほぼ通年開催・繰り返し延長中（2026年9月分以降も継続が告知済み）。公式ページで最新期間を要確認。',
+    '📅 2026年8月はJAL×moppy「夏のマイル超レートアップ祭」で通常交換が20%増（1,000P→600マイル）となり、ドリームキャンペーン併用で実質96%（1人1回）の実績あり。同種の企画が再開催される可能性あり。',
     '📊 マイル集約電卓では月12,000Pの上限を超える分は、Pontaポイント経由の増量キャンペーン(60%)で計算しています。'
   ]});
 // モッピー→JALマイル（間接）: ドリームキャンペーンの月間上限(12,000P)を超える分は、Pontaポイント経由の増量キャンペーン(60%)が実用的な代替。
@@ -972,11 +974,11 @@ d('hapitas','ana',{rate:0,url:'https://www.google.com/search?q=ハピタス+ANA�
   history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],verified:true,
   notices:['ハピタスからANAマイルへの直接交換ルートはありません（2026年時点、複数のポイ活ブログ・ハピタス公式交換先一覧で確認）。','ANAマイルを狙う場合は、Vポイント・ドットマネー等を経由した間接ルート（下記参照、最大70%）を利用してください。']});
 id('hapitas','ana',{rate:0.70,
-  route:[{from:'ハピタス',to:'ドットマネー',rate:1.0,url:'https://www.google.com/search?q=ハピタス+ドットマネー+交換+公式'},{from:'ドットマネー',to:'Vポイント',rate:1.0,url:'https://www.google.com/search?q=ドットマネー+Vポイント+交換+手数料'},{from:'Vポイント',to:'JRキューポ',rate:1.0,url:'https://www.google.com/search?q=JRキューポ+永久不滅ポイント+交換+公式'},{from:'JRキューポ',to:'永久不滅P(1,000P→200P)',rate:0.2,url:'https://www.jrkyushu.co.jp/jq/support/faq/7-4.html'},{from:'永久不滅P',to:'ANAマイル(みずほ・100P→350マイル)',rate:3.5,url:'https://www.google.com/search?q=永久不滅ポイント+ANAマイル+交換レート+セゾンカード'}],
+  route:[{from:'ハピタス',to:'Vポイント(直接・等価)',rate:1.0,url:'https://www.google.com/search?q=ハピタス+Vポイント+交換+手数料'},{from:'Vポイント',to:'JRキューポ',rate:1.0,url:'https://www.google.com/search?q=JRキューポ+永久不滅ポイント+交換+公式'},{from:'JRキューポ',to:'永久不滅P(1,000P→200P)',rate:0.2,url:'https://www.jrkyushu.co.jp/jq/support/faq/7-4.html'},{from:'永久不滅P',to:'ANAマイル(みずほ・100P→350マイル)',rate:3.5,url:'https://www.google.com/search?q=永久不滅ポイント+ANAマイル+交換レート+セゾンカード'}],
   url:'https://www.google.com/search?q=ハピタス+ポイント交換+公式',
   history:[{d:'2020-01',r:0.70},{d:'2022-01',r:0.70},{d:'2026-01',r:0.70},{d:'2026-08',r:0.70}],
   verified:true,
-  notices:['✅ 2026年8月時点で再確認：ハピタス→ドットマネー→Vポイントはいずれも無料・等価（100%）であることを確認、70%に変更なし（モッピーのような直接交換手数料はハピタスのVポイント関連ルートには確認されず）。','ハピタスからANAマイルへの直接交換は不可。中継ルートが必要。','【70%ルート】みずほルート経由。ただし2026年1月21日でみずほマイレージクラブカード/ANAは新規発行終了。既存保有者のみ継続利用可。','【60%ルート】★初心者向け★ ハピタス→Vポイント(100%)→ANAマイル(60%)。三井住友カード発行のANAカード(年会費2,200円・初年度無料)保有が条件。これからポイ活を始める方の現実的な選択肢。','JRキューポ→永久不滅Pは1,000P→200P（永久不滅Pは1P=5円のため金額としては等価交換）。永久不滅P→ANAマイル(みずほ)は100P→350マイル（1P=5円換算で70%）。']});
+  notices:['⚠ 2026年10月修正: 旧版はハピタス→ドットマネー→Vポイント経由としていましたが、ハピタス→ドットマネー（ギフトコード）交換は2025年10月末で終了済みのため、ハピタス→Vポイントの直接交換（等価）経由に修正しました。総合70%は変わりません。','ハピタス→Vポイントの交換手数料は会員ランクにより異なる場合があります（シルバー・ゴールド会員は無料との情報あり）。交換前にハピタスの交換画面で手数料をご確認ください。','ハピタスからANAマイルへの直接交換は不可。中継ルートが必要。','【70%ルート】みずほルート経由。ただし2026年1月21日でみずほマイレージクラブカード/ANAは新規発行終了。既存保有者のみ継続利用可。','【60%ルート】★初心者向け★ ハピタス→Vポイント(100%)→ANAマイル(60%)。三井住友カード発行のANAカード(年会費2,200円・初年度無料)保有が条件。これからポイ活を始める方の現実的な選択肢。','JRキューポ→永久不滅Pは1,000P→200P（永久不滅Pは1P=5円のため金額としては等価交換）。永久不滅P→ANAマイル(みずほ)は100P→350マイル（1P=5円換算で70%）。']});
 // ハピタス→ソラシドマイル（ソラシドルート）: ハピタス→Vポイント(等価)→ソラシドマイル(100%)
 id('hapitas','solaseed',{rate:1.0*1.0,
   route:[{from:'ハピタス',to:'Vポイント',rate:1.0,url:'https://www.google.com/search?q=ハピタス+ポイント交換+公式'},{from:'Vポイント',to:'ソラシドマイル(要Solaseed Airカード)',rate:1.0,url:'https://www.smbc-card.com/mem/cardinfo/25/cardinfo4010961.jsp'}],
@@ -1040,29 +1042,29 @@ id('hapitas','united',{rate:(330/500)*(30000/60000),
 d('fancrew','ana',{rate:0,url:'https://www.google.com/search?q=ファンくる+ANAマイル+直接交換',
   history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],verified:true,
   notices:['Rポイント（ファンくる独自のポイント単位。運営会社の株式会社ROIが発行、10Rポイント=1円）をANAマイルに直接交換することはできません（複数のブログで確認）。','ANAマイルを狙う場合は、ドットマネー・Gポイント・PeX等を経由した間接ルート（下記参照、最大70%）を利用してください。']});
-id('fancrew','ana',{rate:0.9*0.70/10,
-  route:[{from:'ファンくる(10P→1G)',to:'Gポイント(手数料無料)',rate:0.10,url:'https://www.google.com/search?q=ファンくる+Gポイント+交換'},{from:'Gポイント',to:'nimocaポイント(10%手数料)',rate:0.90,url:'https://www.gpoint.co.jp/scripts/partner/detail/pen.jsp?partnerid=81058773'},{from:'nimocaポイント',to:'ANAマイル',rate:0.70,url:'https://www.ana.co.jp/ja/jp/shoppingandlife/point/tameru_nimoca/'}],
+id('fancrew','ana',{rate:0.9*0.70,
+  route:[{from:'ファンくる(10P=1円→1G・等価)',to:'Gポイント(手数料無料)',rate:1.0,url:'https://www.google.com/search?q=ファンくる+Gポイント+交換'},{from:'Gポイント',to:'nimocaポイント(10%手数料)',rate:0.90,url:'https://www.gpoint.co.jp/scripts/partner/detail/pen.jsp?partnerid=81058773'},{from:'nimocaポイント',to:'ANAマイル',rate:0.70,url:'https://www.ana.co.jp/ja/jp/shoppingandlife/point/tameru_nimoca/'}],
   url:'https://www.google.com/search?q=ファンくる+ポイント交換+ANAマイル+JALマイル',
-  history:[{d:'2020-01',r:0.70/10},{d:'2022-01',r:0.70/10},{d:'2026-01',r:0.9*0.70/10},{d:'2026-07',r:0.9*0.70/10}],
+  history:[{d:'2020-01',r:0.70},{d:'2022-01',r:0.70},{d:'2026-01',r:0.9*0.70},{d:'2026-07',r:0.9*0.70}],
   verified:true,
   notices:['✅ 2026年7月時点で確認：Gポイント公式ページで確認。交換には手数料分を加えたGポイントが必要で、手数料還元サービス対象サービス利用で5%が戻る仕組み（基本手数料10%・還元適用後の実質負担5%という構造は変更なし）。ANA公式nimocaポイントページでも70%（10P→7マイル）を確認。',
-    '【単位注意】ファンくるは10ポイント=1円相当（他サイトの1P=1円とは異なる）。このレートはファンくる1ポイントあたりの実際の交換率です（他サイトと同じ基準）。',
+    '【単位注意】ファンくるは10ポイント=1円相当（他サイトの1P=1円とは異なる）。表示レートは他のポイントサイトと同じく「1円相当あたり」の換算率です（ファンくる10P＝1円分あたり）。電卓に入力する際はファンくるのポイント数をそのまま入力すれば自動で1/10換算されます。',
     '【手数料の発生箇所】ファンくる→Gポイントは手数料無料（10P→1G）。Gポイント内での次の交換（nimoca等）時に10%手数料が発生します。',
     '【手数料還元】Gポイントの対象サービスで期間内（交換申請前月〜4ヶ月後末日）に1件でもポイント獲得があれば最大5%キャッシュバック。還元適用時は実質5%手数料（ただし交換先によって全額還元の場合あり）。',
-    'nimocaルート(九州・函館在住者向け、ANA VISA nimocaカード必須)経由でANA70%相当。Gポイント手数料10%控除後の実質レートは約6.3%/P（ファンくる1P基準）。手数料還元適用なら約6.65%/P。']});
+    'nimocaルート(九州・函館在住者向け、ANA VISA nimocaカード必須)経由でANA70%相当。Gポイント手数料10%控除後の実質レートは63%（1円相当あたり。ファンくる10,000P→約630マイル）。手数料還元適用なら約66.5%。']});
 // ファンくる→JALマイル: 直接交換ルートなし（確認済み）。Rポイントはドットマネー等への交換が必須。
 d('fancrew','jal',{rate:0,url:'https://www.google.com/search?q=ファンくる+JALマイル+直接交換',
   history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],verified:true,
   notices:['Rポイント（ファンくる独自のポイント単位。10Rポイント=1円）をJALマイルに直接交換することはできません（複数のブログで確認、交換先一覧はAmazonギフト券・Gポイント・PeX・デジタルウォレット・ドットマネーの5つのみ）。','JALマイルを狙う場合は、ドットマネー経由の間接ルート（下記参照、実質50%）を利用してください。']});
-id('fancrew','jal',{rate:0.50/10,
-  route:[{from:'ファンくる(10P→1マネー)',to:'ドットマネー(手数料無料)',rate:0.10,url:'https://www.google.com/search?q=ファンくる+ドットマネー+交換'},{from:'ドットマネー',to:'JALマイル',rate:0.50,url:'https://d-money.jp/withdrawal/point/detail/1119'}],
+id('fancrew','jal',{rate:0.50,
+  route:[{from:'ファンくる(10P=1円→1マネー・等価)',to:'ドットマネー(手数料無料)',rate:1.0,url:'https://www.google.com/search?q=ファンくる+ドットマネー+交換'},{from:'ドットマネー',to:'JALマイル',rate:0.50,url:'https://d-money.jp/withdrawal/point/detail/1119'}],
   url:'https://www.google.com/search?q=ファンくる+ポイント交換+JALマイル',
-  history:[{d:'2020-01',r:0.50/10},{d:'2022-01',r:0.50/10},{d:'2026-01',r:0.50/10}],
+  history:[{d:'2020-01',r:0.50},{d:'2022-01',r:0.50},{d:'2026-01',r:0.50}],
   verified:true,
-  notices:["✅ 2026年7月時点で確認：ファンくる→ドットマネー(等価・手数料無料)→JALマイル50%の各ホップに変更がないことを確認。",'【単位注意】ファンくるは10ポイント=1円相当（他サイトの1P=1円とは異なる）。このレートはファンくる1ポイントあたりの実際の交換率です（他サイトと同じ基準）。',
-    '【推奨ルート★】ファンくる→ドットマネー（手数料無料・10P→1マネー）→JALマイル（50%）。実質5%/P。Gポイント経由より有利。',
+  notices:["✅ 2026年7月時点で確認：ファンくる→ドットマネー(等価・手数料無料)→JALマイル50%の各ホップに変更がないことを確認。",'【単位注意】ファンくるは10ポイント=1円相当（他サイトの1P=1円とは異なる）。表示レートは他のポイントサイトと同じく「1円相当あたり」の換算率です（ファンくる10P＝1円分あたり）。電卓に入力する際はファンくるのポイント数をそのまま入力すれば自動で1/10換算されます。',
+    '【推奨ルート★】ファンくる→ドットマネー（手数料無料・10P→1マネー）→JALマイル（50%）。実質50%（ファンくる10,000P→500マイル）。Gポイント経由より有利。',
     'ドットマネー→JALは500マネー単位。申請月の下旬または翌月上旬に積算。',
-    '【Gポイント経由の場合】Gポイント内交換で10%手数料発生（実質4.5%/P）。Pontaキャンペーン時60%増量なら手数料引後5.4%/P。ただしドットマネー経由の5%/Pの方が通常は有利。']});
+    '【Gポイント経由の場合】Gポイント内交換で手数料が発生（Ponta(au)向けは3%）。Pontaキャンペーン時60%なら手数料引後約58%。キャンペーン時以外はドットマネー経由の50%の方が手間が少なく有利。']});
 // ファンくる→マリオットBonvoy: 直接交換ルートなし（確認済み）
 d('fancrew','marriott',{rate:0,url:'https://www.google.com/search?q=ファンくる+マリオットBonvoy+直接交換',
   history:[{d:'2023-10',r:0},{d:'2026-01',r:0}],verified:true,
@@ -1070,7 +1072,7 @@ d('fancrew','marriott',{rate:0,url:'https://www.google.com/search?q=ファンく
 // ファンくる→マリオットBonvoy (Gポイント経由): 追加調査の結果、ルートなしと判明
 id('fancrew','marriott',{rate:0,
   url:'https://www.google.com/search?q=Gポイント+マリオットBonvoy+ポイント交換',
-  history:[{d:'2023-10',r:0.9*(1000/1300)/10},{d:'2026-07',r:0}],
+  history:[{d:'2023-10',r:0},{d:'2026-07',r:0}],
   notices:['⚠ よくある誤情報にご注意: 「Gポイント経由でマリオットBonvoyに交換できる」という情報が一部で見られますが、Gポイント公式の交換先一覧にマリオットBonvoyは含まれていません（2026年7月確認）。','マリオットBonvoyの国内ポイントモール提携先は、モッピー・ハピタス・楽天ポイントの3サイトのみで、Gポイントは含まれません。','したがって、ファンくる→Gポイント→マリオットBonvoyというルートは実在せず、ファンくるからマリオットBonvoy・KrisFlyer・デルタSkyMilesへの間接ルートは存在しません。']});
 // ファンくる→KrisFlyer: 直接・間接ともに変換ルートなし（確認済み）
 d('fancrew','kris',{rate:0,url:'https://www.google.com/search?q=ファンくる+KrisFlyer+マイル+交換',
@@ -1079,8 +1081,8 @@ d('fancrew','kris',{rate:0,url:'https://www.google.com/search?q=ファンくる+
     'Gポイント経由を含め、マリオットBonvoyへの交換ルート自体が存在しないため、KrisFlyerへの間接ルートはありません。']});
 id('fancrew','kris',{rate:0,
   url:'https://www.google.com/search?q=Gポイント+マリオットBonvoy+ポイント交換',
-  history:[{d:'2023-10',r:0.9*(1000/1300)/10*(25000/60000)},{d:'2026-07',r:0}],
-  notices:['⚠ よくある誤情報にご注意: 「Gポイント経由でマリオットBonvoy→KFに交換できる（約2.9%）」という情報が一部で見られますが、Gポイント公式の交換先一覧にマリオットBonvoyは含まれていません。この中継ルート自体が存在しないため、間接ルートもありません。']});
+  history:[{d:'2023-10',r:0},{d:'2026-07',r:0}],
+  notices:['⚠ よくある誤情報にご注意: 「Gポイント経由でマリオットBonvoy→KFに交換できる」という情報が一部で見られますが、Gポイント公式の交換先一覧にマリオットBonvoyは含まれていません。この中継ルート自体が存在しないため、間接ルートもありません。']});
 
 // ─── エポスポイント（2026年9月時点で新規追加・要継続検証） ───
 // 2026年3月31日をもってゴールド/プラチナカード限定のANAマイル優遇レート(60%)が終了し、
@@ -1127,7 +1129,7 @@ id('amex_mr','ana',{rate:0,
 // AMEX MR→ANA SKYコイン: ANA公式(ポイントから交換する)で確認。MRプラス等登録時は1,000pt→1,000コイン(100%)だが、2026年7月時点で交換自体が一時停止中。
 d('amex_mr','anacoin',{rate:0,url:'https://www.ana.co.jp/ja/jp/guide/amc/skycoin/point/',
   history:[{d:'2024-01',r:1.0},{d:'2026-07',r:0}],change:'down',verified:true,
-  notices:['✅ ANA公式サイト(2026年7月時点)で確認: メンバーシップ・リワード・プラス等の登録済みカード会員は本来1,000pt→1,000コイン（100%）だが、「当面の間、メンバーシップ・リワードポイントからANA SKY コインへの交換を中止」と案内されており、交換再開時期は未定。','再開時期未定のため現時点では利用不可（0%扱い）。再開され次第、他のどのルートより高レートになる見込み。']});
+  notices:['✅ ANA公式サイト(2026年7月時点)で確認: メンバーシップ・リワード・プラス等の登録済みカード会員は本来1,000pt→1,000コイン（100%）だが、「当面の間、メンバーシップ・リワードポイントからANA SKY コインへの交換を中止」と案内されており、交換再開時期は未定。','再開時期未定のため現時点では利用不可（0%扱い）。','✅ 2026年10月にANA公式ページで再確認：引き続き「当面の間交換を中止・再開時期未定」。未登録カード会員の本来レートは3,000pt→1,000コイン（33.3%）。','⚠ 同ページのお知らせ欄に「2027年9月30日をもってポイントからの交換を終了」「交換中止前に発行されたURLは2027年9月30日までに受け取りを」との告知あり。再開されないまま終了する可能性が高い点にご注意ください。']});
 d('amex_mr','jal',{rate:1000/2500,
   url:'https://partner.jal.co.jp/shop/?tp=200354',
   history:[{d:'2020-01',r:1000/3000},{d:'2024-01',r:1000/2500},{d:'2026-01',r:1000/2500}],
@@ -1163,15 +1165,15 @@ d('amex_mr','delta',{rate:1000/1250,
 // AMEX MR→ホテル: ⚠ 重大な修正: 従来「マリオットへの直接移行ルートなし」としていたが、
 // 日本のAMEXメンバーシップ・リワードは公式に「ヒルトン・オナーズ／Marriott Bonvoy／ALL Accor」の3ホテルへ移行可能（公式サイトで確認）。
 // ※Accorは2026年4月6日開始の新パートナーシップ。IHG・ハイアットは提携先に含まれていない。
-d('amex_mr','marriott',{rate:990/1000,url:'https://www.americanexpress.com/ja-jp/point/mile-point/hotel/',
-  history:[{d:'2022-01',r:0},{d:'2026-04',r:990/2000},{d:'2026-07',r:990/1000}],verified:true,
-  notices:['⚠ よくある誤情報にご注意: 「AMEX MRからマリオットBonvoyへの移行ルートはない」という情報が一部で見られますが、実際にはAMEX公式サイトで移行が可能です: 「メンバーシップ・リワード・プラス」登録（年間参加費3,300円）時は1,000pt→990ポイント（99%）。','未登録の場合は2,000pt→990ポイント（49.5%）に半減。','【表示について】本ツールではANA/JAL/KFのAMEX MR欄と同様、MRプラス登録時の値（99%）を基準レートとして表示しています（未登録の場合は49.5%）。','初回移行は約2週間、2回目以降は通常同日中に反映。']});
-d('amex_mr','hilton',{rate:1250/2000,url:'https://www.americanexpress.com/ja-jp/point/mile-point/hotel/',
-  history:[{d:'2022-01',r:1250/2000},{d:'2026-01',r:1250/2000}],verified:true,
-  notices:['AMEX公式サイトで確認: 通常2,000pt→1,250ポイント（62.5%）。','「メンバーシップ・リワード・プラス」登録（年間参加費3,300円）で1,000pt→1,250ポイント（125%、増量）に優遇。','初回移行は約2週間、2回目以降は通常5日程度で反映。']});
-d('amex_mr','accor',{rate:1000/7000,url:'https://www.americanexpress.com/ja-jp/rewards/membership-rewards/partner/ALL_Accor/ACCR-NFTO',
-  history:[{d:'2026-04',r:1000/7000}],verified:true,
-  notices:['2026年4月6日開始の新パートナーシップ。AMEX公式サイトで確認: 通常7,000pt→1,000 ALL Accorポイント（14.3%）。','「メンバーシップ・リワード・プラス」登録（年間参加費3,300円）で3,500pt→1,000ポイント（28.6%）に優遇。','初回移行は約2週間、2回目以降は通常同日中に反映。']});
+d('amex_mr','marriott',{rate:990/1000,url:'https://www.americanexpress.com/ja-jp/rewards/membership-rewards/partner/Marriott_Bonvoy/MARR-N',
+  history:[{d:'2026-07',r:990/1000},{d:'2026-10',r:990/1000}],verified:true,
+  notices:['⚠ よくある誤情報にご注意: 「AMEX MRからマリオットBonvoyへの移行ルートはない」という情報が一部で見られますが、実際にはAMEX公式サイトで移行が可能です: 「メンバーシップ・リワード・プラス」登録（年間参加費3,300円）時は1,000pt→990ポイント（99%）。','✅ 2026年10月、AMEX公式の移行アイテムページ（ログイン前表示）で「2,000ポイント＝990ポイント、2,000ポイント単位、最少2,000ポイント、移行は通常同日中」を確認。これが未登録時（49.5%）のレートです。','✅ 2026年10月、AMEX会員ログイン後の移行画面で「1,000ポイント＝990ポイント、最少移行1,000ポイント、移行は通常同日中」を確認（最少1,000ptはAMEX公式が案内するMRプラス登録時の条件と一致）。表示の99%はこのレートです。','【表示について】本ツールではANA/JAL/KFのAMEX MR欄と同様、MRプラス登録時の値（99%）を基準レートとして表示しています（未登録の場合は49.5%）。','初回移行は約2週間、2回目以降は通常同日中に反映。']});
+d('amex_mr','hilton',{rate:1250/1000,url:'https://www.americanexpress.com/ja-jp/point/mile-point/hotel/',
+  history:[{d:'2022-01',r:1250/1000},{d:'2026-01',r:1250/1000}],verified:true,
+  notices:['【表示基準の統一】AMEX MR欄はANA/JAL/KF/マリオットと同じく「メンバーシップ・リワード・プラス登録時」のレートで表示しています（旧版はこの欄だけ未登録時のレートになっており、基準が不揃いでした）。','AMEX公式サイトで確認: 未登録は2,000pt→1,250ポイント（62.5%）、最少移行2,000pt。','「メンバーシップ・リワード・プラス」登録（年間参加費3,300円）で1,000pt→1,250ポイント（125%、増量）に優遇。','初回移行は約2週間、2回目以降は通常5日程度で反映。']});
+d('amex_mr','accor',{rate:1000/3500,url:'https://www.americanexpress.com/ja-jp/rewards/membership-rewards/partner/ALL_Accor/ACCR-NFTO',
+  history:[{d:'2026-04',r:1000/3500}],verified:true,
+  notices:['【表示基準の統一】AMEX MR欄はANA/JAL/KF/マリオットと同じく「メンバーシップ・リワード・プラス登録時」のレートで表示しています（旧版はこの欄だけ未登録時のレートになっており、基準が不揃いでした）。','2026年4月開始の新パートナーシップ（ALL公式の提携条件ページでも確認）。AMEX公式サイトで確認: 通常7,000pt→1,000 ALL Accorポイント（14.3%）。','「メンバーシップ・リワード・プラス」登録（年間参加費3,300円）で3,500pt→1,000ポイント（28.6%）に優遇。','初回移行は約2週間、2回目以降は通常同日中に反映。']});
 d('amex_mr','ihg',{rate:0,url:'https://www.americanexpress.com/ja-jp/point/mile-point/hotel/',
   history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,
   notices:['日本のAMEX MRの提携ホテルは「ヒルトン・オナーズ／Marriott Bonvoy／ALL Accor」の3社のみで、IHGは含まれていません（公式サイトで確認）。']});
@@ -1344,21 +1346,21 @@ d('ecnavi','marriott',{rate:0,url:'https://pex.jp/exchange',
 d('ptown','ana',{rate:100/350,url:'https://www.google.com/search?q=ポイントタウン+ANAマイル+交換+公式',
   history:[{d:'2022-01',r:0.42},{d:'2026-01',r:100/350}],
   change:'down',verified:true,
-  notices:['ポイントタウン公式: 350P→100マイル（≈28.57%）。旧レート約42%から改悪。最低350P。当月末締め翌月10営業日前後。手数料無料。','⚠ 間接ルート（Vポイント経由50%）の方が高レートのため、直接交換は非推奨。']});
+  notices:['⚠ 単位修正: ポイントタウンは20pt=1円。公式レートは7,000pt（350円相当）→100マイル（≈28.6%）。旧レート約42%から改悪。最低7,000pt。当月末締め翌月10営業日前後。手数料無料。','⚠ 間接ルート（Vポイント経由50%）の方が高レートのため、直接交換は非推奨。']});
 id('ptown','ana',{rate:0.50,
   route:[{from:'ポイントタウン',to:'ドットマネー',rate:1.0,url:'https://www.google.com/search?q=ポイントタウン+ドットマネー+交換'},{from:'ドットマネー',to:'Vポイント',rate:1.0,url:'https://www.google.com/search?q=ドットマネー+Vポイント+交換+公式'},{from:'Vポイント',to:'ANAマイル',rate:0.50,url:'https://t-point.tsite.jp/store/list/ana/'}],
   url:'https://www.google.com/search?q=ポイントタウン+ANAマイル+Vポイント+交換ルート',
   history:[{d:'2022-01',r:0.50},{d:'2026-01',r:0.50}],
-  notices:["✅ 2026年7月時点で確認：ポイントタウン→ドットマネーが手数料無料・等価交換であることを公式FAQ・複数ブログで再確認。",'★推奨★ ポイントタウン→ドットマネー(等価・手数料無料)→Vポイント(等価)→ANAマイル(50%)で実質50%。直接交換（≈28.57%）より高レート。','ポイントタウン→Vポイントの直接交換には8%の手数料がかかる（108P→100Vポイント）ため、手数料無料のドットマネー経由が推奨ルートです。','みずほルート（Vポイント→JRキューポ→永久不滅P→ANA）経由なら70%も可能だが、2026年1月21日以降みずほカードは新規発行終了（既存保有者のみ継続利用可）。']});
+  notices:["✅ 2026年7月時点で確認：ポイントタウン→ドットマネーが手数料無料・等価交換であることを公式FAQ・複数ブログで再確認。",'★推奨★ ポイントタウン→ドットマネー(等価・手数料無料)→Vポイント(等価)→ANAマイル(50%)で実質50%。直接交換（≈28.57%）より高レート。','ポイントタウン→Vポイントの直接交換には約8%の手数料がかかるため、手数料無料のドットマネー経由が推奨ルートです。','みずほルート（Vポイント→JRキューポ→永久不滅P→ANA）経由なら70%も可能だが、2026年1月21日以降みずほカードは新規発行終了（既存保有者のみ継続利用可）。']});
 d('ptown','jal',{rate:500/1250,url:'https://www.google.com/search?q=ポイントタウン+JALマイル+交換+公式',
   history:[{d:'2022-01',r:500/1250},{d:'2026-01',r:500/1250}],
   verified:true,
-  notices:['ポイントタウン公式: 1,250P→500マイル（40%）。最低1,250P。当月末締め翌月5営業日前後。手数料無料。','ドットマネー経由の間接ルート（50%）の方が高レートのため、通常は間接ルートを推奨。']});
+  notices:['⚠ 単位修正: ポイントタウンは20pt=1円。公式レートは25,000pt（1,250円相当）→500マイル（40%）。最低25,000pt。当月末締め翌月5営業日前後。手数料無料。','ドットマネー経由の間接ルート（50%）の方が高レートのため、通常は間接ルートを推奨。']});
 id('ptown','jal',{rate:0.50,
   route:[{from:'ポイントタウン',to:'ドットマネー',rate:1.0,url:'https://www.google.com/search?q=ポイントタウン+ドットマネー+交換'},{from:'ドットマネー',to:'JALマイル',rate:0.50,url:'https://d-money.jp/withdrawal/point/detail/1119'}],
   url:'https://www.google.com/search?q=ポイントタウン+JALマイル+ドットマネー+交換ルート',
   history:[{d:'2022-01',r:0.50},{d:'2026-01',r:0.50}],
-  notices:["✅ 2026年7月時点で確認：ポイントタウン→ドットマネーが手数料無料・等価交換であることを公式FAQ・複数ブログで再確認。",'★推奨★ ポイントタウン→ドットマネー(1:1等価交換)→JALマイル(50%)で実質50%。直接交換（40%）より高レート。500マネー単位（ドットマネー側）。申請月の下旬〜翌月上旬に積算。']});
+  notices:["✅ 2026年7月時点で確認：ポイントタウン→ドットマネーが手数料無料・等価交換であることを公式FAQ・複数ブログで再確認。",'★推奨★ ポイントタウン→ドットマネー(10,000pt→500マネー＝等価交換)→JALマイル(50%)で実質50%。直接交換（40%）より高レート。500マネー単位（ドットマネー側）。申請月の下旬〜翌月上旬に積算。']});
 d('ptown','kris',{rate:0,url:'https://www.google.com/search?q=ポイントタウン+KrisFlyer+マイル+交換',
   history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
   notices:['KFへの直接・間接換算ルートなし。ポイントタウンからマリオットBonvoyへの変換経路がないため、マリオット経由のKFブリッジも利用不可。KFを目指す場合はANA/JAL目標への切替を推奨。']});
@@ -1380,14 +1382,14 @@ id('pex','ana',{rate:0.95*0.70,
   verified:true,
   notices:['★推奨★ ⚠ よくある誤情報にご注意: 「PeX→Vポイントは1,000P→100P=10%」という情報が一部で見られますが、PeX公式サイトによれば基本レートは1,000P→100Vポイントの完全等価（100%）です。手数料は割合ではなく「1回あたりPeXポイント500P（50円相当）」の定額。','定額手数料のため、まとまった額を一度に交換するほど実質レートは100%に近づく（例: 10,000P交換なら実質95%、30,000P以上ならほぼ100%）。手数料無料キャンペーンも随時開催。','Vポイント→ANAマイル(みずほルート)の70%と組み合わせて、まとまった額なら実質65〜70%。直接交換（30%）より大幅に高レート。','nimocaルート（PeX→nimoca、1,000P→100P=完全等価・手数料なし）→ANA(70%)なら70%達成可能だが、nimocaは九州・函館エリアの交換機必須。','2026年1月21日以降、みずほマイレージクラブカード/ANAは新規発行終了（既存保有者のみ利用可）。']});
 // PeX→ANA SKYコイン: ANA公式(ポイントから交換する)で確認。直接10%と低いため、Vポイント経由でANAマイルに変換後1:1でコイン化する間接ルートの方が高レート。
-d('pex','anacoin',{rate:100/1000,url:'https://www.ana.co.jp/ja/jp/guide/amc/skycoin/point/',
-  history:[{d:'2022-01',r:0.10},{d:'2026-01',r:0.10}],verified:true,
-  notices:['✅ ANA公式サイトで確認: 1,000ポイントごとに100コイン（10%）。単位1,000P、上限990,000P、手数料500P。交換完了まで約2日。','レートが低いため、下記の間接ルート（Vポイント経由でANAマイルに変換後、マイル→コイン1:1）の方が高レートで推奨。']});
+d('pex','anacoin',{rate:1.0,url:'https://www.ana.co.jp/ja/jp/guide/amc/skycoin/point/',
+  history:[{d:'2022-01',r:1.0},{d:'2026-01',r:1.0},{d:'2026-10',r:1.0}],verified:true,
+  notices:['⚠ 2026年10月訂正: 旧版は「10%」としていましたが単位の誤りでした。ANA公式: 1,000ポイントごとに100コイン。PeXは10P=1円なので1,000P（100円相当）→100コイン＝実質100%（等価）です。','単位1,000P、上限990,000P、交換1回ごとに手数料500P（50円相当）。交換完了まで約2日。','手数料は定額のため、まとめて交換するほど実質レートは100%に近づきます（例: 10,000P交換なら実質約95%）。下記の間接ルート（約66.5%）より高レートで、SKYコインが目的なら本ルートが最良。']});
 id('pex','anacoin',{rate:0.95*0.70,
   route:[{from:'PeX',to:'Vポイント(定額手数料)',rate:0.95,url:'https://pex.jp/exchange/tpointjapan/show'},{from:'Vポイント',to:'ANAマイル(みずほルート)',rate:0.70,url:'https://www.google.com/search?q=ANAマイル+みずほルート+交換+公式'},{from:'ANAマイル',to:'ANA SKYコイン',rate:1.0,url:'https://www.ana.co.jp/ja/jp/guide/amc/skycoin/skycoin/'}],
   url:'https://pex.jp/exchange/tpointjapan/show',
   history:[{d:'2022-01',r:0.665},{d:'2026-01',r:0.665}],
-  notices:['PeX→Vポイント→ANAマイル(みずほルート)の66.5%に、ANAマイル→SKYコインの基本1:1を適用した参考値。まとまったマイル数(10,000マイル以上)を一括交換すればステイタス等に応じてさらに1.2〜2.0倍の優遇レートが乗る場合がある。','直接のSKYコインルート（10%）より大幅に高レート。']});
+  notices:['（参考）直接交換（上記・実質ほぼ100%）の方が高レートです。','PeX→Vポイント→ANAマイル(みずほルート)の66.5%に、ANAマイル→SKYコインの基本1:1を適用した参考値。まとまったマイル数(10,000マイル以上)を一括交換すればステイタス等に応じてさらに1.2〜2.0倍の優遇レートが乗る場合がある。','直接のSKYコインルート（10%）より大幅に高レート。']});
 d('pex','jal',{rate:100/400,url:'https://pex.jp/exchange/jal/show',
   history:[{d:'2022-01',r:100/400},{d:'2026-01',r:100/400}],
   verified:true,
@@ -1409,19 +1411,19 @@ d('pex','marriott',{rate:0,url:'https://pex.jp/exchange',
 // これまでJRキューポ経由の中間ホップとしてのみ登場していたが、セゾン/UCカードの利用で
 // 直接貯めている保有者向けに、単体の起点としても電卓・マトリクスに登場させる。
 // ANA公式サイト(tameru_saison)で確認: 1ポイントごとに3マイル、200ポイント(600マイル)単位、手数料無料。
-d('eikyuu','ana',{rate:3.0,url:'https://www.ana.co.jp/ja/jp/shoppingandlife/point/tameru_saison/',
-  history:[{d:'2022-01',r:3.0},{d:'2026-01',r:3.0}],
+d('eikyuu','ana',{rate:3.0/5,url:'https://www.ana.co.jp/ja/jp/shoppingandlife/point/tameru_saison/',
+  history:[{d:'2022-01',r:3.0/5},{d:'2026-01',r:3.0/5}],
   verified:true,
   notices:['✅ ANA公式サイトで確認: 永久不滅ポイント1ポイント(=5円相当)ごとに3マイル（実質60%）。200ポイント(600マイル)以上、200ポイント単位。移行手数料無料。積算まで約3週間。','⚠️「みずほマイレージクラブカード/ANA」の既存カード会員に限り、100ポイント→350マイル（実質70%）にアップする優遇レートがある。ただし同カードは2026年1月21日をもって新規発行を終了しており、これから永久不滅ポイントを貯め始める方は上記の通常レート(60%)が対象。']});
 // 永久不滅ポイント→JALマイル: セゾン公式で確認。ANAと異なりカード種別・保有カードによる優遇差はない。
-d('eikyuu','jal',{rate:2.5,url:'https://www.saisoncard.co.jp/credictionary/dictionary/article121.html',
-  history:[{d:'2022-01',r:2.5},{d:'2026-01',r:2.5}],
+d('eikyuu','jal',{rate:2.5/5,url:'https://www.saisoncard.co.jp/credictionary/dictionary/article121.html',
+  history:[{d:'2022-01',r:2.5/5},{d:'2026-01',r:2.5/5}],
   verified:true,
   notices:['セゾン公式で確認: 永久不滅ポイント200ポイント(=1,000円相当)→500JALマイル（実質50%）。移行手数料無料。積算まで3〜4週間。','📅 不定期（年数回程度）で+20%のレートアップキャンペーンが実施され、その間は200ポイント→600マイル（実質60%）にアップする。直近実績は2025年12月開催。公式サイトで開催有無を要確認。']});
 // 永久不滅ポイント→ANA SKYコイン: ANA公式(ポイントから交換する)で確認。マイル経由(60%=3.0)よりコイン直接交換(90%)の方が高レート。
-d('eikyuu','anacoin',{rate:4.5,url:'https://www.ana.co.jp/ja/jp/guide/amc/skycoin/point/',
-  history:[{d:'2022-01',r:4.5},{d:'2026-01',r:4.5}],verified:true,
-  notices:['✅ ANA公式サイトで確認: 永久不滅ポイント1ポイントごとに4.5コイン（実質90%）。200／1,000／3,000ポイント単位。セゾンカードの会員専用サービス「Netアンサー」での手続きが必要。','ANAマイル経由（直接60%→コイン1:1）より大幅に高レート。SKYコインが目的なら本ルートが最良。']});
+d('eikyuu','anacoin',{rate:4.5/5,url:'https://www.ana.co.jp/ja/jp/guide/amc/skycoin/point/',
+  history:[{d:'2022-01',r:4.5/5},{d:'2026-01',r:4.5/5},{d:'2026-10',r:4.5/5}],verified:true,
+  notices:['✅ ANA公式サイトで確認: 永久不滅ポイント1ポイントごとに4.5コイン（実質90%）。200／1,000／3,000ポイント単位。セゾンカードの会員専用サービス「Netアンサー」での手続きが必要。','ANAマイル経由（直接60%→コイン1:1）より大幅に高レート。SKYコインが目的なら本ルートが最良。','⚠ ANA公式のお知らせ: 2027年3月31日（水）をもって永久不滅ポイントからANA SKYコインへの交換は終了予定（2026年10月確認）。','【単位注意】永久不滅ポイントは1P=5円相当。表のレートは他と同じ「1円相当あたり」で表示しています（電卓ではポイント数をそのまま入力すれば自動で5倍の円換算をします）。']});
 d('eikyuu','kris',{rate:0,url:'https://www.google.com/search?q=永久不滅ポイント+KrisFlyer+マイル+交換',
   history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
   notices:['KFへの直接換算ルートなし。永久不滅ポイント→ANA/JALマイル経由でも、いずれもKrisFlyerへの変換経路が存在しないためKF目標には貢献できません。','マリオットBonvoyへの交換ルートも持たないため、マリオット経由のブリッジも利用できません。','KFマイルを目指す場合は、ANAまたはJAL目標への切替を推奨します。']});
@@ -1560,7 +1562,7 @@ id('vpoint','jal',{rate:0.50,
   notices:['✅ 2026年7月時点で確認：Vポイント→JRキューポ→永久不滅ポイント→JALマイルのルート（50%、キャンペーン時60%）は現在も有効であることを確認。',
     '⚠️ VポイントからJALマイルへの直接交換ルートはありません（ANAとは異なる点に注意）。',
     'JRキューポ→永久不滅P経由ルート（50%）。定期的に永久不滅P→JALマイル20%増量キャンペーンあり（その際60%）。',
-    '⚠️ 重要な発見：別ルートとして案内されることがある「Vポイント→JRキューポ→Pontaポイント→JALマイル」経路は、2026年8月末で終了することが既にアナウンスされています（Yahoo!知恵袋等で確認、2026年3月時点情報）。当ツールが採用している永久不滅ポイント経由ルートはこの終了の影響を受けません。',
+    '⚠️ 2026年10月訂正：「Vポイント→JRキューポ→Pontaポイント→JALマイル」経路は、JR九州の公式発表（2024年12月20日付）により、JRキューポ→Pontaポイントの交換サービスが2025年8月31日をもって終了済みです（旧版の「2026年8月末で終了予定」は誤り）。当ツールが採用している永久不滅ポイント経由ルートはこの終了の影響を受けません。',
     'Vポイント→WAON POINTへの等価交換→JALマイル50%（イオンカード必須・所要1〜2ヶ月）も可。',
     '所要時間: 複数のポイントを経由するため合計3〜8週間程度。',
     'JRキューポ→永久不滅Pは1,000P→200P（永久不滅Pは1P=5円のため金額としては等価交換）。永久不滅P→JALマイルは100P→250マイル（通常50%）。']});
@@ -1585,7 +1587,7 @@ d('vpoint','kris',{rate:0,url:'https://www.google.com/search?q=Vポイント+Kri
 d('vpoint','marriott',{rate:0,url:'https://www.google.com/search?q=Vポイント+マリオットBonvoy+交換',
   history:[{d:'2024-04',r:0},{d:'2026-01',r:0}],
   notices:['マリオットBonvoyへの直接換算ルートなし。Vポイントからマリオットへの変換経路は存在しません。','マリオット経由でKFマイルに集約したい場合は、先にANAマイルへ変換（直接50%・JQみずほルート70%）した上でANA目標として集計することを推奨します。']});
-d('nanaco','ana',{rate:0.50,url:'https://www.google.com/search?q=nanacoポイント+ANAマイル+交換+公式',history:[{d:'2020-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-01',r:0.50}],verified:true,notices:['1,000P単位。不定期増量キャンペーンあり。']});
+d('nanaco','ana',{rate:0.50,url:'https://www.google.com/search?q=nanacoポイント+ANAマイル+交換+公式',history:[{d:'2020-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-01',r:0.50}],verified:true,notices:['通常500P→250マイル（50%）。','📅 開催中: 2026年10月1日〜10月31日交換申請分は20%レートアップで500P→300マイル（実質60%）（ANA公式キャンペーンページで確認）。過去は年1〜2回（3月・10月頃）開催。']});
 id('nanaco','ana',{rate:0,url:'https://www.google.com/search?q=nanacoポイント+ANAマイル+間接交換',
   history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],
   notices:['✅ 調査済み: nanacoポイントはVポイント・ドットマネー等への出口ブリッジを持たないため、間接ルートは存在しません。直接交換(50%、通称「nanacoルート」)が唯一かつ最良のルートです。']});
@@ -1653,7 +1655,7 @@ id('gpoint','ana',{rate:0.90*0.70,
 // Gポイント→ANA SKYコイン: ANA公式(ポイントから交換する)で確認。直接100%はマイル経由(50〜63%)より高レート。
 d('gpoint','anacoin',{rate:1.0,url:'https://www.ana.co.jp/ja/jp/guide/amc/skycoin/point/',
   history:[{d:'2022-01',r:1.0},{d:'2026-01',r:1.0}],verified:true,
-  notices:['✅ ANA公式サイトで確認: 1Gポイントごとに1コイン（100%）。1P単位。交換完了まで約2日。','ANAマイル経由（直接50%・みずほルート63%→コイン1:1）より大幅に高レート。SKYコインが目的なら本ルートが最良。','⚠ 期間限定でGポイント側の都合により交換が一時停止される場合がある（例: 2026年GW期間）。交換前にGポイント公式のお知らせを要確認。']});
+  notices:['✅ ANA公式サイトで確認: 1Gポイントごとに1コイン（100%）。1P単位。交換完了まで約2日。','ANAマイル経由（直接50%・みずほルート63%→コイン1:1）より大幅に高レート。SKYコインが目的なら本ルートが最良。','⚠ 2026年10月時点、ANA公式ページに「現在、システムメンテナンスのためサービスを停止」と掲載中。再開まで本ルートは利用できません（再開時期は要確認）。過去にも一時停止の例あり（2026年GW期間など）。']});
 d('gpoint','jal',{rate:0.50,url:'https://www.google.com/search?q=Gポイント+ANAマイル+JALマイル+交換+公式',history:[{d:'2022-01',r:0.50},{d:'2026-01',r:0.50}],verified:true,notices:['直接交換は500P→250マイル(50%)。より高いレートを狙う場合はPonta(au)経由の間接ルート（下記参照）も検討可能。']});
 id('gpoint','jal',{rate:0.97*0.60,
   route:[{from:'Gポイント',to:'Pontaポイント(au)(手数料3%)',rate:0.97,url:'https://www.gpoint.co.jp/scripts/partner/detail/pen.jsp?partnerid=81172371'},{from:'Pontaポイント',to:'JALマイル(レートアップキャンペーン)',rate:0.60,url:'https://www.google.com/search?q=Pontaポイント+JALマイル+レートアップキャンペーン'}],
@@ -1808,7 +1810,7 @@ id('yamada','ana',{rate:0,url:'https://www.yamada-denki.jp/point/',
 // ヤマダポイント→ANA SKYコイン: ANA公式(ポイントから交換する)で確認。直接100%はマイル経由(25%)より大幅に高レート。
 d('yamada','anacoin',{rate:1.0,url:'https://www.ana.co.jp/ja/jp/guide/amc/skycoin/point/',
   history:[{d:'2023-08',r:1.0},{d:'2026-01',r:1.0}],verified:true,
-  notices:['✅ ANA公式サイトで確認: ヤマダポイント1ポイントごとに1コイン（100%）。1,000P単位。交換完了まで約2日。','事前にヤマダデンキ「ヤマダデジタル会員」の登録が必要。スマートフォンからのみ申込可（アプリのダウンロードが必要）。','ANAマイル経由（直接25%→コイン1:1）より大幅に高レート。SKYコインが目的なら本ルートが最良。']});
+  notices:['✅ ANA公式サイトで確認: ヤマダポイント1ポイントごとに1コイン（100%）。1,000P単位。交換完了まで約2日。','事前にヤマダデンキ「ヤマダデジタル会員」の登録が必要。スマートフォンアプリからのみ申込可（2026年10月ANA公式で再確認）。','ANAマイル経由（直接25%→コイン1:1）より大幅に高レート。SKYコインが目的なら本ルートが最良。']});
 // ヤマダ→KF・JAL: 直接交換不可。ANAマイル→マリオット逆方向交換は存在しないためKFルートなし
 // ※ANAマイル→マリオットBonvoyの直接交換は存在しない（逆方向のマリオット→ANAは可能）
 d('yamada','kris',{rate:0,
@@ -1821,8 +1823,8 @@ d('yamada','kris',{rate:0,
 d('fancrew','delta',{rate:0,url:'https://www.google.com/search?q=%E3%83%95%E3%82%A1%E3%83%B3%E3%81%8F%E3%82%8B%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E7%9B%B4%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ファンくるの交換メニューにデルタSkyMilesは含まれておらず、直接交換ルートは存在しません。デルタ航空は国内の主要ポイントサイト・共通ポイントの提携網に含まれていません。']});
 id('fancrew','delta',{rate:0,
   url:'https://www.google.com/search?q=Gポイント+マリオットBonvoy+ポイント交換',
-  history:[{d:'2023-10',r:0.9*(1000/1300)/10*(20000/60000)},{d:'2026-07',r:0}],
-  notices:['⚠ よくある誤情報にご注意: 「Gポイント経由でマリオットBonvoy→デルタに交換できる（約2.3%）」という情報が一部で見られますが、Gポイント公式の交換先一覧にマリオットBonvoyは含まれていません。この中継ルート自体が存在しないため、間接ルートもありません。']});
+  history:[{d:'2023-10',r:0},{d:'2026-07',r:0}],
+  notices:['⚠ よくある誤情報にご注意: 「Gポイント経由でマリオットBonvoy→デルタに交換できる」という情報が一部で見られますが、Gポイント公式の交換先一覧にマリオットBonvoyは含まれていません。この中継ルート自体が存在しないため、間接ルートもありません。']});
 d('dmoney','delta',{rate:0,url:'https://www.google.com/search?q=%E3%83%89%E3%83%83%E3%83%88%E3%83%9E%E3%83%8D%E3%83%BC%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E7%9B%B4%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ドットマネーの交換メニューにデルタSkyMilesは含まれておらず、直接交換ルートは存在しません。デルタ航空は国内の主要ポイントサイト・共通ポイントの提携網に含まれていません。']});
 id('dmoney','delta',{rate:0,url:'https://www.google.com/search?q=%E3%83%89%E3%83%83%E3%83%88%E3%83%9E%E3%83%8D%E3%83%BC%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: ドットマネーはマリオットBonvoyへの交換ルートを持たないため、デルタSkyMilesへの間接ルートも存在しません。']});
 d('gendama','delta',{rate:0,url:'https://www.google.com/search?q=%E3%81%92%E3%82%93%E7%8E%89%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E7%9B%B4%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: げん玉の交換メニューにデルタSkyMilesは含まれておらず、直接交換ルートは存在しません。デルタ航空は国内の主要ポイントサイト・共通ポイントの提携網に含まれていません。']});
@@ -1958,7 +1960,7 @@ id('moppy','dmoney',{rate:1.0,route:[{from:'モッピー',to:'ドットマネー
 d('hapitas','dmoney',{rate:0,url:'https://sp.hapitas.jp/notifications/view/1895',
   history:[{d:'2020-01',r:1.0},{d:'2024-01',r:1.0},{d:'2025-10',r:0},{d:'2026-07',r:0}],
   change:'down',verified:true,
-  notices:['2025年10月23日をもってハピタス→ドットマネーギフトコードへの交換は終了しており、現在このルートは利用不可。','代替ルートとして、ハピタス→PeX（等価交換・手数料無料）→Vポイント（500PeX=50円相当の手数料あり）、またはハピタス→デジタルギフト経由での現金化が案内されている。','みずほルート（ANAマイル交換）はハピタス→Vポイント直接交換を使用しており、ドットマネーを経由しないため今回の終了の影響はなし。','✅ 2026年7月時点で確認：終了状態が継続していることを確認。']});
+  notices:['2025年10月31日（23:59受付分まで）をもってハピタス→ドットマネーギフトコードへの交換は終了しており、現在このルートは利用不可。','代替ルートとして、ハピタス→PeX（等価交換・手数料無料）→Vポイント（500PeX=50円相当の手数料あり）、またはハピタス→デジタルギフト経由での現金化が案内されている。','みずほルート（ANAマイル交換）はハピタス→Vポイント直接交換を使用しており、ドットマネーを経由しないため今回の終了の影響はなし。','✅ 2026年7月時点で確認：終了状態が継続していることを確認。']});
 
 // ─── 現金購入レート ───
 // マリオット公式購入: 1,000pt=$12.50USD(セール以外)。通常時1pt≈1.875円(150円/ドル)→1円で約0.53pt
@@ -2425,7 +2427,7 @@ function renderMod(fid,tid,rd){
     if(dr.verified===false)bg+='<span class="mbg nv">要確認</span>';
     html+=`<div class="sh">直接交換レート</div>`;
     html+=`<div class="mrate"${dr.rate===0?' style="background:var(--cash-bg);color:var(--cash-fg)"':''}>${dr.rate===0?'交換不可（調査済み）':fid==='jpy'?Math.round(1000/dr.rate).toLocaleString()+'円/1,000pt':fid==='usd'?'$'+(1000/dr.rate).toFixed(2)+'/1,000pt':(dr.rate*100).toFixed(2)+'%'}${bg}</div>`;
-    html+=`<div class="mrate-n">${fid==='jpy'?'1円 → 約'+dr.rate.toFixed(4)+' '+tn:fid==='usd'?'1ドル → 約'+Math.round(dr.rate)+' '+tn:'1 '+fn+' → '+dr.rate.toFixed(4)+' '+tn+' ／ 10,000pt → '+Math.round(10000*dr.rate).toLocaleString()+'pt'}</div>`;
+    html+=`<div class="mrate-n">${fid==='jpy'?'1円 → 約'+dr.rate.toFixed(4)+' '+tn:fid==='usd'?'1ドル → 約'+Math.round(dr.rate)+' '+tn:(ptYen(fid)!==1?'1円相当（'+unitNote(fid)+'）':'1 '+fn)+' → '+dr.rate.toFixed(4)+' '+tn+' ／ 10,000pt → '+Math.round(10000*ptYen(fid)*dr.rate).toLocaleString()+'pt'}</div>`;
     if(dr.notices?.length){
       dr.notices.forEach(n=>{html+=`<div class="nbox">⚠ ${n}</div>`;});
     }
@@ -2443,7 +2445,7 @@ function renderMod(fid,tid,rd){
     ibg+=changeBadgeHtml(ir);
     html+=`<div class="sh">ベスト間接交換ルート</div>`;
     html+=`<div class="mrate" style="font-size:22px">${fid==='jpy'?Math.round(1000/ir.rate).toLocaleString()+'円/1,000pt':fid==='usd'?'$'+(1000/ir.rate).toFixed(2)+'/1,000pt':(ir.rate*100).toFixed(2)+'%'}${ibg}</div>`;
-    html+=`<div class="mrate-n">${fid==='jpy'?'1円で → 約'+ir.rate.toFixed(4)+' '+tn:fid==='usd'?'1ドルで → 約'+Math.round(ir.rate)+' '+tn:'間接経由: 10,000pt → 約'+Math.round(10000*ir.rate).toLocaleString()+'pt相当'}</div>`;
+    html+=`<div class="mrate-n">${fid==='jpy'?'1円で → 約'+ir.rate.toFixed(4)+' '+tn:fid==='usd'?'1ドルで → 約'+Math.round(ir.rate)+' '+tn:'間接経由: 10,000pt'+(ptYen(fid)!==1?'（'+Math.round(10000*ptYen(fid)).toLocaleString()+'円相当）':'')+' → 約'+Math.round(10000*ptYen(fid)*ir.rate).toLocaleString()+'pt相当'}</div>`;
     if(ir.route?.length){
       html+=`<div class="routebox">`;
       ir.route.forEach((step,i)=>{
@@ -2640,10 +2642,16 @@ function setCalcSort(s) {
   runCalc();
 }
 
+// 1ポイントあたりの円相当額（げん玉・ポイントインカム・ECナビ・PeX・ファンくるは10P=1円、ポイントタウンは20P=1円）。
+// マトリクスのレートはすべて「1円相当あたり」で表示しているため、電卓では入力ポイント数にこの係数を掛けてから換算する。
+function ptYen(id){ const p=PTS.find(x=>x.id===id); return (p&&p.yen)?p.yen:1; }
+function unitNote(id){ const y=ptYen(id); return y>1?`1P=${y}円`:`${Math.round(1/y)}P=1円`; }
+function unitLabel(id){ const y=ptYen(id); return y===1?'ポイント':`ポイント（${unitNote(id)}）`; }
+
 function getCalcUnit(fromId) {
   if (fromId === 'jpy') return '円';
   if (fromId === 'usd') return 'ドル';
-  return 'ポイント';
+  return unitLabel(fromId);
 }
 
 function calcRateColor(r) {
@@ -2705,7 +2713,7 @@ function runCalc() {
     }
     if (!best || best.rate <= 0) return; // rate:0は「ルートなし」を意味するため候補から除外
 
-    const got = Math.round(amt * best.rate);
+    const got = Math.round(amt * ptYen(fromId) * best.rate);
     results.push({ toP, rate: best.rate, got, isIndirect: best.isIndirect, change: best.change, route: best.route, derived: best.derived });
   });
 
@@ -2757,7 +2765,7 @@ function runCalc() {
         </div>
         <div class="calc-res-val">
           <div class="calc-res-main ${colorCls}">${gotFmt}<span style="font-size:10px;font-weight:500;margin-left:2px">${gotUnit}</span></div>
-          <div class="calc-res-sub">${amt.toLocaleString()} ${unit} → ${pct}%</div>
+          <div class="calc-res-sub">${amt.toLocaleString()} ${unit}${ptYen(fromId)!==1?'（='+Math.round(amt*ptYen(fromId)).toLocaleString()+'円相当）':''} → ${pct}%</div>
         </div>
         ${routeStr ? `<div class="calc-res-route">経路: ${routeStr}</div>` : ''}
       </div>`;
@@ -2846,8 +2854,8 @@ function buildAggListForTarget(targetId){
       const ov = overrides[p.id] || {};
       const rate = ov.rateOverride != null ? ov.rateOverride : base.rate;
       const route = ov.routeNote || base.routeText;
-      const unit = AGG_UNIT_OVERRIDES[p.id] || 'ポイント';
-      const entry = { id:p.id, name:p.name, rate, route, unit, default: p.id==='moppy' ? 100000 : 0 };
+      const unit = AGG_UNIT_OVERRIDES[p.id] || unitLabel(p.id);
+      const entry = { id:p.id, name:p.name, rate, route, unit, yen: ptYen(p.id), default: p.id==='moppy' ? 100000 : 0 };
       ['monthlyCapPoints','overflowRate','overflowLabel','annualCapMiles','dailyCapPoints','daysMax','daysNote']
         .forEach(k => { if(ov[k] !== undefined) entry[k] = ov[k]; });
       return entry;
@@ -3390,6 +3398,7 @@ function toggleAgg() {
 
 // 1行分の保有ポイントを、決まった振分先(def)で換算する共通ロジック（上限・按分ロジックは従来どおり）
 function computeRowConversion(row, def, meta, capWarnings, capInfos, name){
+  const yen = (def && def.yen) ? def.yen : 1; // 10P=1円等の単位補正
   const rate = def ? def.rate : 0;
   const unit = def ? def.unit : 'ポイント';
   let converted;
@@ -3398,7 +3407,7 @@ function computeRowConversion(row, def, meta, capWarnings, capInfos, name){
     const capped = Math.min(row.amount, def.monthlyCapPoints);
     const overflow = Math.max(0, row.amount - def.monthlyCapPoints);
     const overflowRate = def.overflowRate || 0;
-    converted = Math.round(capped * rate + overflow * overflowRate);
+    converted = Math.round((capped * rate + overflow * overflowRate) * yen);
     if (overflow > 0) {
       const monthsForFull = Math.ceil(row.amount / def.monthlyCapPoints);
       if (overflowRate > 0) {
@@ -3409,7 +3418,7 @@ function computeRowConversion(row, def, meta, capWarnings, capInfos, name){
       capInfos.push(`${name}（${meta.label}）: ${rowNote}`);
     }
   } else if (def && def.annualCapMiles) {
-    const raw = Math.round(row.amount * rate);
+    const raw = Math.round(row.amount * yen * rate);
     const used = row.usedThisYear || 0;
     const remaining = Math.max(0, def.annualCapMiles - used);
     converted = Math.min(raw, remaining);
@@ -3419,7 +3428,7 @@ function computeRowConversion(row, def, meta, capWarnings, capInfos, name){
       capWarnings.push(`${name}（${meta.label}）: ${rowNote}`);
     }
   } else {
-    converted = Math.round(row.amount * rate);
+    converted = Math.round(row.amount * yen * rate);
   }
   if (def && def.dailyCapPoints && row.amount > def.dailyCapPoints) {
     const daysNeeded = Math.ceil(row.amount / def.dailyCapPoints);
