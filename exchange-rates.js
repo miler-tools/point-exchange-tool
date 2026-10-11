@@ -1,0 +1,1402 @@
+/* ============================================================
+ * exchange-rates.js ── ポイント・マイル交換レートデータ（単一の正データ）
+ * ------------------------------------------------------------
+ * 【このファイルの役割】
+ *  index.html（マイル集約電卓・交換レート一覧）が使う交換レート・ルート・
+ *  注意事項・電卓用の上限設定をすべてここに集約しています。
+ *  レート改定・キャンペーン・交換先の終了などの更新は、このファイルだけで完結します。
+ *  （index.html 側は画面表示と計算ロジックだけを持ちます）
+ *
+ * 【主な構成】
+ *  EXCHANGE_DATA_META : データ全体の最終更新日（画面ヘッダーに表示）
+ *  CATS / PTS         : カテゴリとポイント一覧
+ *                       PTS[].yen = 1ポイントの円価値（10P=1円なら0.1、永久不滅は5）
+ *  d(from,to,{...})   : 直接交換レート    id(from,to,{...}) : 間接（最良）ルート
+ *     rate     : 「1円相当あたり」の換算率（例: 50% → 0.50）
+ *     history  : レート履歴 [{d:'YYYY-MM', r:レート}]  ← 改定時は末尾に追記
+ *     change   : 'up' / 'down'（最近の改定で有利/不利になった場合のみ）
+ *     verified : 公式サイトで確認済みなら true
+ *     notices  : 詳細モーダルに出る注意事項
+ *  AGG_OVERRIDES      : マイル集約電卓専用の上限・所要日数・保守的レート設定
+ *  AGG_TARGET_META    : 電卓の目標マイル種別ごとの表示設定と注記
+ *  CASH_BUY           : 不足分の現金購入参考額の計算に使う公式購入価格
+ *
+ * 【読み込み方】 index.html で本ファイルを先に読み込みます。
+ *   <script src="./exchange-rates.js"></script>
+ * ============================================================ */
+
+// データ全体の最終更新日（画面ヘッダーの「レート最終更新」に表示）
+const EXCHANGE_DATA_META = { lastUpdated: '2026-10-07', lastUpdatedLabel: '2026年10月7日' };
+
+// 不足分の現金購入参考額（マイル集約電卓）で使う公式購入価格
+const CASH_BUY = {
+  marriottUsdPer1000: 12.5,   // マリオットBonvoy公式購入：1,000pt = $12.50（セール以外の通常価格）
+  marriottLotPt: 60000,        // マイル交換のボーナス単位（60,000pt）
+  marriottLotMiles: 25000,     // 60,000pt → 25,000マイル（ANA/JAL/KF、5,000マイルボーナス込み）
+};
+
+// ════════════════════════════════
+// DATA DEFINITIONS
+// ════════════════════════════════
+const CATS={
+  site:{label:'ポイントサイト'},
+  common:{label:'共通ポイント'},
+  card:{label:'クレジットカード'},
+  mile:{label:'航空マイル'},
+  coin:{label:'SKYコイン等'},
+  hotel:{label:'ホテル'},
+  cash:{label:'現金購入'},
+};
+
+// lv: major=主要 standard=標準 niche=ニッチ
+const PTS=[
+  {id:'moppy',   name:'モッピー',         cat:'site',  lv:'major'},
+  {id:'hapitas', name:'ハピタス',         cat:'site',  lv:'major'},
+  {id:'fancrew', name:'ファンくる',       cat:'site',  lv:'major', yen:0.1},
+  {id:'dmoney',  name:'ドットマネー',     cat:'site',  lv:'major'},
+  {id:'gendama', name:'げん玉',           cat:'site',  lv:'standard', yen:0.1},
+  {id:'pincm',   name:'ポイントインカム', cat:'site',  lv:'standard', yen:0.1},
+  {id:'ecnavi',  name:'ECナビ',           cat:'site',  lv:'standard', yen:0.1},
+  {id:'ptown',   name:'ポイントタウン',   cat:'site',  lv:'niche', yen:0.05},
+  {id:'pex',     name:'PeX',             cat:'site',  lv:'niche', yen:0.1},
+  {id:'dpoint',  name:'dポイント',        cat:'common',lv:'major'},
+  {id:'rakuten', name:'楽天ポイント',     cat:'common',lv:'major'},
+  {id:'ponta',   name:'Pontaポイント',   cat:'common',lv:'major'},
+  {id:'vpoint',  name:'Vポイント(旧T)',   cat:'common',lv:'major'},
+  {id:'paypay',  name:'PayPayポイント',  cat:'common',lv:'standard'},
+  {id:'jre',     name:'JREポイント',     cat:'common',lv:'standard'},
+  {id:'nanaco',  name:'nanacoポイント',  cat:'common',lv:'standard'},
+  {id:'waon',    name:'WAONポイント',    cat:'common',lv:'standard'},
+  {id:'au',      name:'auポイント',      cat:'common',lv:'niche'},
+  {id:'gpoint',  name:'Gポイント',       cat:'common',lv:'niche'},
+  {id:'epos',    name:'エポスポイント',   cat:'common',lv:'standard'},
+  {id:'eikyuu',  name:'永久不滅ポイント', short:'永久不滅P', cat:'common',lv:'standard', yen:5},
+  {id:'ana',     name:'ANAマイル',      cat:'mile',  lv:'major'},
+  {id:'jal',     name:'JALマイル',      cat:'mile',  lv:'major'},
+  {id:'kris',    name:'KrisFlyer(SQ)',  cat:'mile',  lv:'standard'},
+  {id:'delta',   name:'デルタSkyMiles', cat:'mile',  lv:'standard'},
+  {id:'avios',   name:'Avios(BA)',      cat:'mile',  lv:'standard'},
+  {id:'united',  name:'ユナイテッドMP', cat:'mile',  lv:'niche'},
+  {id:'alaska',  name:'Alaska Mileage Plan', short:'Alaska', cat:'mile', lv:'niche'},
+  {id:'aeroplan',name:'Aeroplan(エアカナダ)', short:'Aeroplan', cat:'mile', lv:'niche'},
+  {id:'solaseed',name:'ソラシドマイル', short:'ソラシド', cat:'mile', lv:'niche'},
+  {id:'anacoin', name:'ANA SKYコイン', cat:'coin',  lv:'major'},
+  {id:'marriott',name:'マリオットBonvoy',short:'Marriott',cat:'hotel', lv:'major'},
+  {id:'hilton',  name:'ヒルトンHonors', cat:'hotel', lv:'major'},
+  {id:'ihg',     name:'IHGリワード',    cat:'hotel', lv:'standard'},
+  {id:'hyatt',   name:'World of Hyatt', cat:'hotel', lv:'standard'},
+  {id:'accor',   name:'Accorライブ',    cat:'hotel', lv:'niche'},
+  {id:'yamada',  name:'ヤマダ電機P',   cat:'common',lv:'niche'},
+  {id:'amex_mr', name:'AMEXメンバーシップリワード', short:'AMEX MR', cat:'card', lv:'major'},
+  {id:'jpy',     name:'日本円(現金)',  cat:'cash',  lv:'major'},
+  {id:'usd',     name:'米ドル(現金)', cat:'cash',  lv:'standard'},
+];
+
+// RD[from->to] = {
+//   direct: null | {rate, url, history, change, notices, verified}
+//   indirect: null | {rate, route:[{from,to,rate,url}], history, change, notices, url}
+// }
+const RD={};
+function d(f,t,o){
+  const k=`${f}->${t}`;
+  if(!RD[k])RD[k]={direct:null,indirect:null};
+  RD[k].direct=o;
+}
+function id(f,t,o){
+  const k=`${f}->${t}`;
+  if(!RD[k])RD[k]={direct:null,indirect:null};
+  RD[k].indirect=o;
+}
+
+// ─── ポイントサイト ───
+// モッピー 2026/02/02より直接ANA交換開始、2026/06/01より改悪(1,750P→500マイル=28.6%)
+d('moppy','ana',{rate:500/1750,url:'https://www.ana.co.jp/ja/jp/shoppingandlife/point/tameru-moppy/',
+  history:[{d:'2020-01',r:null},{d:'2026-02',r:1/3},{d:'2026-06',r:500/1750}],
+  change:'down',verified:true,
+  notices:['⚠️ 2026年6月1日より改悪: 1,750P→500マイル（≈28.6%）。旧レート: 3P→1マイル（33.3%）。','✅ 2026年10月、ANA公式提携ページで確認: 2026年6月1日申請分から「1,750ポイントごとに500マイル」（最低1,750P）。旧: 1,500P単位で500マイル。手数料無料。1〜3日で反映。','みずほ/nimocaルート等の間接交換(70%)の方がレートは高い。']});
+id('moppy','ana',{rate:1.0*1.0*0.2*3.5,
+  route:[{from:'モッピー',to:'ドットマネー',rate:1.0,url:'https://www.google.com/search?q=モッピー+ドットマネー+交換+公式'},{from:'ドットマネー',to:'Vポイント',rate:1.0,url:'https://www.google.com/search?q=ドットマネー+Vポイント+交換+手数料'},{from:'Vポイント',to:'JRキューポ',rate:1.0,url:'https://www.google.com/search?q=JRキューポ+永久不滅ポイント+交換+公式'},{from:'JRキューポ',to:'永久不滅P(1,000P→200P)',rate:0.2,url:'https://www.jrkyushu.co.jp/jq/support/faq/7-4.html'},{from:'永久不滅P',to:'ANAマイル(みずほ・100P→350マイル)',rate:3.5,url:'https://www.google.com/search?q=永久不滅ポイント+ANAマイル+交換レート+セゾンカード'}],
+  url:'https://www.google.com/search?q=モッピー+ポイント交換+公式',
+  history:[{d:'2020-01',r:0.70},{d:'2022-01',r:0.70},{d:'2024-01',r:0.70},{d:'2026-02',r:0.70},{d:'2026-04',r:0.70}],
+  notices:['【70%ルート】モッピー→ドットマネー(無料)→Vポイント(無料)→JRキューポ→永久不滅P→みずほマイレージクラブカード/ANA。ただし2026年1月21日でみずほマイレージクラブカード/ANAは新規発行終了。既存保有者のみ継続利用可。','⚠️ ドットマネー→Vポイントの交換には月間100,000マネー（=モッピー100,000P相当）の上限あり。まとまった額を移行する場合は複数月に分ける必要があります。','【60%ルート】★初心者向け★ モッピー→Vポイント直接交換(93%※手数料あり)→ANAマイル(60%)。三井住友カード発行のANAカード(年会費2,200円・初年度無料)保有が条件。これからポイ活を始める方の現実的な選択肢。','【33.3%ルート】2026年2月から、カード不要のモッピー→ANA直接交換も可能(別途記載)。','JRキューポ→永久不滅Pは1,000P→200P（永久不滅Pは1P=5円のため金額としては等価交換）。永久不滅P→ANAマイル(みずほ)は100P→350マイル（1P=5円換算で70%）。']});
+
+d('moppy','jal',{rate:0.80,url:'https://pc.moppy.jp/campaign/special/jalmile.php',
+  history:[{d:'2017-01',r:0.333},{d:'2018-05',r:0.80},{d:'2026-06',r:0.80}],
+  verified:true,
+  notices:[
+    '⚠️ 表示レート80%はドリームキャンペーン適用時の実質レートです。通常交換（キャンペーン非適用時）は50%（2P→1マイル・最低1,000P）。',
+    '【ドリームキャンペーン(ほぼ通年開催)の仕組み】12,000P交換→6,000JALマイル付与＋翌月末に4,500Pスカイボーナス（モッピーポイント）返還。実質コスト7,500Pで6,000マイル＝実質80%。',
+    '条件：①交換当月に広告利用のみで10,000P以上獲得、②ゴールド会員。月1回まで。',
+    '2018年5月開始以来ほぼ通年開催・繰り返し延長中（2026年9月分以降も継続が告知済み）。公式ページで最新期間を要確認。',
+    '📅 2026年8月はJAL×moppy「夏のマイル超レートアップ祭」で通常交換が20%増（1,000P→600マイル）となり、ドリームキャンペーン併用で実質96%（1人1回）の実績あり。同種の企画が再開催される可能性あり。',
+    '📊 マイル集約電卓では月12,000Pの上限を超える分は、Pontaポイント経由の増量キャンペーン(60%)で計算しています。'
+  ]});
+// モッピー→JALマイル（間接）: ドリームキャンペーンの月間上限(12,000P)を超える分は、Pontaポイント経由の増量キャンペーン(60%)が実用的な代替。
+id('moppy','jal',{rate:1.0*0.60,
+  route:[{from:'モッピー',to:'Pontaポイント',rate:1.0,url:'https://www.google.com/search?q=モッピー+ポイント交換+公式'},{from:'Pontaポイント',to:'JALマイル(増量キャンペーン)',rate:0.60,url:'https://www.google.com/search?q=Pontaポイント+JALマイル+レートアップキャンペーン'}],
+  url:'https://www.google.com/search?q=モッピー+Pontaポイント+交換+公式',
+  history:[{d:'2019-01',r:0.60},{d:'2026-01',r:0.60}],
+  notices:['Pontaポイント→JALマイルは通常50%だが、年3回程度（3月・7〜8月・11〜12月頃）のレートアップキャンペーン中は60%に上昇。','ドリームキャンペーンの月間上限(12,000P)を超える保有ポイントがある場合や、条件を満たせない月の代替ルートとして有効。','ドリームキャンペーンが利用できる分は80%の方が高レートなので、そちらを優先。']});
+
+d('moppy','dpoint',{rate:1.0,url:'https://www.google.com/search?q=モッピー+ポイント交換+公式',
+  history:[{d:'2020-01',r:1},{d:'2023-01',r:1},{d:'2026-01',r:1}],
+  verified:true,notices:['リアルタイム交換。手数料無料。']});
+d('moppy','rakuten',{rate:0.90,url:'https://www.google.com/search?q=モッピー+楽天ポイント+交換+手数料',
+  history:[{d:'2020-01',r:1},{d:'2023-01',r:1},{d:'2026-01',r:1},{d:'2026-04',r:0.90}],
+  change:'down',verified:true,notices:['⚠️ 2026年4月1日13:00交換申請分より、これまで手数料無料だった直接交換に10%の手数料が新設（実質レート90%）。モッピー公式お知らせで確認済み。','💡 下記の間接ルート（ドットマネー経由）を使えばこの手数料は回避でき、実質100%で交換可能です。']});
+id('moppy','rakuten',{rate:1.0*1.0,
+  route:[{from:'モッピー',to:'ドットマネー',rate:1.0,url:'https://www.google.com/search?q=モッピー+ドットマネー+交換+公式'},{from:'ドットマネー',to:'楽天ポイント',rate:1.0,url:'https://www.google.com/search?q=ドットマネー+楽天ポイント+交換+手数料'}],
+  url:'https://www.google.com/search?q=モッピー+ドットマネー+楽天ポイント',
+  history:[{d:'2025-02',r:1.0},{d:'2026-04',r:1.0}],
+  notices:['モッピー→ドットマネー→楽天ポイントは、どちらの区間も無料・等価（100%）。2026年4月にモッピー直接交換へ10%の手数料が新設されたため、直接交換よりこちらの方が有利。','ドットマネー→楽天ポイントは2025年2月22日改定で230pt→300ptの等価交換になった経緯あり。','ドットマネーからの月間交換上限は100,000マネー。']});
+d('moppy','ponta',{rate:1.0,url:'https://www.google.com/search?q=モッピー+ポイント交換+公式',
+  history:[{d:'2020-01',r:1},{d:'2023-01',r:1},{d:'2026-01',r:1}],
+  verified:true,notices:[]});
+d('moppy','vpoint',{rate:0.93,url:'https://www.google.com/search?q=モッピー+Vポイント+交換+手数料',
+  history:[{d:'2022-01',r:1},{d:'2024-04',r:1},{d:'2026-01',r:1},{d:'2026-04',r:0.93}],
+  change:'down',verified:true,notices:['旧Tポイント。2024年4月Vポイントへ統合。','⚠️ 2026年4月1日13:00交換申請分より交換手数料が導入/改定：8%→7%（実質レート93%）。モッピー公式お知らせで確認済み。','💡 下記の間接ルート（ドットマネー経由）を使えばこの手数料は回避でき、実質100%で交換可能です。']});
+id('moppy','vpoint',{rate:1.0*1.0,
+  route:[{from:'モッピー',to:'ドットマネー',rate:1.0,url:'https://www.google.com/search?q=モッピー+ドットマネー+交換+公式'},{from:'ドットマネー',to:'Vポイント',rate:1.0,url:'https://www.google.com/search?q=ドットマネー+Vポイント+交換+手数料'}],
+  url:'https://www.google.com/search?q=モッピー+ドットマネー+Vポイント',
+  history:[{d:'2024-04',r:1.0},{d:'2026-04',r:1.0}],
+  notices:['モッピー→ドットマネー→Vポイントは、どちらの区間も無料・等価（100%）。2026年4月にモッピー直接交換へ手数料が7%に改定されたため、直接交換よりこちらの方が有利。','ドットマネーからの月間交換上限は100,000マネー。まとまった額を移行する場合は複数月に分ける必要あり。']});
+d('moppy','nanaco',{rate:1.0,url:'https://www.google.com/search?q=モッピー+ポイント交換+公式',
+  history:[{d:'2020-01',r:1},{d:'2023-01',r:1},{d:'2026-01',r:1}],
+  verified:true,notices:['1,000P単位。']});
+// モッピー→ソラシドマイル（ソラシドルート）: モッピー→ドットマネー(無料等価)→Vポイント(無料等価)→ソラシドマイル(100%)
+id('moppy','solaseed',{rate:1.0*1.0*1.0,
+  route:[{from:'モッピー',to:'ドットマネー',rate:1.0,url:'https://www.google.com/search?q=モッピー+ドットマネー+交換+公式'},{from:'ドットマネー',to:'Vポイント',rate:1.0,url:'https://www.google.com/search?q=ドットマネー+Vポイント+交換+手数料'},{from:'Vポイント',to:'ソラシドマイル(要Solaseed Airカード)',rate:1.0,url:'https://www.smbc-card.com/mem/cardinfo/25/cardinfo4010961.jsp'}],
+  url:'https://www.google.com/search?q=モッピー+ソラシドマイル+交換ルート',
+  history:[{d:'2024-01',r:1.0*2.0},{d:'2025-12',r:1.0*1.0},{d:'2026-01',r:1.0*1.0},{d:'2026-04',r:1.0*1.0}],
+  notices:['Vポイント→ソラシドマイルは2025年12月の改定後100%（要Solaseed Airカード）。','2025年11月末までは200%だったため合計200%のルートとして陸マイラー界隈で有名だったが、2025年12月1日以降は合計100%。','Solaseed Airカードの保有・Vpass登録が必須条件（未保有の場合はこのルート自体が利用不可）。']});
+// モッピー→マリオット 2023/10改悪: 1,300P→1,000pt
+d('moppy','marriott',{rate:1000/1300,url:'https://www.google.com/search?q=モッピー+マリオットBonvoy+交換レート+改定',
+  history:[{d:'2021-01',r:1.0},{d:'2022-01',r:1.0},{d:'2023-10',r:1000/1300},{d:'2026-01',r:1000/1300}],
+  change:'down',verified:true,
+  notices:['2023年10月改悪: 1,300モッピーP=1,000マリオットpt(≈76.9%)。','24時間交換上限50,000P。初回審査に約1週間。']});
+// モッピーの交換メニューにKrisFlyerは含まれておらず、直接交換は構造上不可。マリオットBonvoy経由のみ利用可。
+d('moppy','kris',{rate:0,url:'https://www.google.com/search?q=モッピー+KrisFlyer+直接交換',
+  history:[{d:'2021-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['モッピーの交換メニューにKrisFlyerマイルは含まれておらず、直接交換ルートは存在しません（構造上不可）。','マリオットBonvoy経由の間接ルート（下記参照）をご利用ください。']});
+// モッピー→KrisFlyer (マリオット経由間接)
+id('moppy','kris',{rate:(1000/1300)*(25000/60000),
+  route:[{from:'モッピー',to:'マリオットBonvoy',rate:parseFloat((1000/1300).toFixed(4)),url:'https://www.google.com/search?q=モッピー+マリオットBonvoy+交換レート+改定'},{from:'マリオットBonvoy',to:'KrisFlyer',rate:parseFloat((25000/60000).toFixed(4)),url:'https://www.google.com/search?q=シンガポール航空+KrisFlyer+マイル+交換+公式'}],
+  url:'https://www.google.com/search?q=モッピー+ポイント交換+公式',
+  history:[{d:'2021-01',r:(1.0)*(25000/60000)},{d:'2023-10',r:(1000/1300)*(25000/60000)},{d:'2026-01',r:(1000/1300)*(25000/60000)}],
+  change:'down',
+  notices:['マリオット経由の間接ルート。','マリオット60,000pt単位で+5,000マイルボーナス（計25,000マイル）。','所要時間: 最大3週間程度。']});
+// モッピーの交換メニューにデルタSkyMilesは含まれておらず、直接交換は構造上不可。マリオットBonvoy経由のみ利用可。
+d('moppy','delta',{rate:0,url:'https://www.google.com/search?q=モッピー+デルタSkyMiles+直接交換',
+  history:[{d:'2021-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['モッピーの交換メニューにデルタSkyMilesは含まれておらず、直接交換ルートは存在しません（構造上不可）。','マリオットBonvoy経由の間接ルート（下記参照）をご利用ください。']});
+id('moppy','delta',{rate:(1000/1300)*(20000/60000),
+  route:[{from:'モッピー',to:'マリオットBonvoy',rate:parseFloat((1000/1300).toFixed(4)),url:'https://www.google.com/search?q=モッピー+マリオットBonvoy+交換レート+改定'},{from:'マリオットBonvoy',to:'デルタSkyMiles',rate:20000/60000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/points-to-miles.mi'}],
+  url:'https://www.google.com/search?q=モッピー+ポイント交換+公式',
+  history:[{d:'2023-10',r:(1000/1300)*(20000/60000)},{d:'2026-01',r:(1000/1300)*(20000/60000)}],
+  notices:['マリオット経由の間接ルート。デルタはマリオットのボーナス対象外のため60,000pt→20,000マイル（33.3%）止まりで、KF/ANA/JAL(41.7%)より低くなります。']});
+// モッピー→Avios(BA)・ユナイテッドMP: 直接交換ルートなし。マリオットBonvoy経由が基本ルート。
+d('moppy','avios',{rate:0,url:'https://www.google.com/search?q=モッピー+Avios+直接交換',
+  history:[{d:'2021-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['モッピーの交換メニューにAvios(BA)は含まれておらず、直接交換ルートは存在しません（構造上不可）。','マリオットBonvoy経由の間接ルート（下記参照）をご利用ください。']});
+id('moppy','avios',{rate:(1000/1300)*(25000/60000),
+  route:[{from:'モッピー',to:'マリオットBonvoy',rate:parseFloat((1000/1300).toFixed(4)),url:'https://www.google.com/search?q=モッピー+マリオットBonvoy+交換レート+改定'},{from:'マリオットBonvoy',to:'Avios(BA)',rate:25000/60000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/points-to-miles.mi'}],
+  url:'https://www.google.com/search?q=モッピー+ポイント交換+公式',
+  history:[{d:'2023-10',r:(1000/1300)*(25000/60000)},{d:'2026-01',r:(1000/1300)*(25000/60000)}],
+  notices:['マリオット経由の間接ルート（ANA/JAL/KFと同水準の41.7%枠）。マリオット60,000pt単位で+5,000マイルボーナス込み。','【別ルート】三井住友カード「ワールドプレゼント」保有者であれば、モッピー→PeX→ワールドプレゼント→Avios経由で60%程度まで狙えるとの情報もありますが、当ツールでは未検証のため参考情報にとどめます。']});
+d('moppy','united',{rate:0,url:'https://www.google.com/search?q=モッピー+ユナイテッドMP+直接交換',
+  history:[{d:'2021-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['モッピーの交換メニューにユナイテッドMileagePlusは含まれておらず、直接交換ルートは存在しません（構造上不可）。','マリオットBonvoy経由の間接ルート（下記参照）をご利用ください。']});
+id('moppy','united',{rate:(1000/1300)*(30000/60000),
+  route:[{from:'モッピー',to:'マリオットBonvoy',rate:parseFloat((1000/1300).toFixed(4)),url:'https://www.google.com/search?q=モッピー+マリオットBonvoy+交換レート+改定'},{from:'マリオットBonvoy',to:'ユナイテッドMileagePlus',rate:30000/60000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/points-to-miles.mi'}],
+  url:'https://www.google.com/search?q=モッピー+ポイント交換+公式',
+  history:[{d:'2023-10',r:(1000/1300)*(30000/60000)},{d:'2026-01',r:(1000/1300)*(30000/60000)}],
+  notices:['マリオット経由の間接ルート。ユナイテッドはマリオットの優遇対象で60,000pt→30,000マイル（50%）と、ANA/JAL/KF(41.7%)より高いレートです。']});
+// モッピー→ANA SKYコイン(ANA直接交換→SKYコイン)
+// ⚠️ 修正: 従来ここにモッピー→ANA SKYコインの手動エントリー（直接レート28.6%のみを使用）がありましたが、
+// モッピーの実際の最良ANAマイルレートは間接ルート経由で70%であり、手動エントリーがこれを無視して低い方の直接レートだけを
+// 参照してしまっていたため、ハピタス等と比べて不自然に低いレートが表示される誤りがありました。
+// 手動エントリーを削除し、他の全ソースと同様にgetRD()のanacoin自動算出（ベストANAマイルレートを使用）に統一しました。
+
+// ─── ハピタス ───
+d('hapitas','dpoint',{rate:1.0,url:'https://www.google.com/search?q=ハピタス+ポイント交換+公式',history:[{d:'2020-01',r:1},{d:'2024-01',r:1},{d:'2026-01',r:1}],verified:true,notices:[]});
+d('hapitas','rakuten',{rate:1.0,url:'https://www.google.com/search?q=ハピタス+ポイント交換+公式',history:[{d:'2020-01',r:1},{d:'2024-01',r:1},{d:'2026-01',r:1}],verified:true,notices:[]});
+d('hapitas','ponta',{rate:1.0,url:'https://www.google.com/search?q=ハピタス+ポイント交換+公式',history:[{d:'2020-01',r:1},{d:'2024-01',r:1},{d:'2026-01',r:1}],verified:true,notices:[]});
+d('hapitas','jal',{rate:0.50,url:'https://www.google.com/search?q=ハピタス+ポイント交換+公式',history:[{d:'2020-01',r:0.5},{d:'2024-01',r:0.5},{d:'2026-01',r:0.5}],verified:true,notices:['1,000P単位。より高いレートを狙う場合はPontaポイント経由の間接ルート（下記参照）も検討可能。']});
+id('hapitas','jal',{rate:1.0*0.60,
+  route:[{from:'ハピタス',to:'Pontaポイント',rate:1.0,url:'https://www.google.com/search?q=ハピタス+ポイント交換+公式'},{from:'Pontaポイント',to:'JALマイル(増量キャンペーン)',rate:0.60,url:'https://www.google.com/search?q=Pontaポイント+JALマイル+レートアップキャンペーン'}],
+  url:'https://www.google.com/search?q=ハピタス+Pontaポイント+交換+公式',
+  history:[{d:'2019-01',r:0.60},{d:'2026-01',r:0.60}],
+  notices:['ハピタス→Pontaポイントは等価交換。Pontaポイント→JALマイルは通常50%だが、年3回程度（3月・7〜8月・11〜12月頃）のレートアップキャンペーン中は60%に上昇。','キャンペーン時期以外は直接交換(50%)と同水準のため、キャンペーンのタイミングを狙って交換するのがポイント。']});
+d('hapitas','ana',{rate:0,url:'https://www.google.com/search?q=ハピタス+ANAマイル+直接交換',
+  history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['ハピタスからANAマイルへの直接交換ルートはありません（2026年時点、複数のポイ活ブログ・ハピタス公式交換先一覧で確認）。','ANAマイルを狙う場合は、Vポイント・ドットマネー等を経由した間接ルート（下記参照、最大70%）を利用してください。']});
+id('hapitas','ana',{rate:0.70,
+  route:[{from:'ハピタス',to:'Vポイント(直接・等価)',rate:1.0,url:'https://www.google.com/search?q=ハピタス+Vポイント+交換+手数料'},{from:'Vポイント',to:'JRキューポ',rate:1.0,url:'https://www.google.com/search?q=JRキューポ+永久不滅ポイント+交換+公式'},{from:'JRキューポ',to:'永久不滅P(1,000P→200P)',rate:0.2,url:'https://www.jrkyushu.co.jp/jq/support/faq/7-4.html'},{from:'永久不滅P',to:'ANAマイル(みずほ・100P→350マイル)',rate:3.5,url:'https://www.google.com/search?q=永久不滅ポイント+ANAマイル+交換レート+セゾンカード'}],
+  url:'https://www.google.com/search?q=ハピタス+ポイント交換+公式',
+  history:[{d:'2020-01',r:0.70},{d:'2022-01',r:0.70},{d:'2026-01',r:0.70},{d:'2026-08',r:0.70}],
+  verified:true,
+  notices:['⚠ 2026年10月修正: 旧版はハピタス→ドットマネー→Vポイント経由としていましたが、ハピタス→ドットマネー（ギフトコード）交換は2025年10月末で終了済みのため、ハピタス→Vポイントの直接交換（等価）経由に修正しました。総合70%は変わりません。','ハピタス→Vポイントの交換手数料は会員ランクにより異なる場合があります（シルバー・ゴールド会員は無料との情報あり）。交換前にハピタスの交換画面で手数料をご確認ください。','ハピタスからANAマイルへの直接交換は不可。中継ルートが必要。','【70%ルート】みずほルート経由。ただし2026年1月21日でみずほマイレージクラブカード/ANAは新規発行終了。既存保有者のみ継続利用可。','【60%ルート】★初心者向け★ ハピタス→Vポイント(100%)→ANAマイル(60%)。三井住友カード発行のANAカード(年会費2,200円・初年度無料)保有が条件。これからポイ活を始める方の現実的な選択肢。','JRキューポ→永久不滅Pは1,000P→200P（永久不滅Pは1P=5円のため金額としては等価交換）。永久不滅P→ANAマイル(みずほ)は100P→350マイル（1P=5円換算で70%）。']});
+// ハピタス→ソラシドマイル（ソラシドルート）: ハピタス→Vポイント(等価)→ソラシドマイル(100%)
+id('hapitas','solaseed',{rate:1.0*1.0,
+  route:[{from:'ハピタス',to:'Vポイント',rate:1.0,url:'https://www.google.com/search?q=ハピタス+ポイント交換+公式'},{from:'Vポイント',to:'ソラシドマイル(要Solaseed Airカード)',rate:1.0,url:'https://www.smbc-card.com/mem/cardinfo/25/cardinfo4010961.jsp'}],
+  url:'https://www.google.com/search?q=ハピタス+ソラシドマイル+交換ルート',
+  history:[{d:'2024-01',r:1.0*2.0},{d:'2025-12',r:1.0*1.0},{d:'2026-01',r:1.0*1.0}],
+  change:'down',
+  notices:['ハピタス→Vポイントは等価交換。Vポイント→ソラシドマイルは2025年12月の改定後100%（要Solaseed Airカード）。','Solaseed Airカードの保有・Vpass登録が必須条件（未保有の場合はこのルート自体が利用不可）。']});
+// ハピタス→マリオット 2025/04改悪: 500P→330pt
+d('hapitas','marriott',{rate:330/500,url:'https://www.google.com/search?q=ハピタス+ポイント交換+公式',
+  history:[{d:'2022-01',r:1.0},{d:'2024-01',r:1.0},{d:'2025-04',r:330/500},{d:'2026-07',r:330/500}],
+  change:'down',verified:true,
+  notices:['2025年4月に大幅改悪。旧: 500P=500マリオットpt(100%) → 新: 500P=330マリオットpt(66%)。','500P単位で交換。','✅ 2026年7月時点で確認：複数の独立ブログ（2026年7月1日時点の記事含む）で330/500レートに変更がないことを確認。']});
+// ハピタスの交換メニューにKrisFlyerは含まれておらず、直接交換は構造上不可。マリオットBonvoy経由のみ利用可。
+d('hapitas','kris',{rate:0,url:'https://www.google.com/search?q=ハピタス+KrisFlyer+直接交換',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['ハピタスの交換メニューにKrisFlyerマイルは含まれておらず、直接交換ルートは存在しません（構造上不可）。','マリオットBonvoy経由の間接ルート（下記参照）をご利用ください。']});
+// ハピタス→KrisFlyer (マリオット経由間接)
+id('hapitas','kris',{rate:(330/500)*(25000/60000),
+  route:[{from:'ハピタス',to:'マリオットBonvoy',rate:parseFloat((330/500).toFixed(4)),url:'https://www.google.com/search?q=ハピタス+ポイント交換+公式'},{from:'マリオットBonvoy',to:'KrisFlyer',rate:parseFloat((25000/60000).toFixed(4)),url:'https://www.google.com/search?q=シンガポール航空+KrisFlyer+マイル+交換+公式'}],
+  url:'https://www.google.com/search?q=ハピタス+ポイント交換+公式',
+  history:[{d:'2022-01',r:(1.0)*(25000/60000)},{d:'2025-04',r:(330/500)*(25000/60000)},{d:'2026-01',r:(330/500)*(25000/60000)}],
+  change:'down',
+  notices:['マリオット経由の間接ルート。','マリオット60,000pt単位で+5,000マイルボーナス（計25,000マイル）。','2025年4月のハピタス→マリオット改悪（500P→330pt）により、このルートのレートも41.7%から27.5%に低下しました。','所要時間: 最大3週間程度。']});
+// ハピタスの交換メニューにデルタSkyMilesは含まれておらず、直接交換は構造上不可。マリオットBonvoy経由のみ利用可。
+d('hapitas','delta',{rate:0,url:'https://www.google.com/search?q=ハピタス+デルタSkyMiles+直接交換',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['ハピタスの交換メニューにデルタSkyMilesは含まれておらず、直接交換ルートは存在しません（構造上不可)。','マリオットBonvoy経由の間接ルート（下記参照）をご利用ください。']});
+id('hapitas','delta',{rate:(330/500)*(20000/60000),
+  route:[{from:'ハピタス',to:'マリオットBonvoy',rate:parseFloat((330/500).toFixed(4)),url:'https://www.google.com/search?q=ハピタス+ポイント交換+公式'},{from:'マリオットBonvoy',to:'デルタSkyMiles',rate:20000/60000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/points-to-miles.mi'}],
+  url:'https://www.google.com/search?q=ハピタス+ポイント交換+公式',
+  history:[{d:'2025-04',r:(330/500)*(20000/60000)},{d:'2026-01',r:(330/500)*(20000/60000)}],
+  notices:['マリオット経由の間接ルート。デルタはボーナス対象外の低い方の枠（60,000pt→20,000マイル）のため、KF/ANA/JAL向けよりさらに低いレートになります。']});
+// ハピタス→Avios(BA)・ユナイテッドMP: 直接交換ルートなし。マリオットBonvoy経由が基本ルート。
+d('hapitas','avios',{rate:0,url:'https://www.google.com/search?q=ハピタス+Avios+直接交換',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['ハピタスの交換メニューにAvios(BA)は含まれておらず、直接交換ルートは存在しません（構造上不可）。','マリオットBonvoy経由の間接ルート（下記参照）をご利用ください。']});
+id('hapitas','avios',{rate:(330/500)*(25000/60000),
+  route:[{from:'ハピタス',to:'マリオットBonvoy',rate:parseFloat((330/500).toFixed(4)),url:'https://www.google.com/search?q=ハピタス+ポイント交換+公式'},{from:'マリオットBonvoy',to:'Avios(BA)',rate:25000/60000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/points-to-miles.mi'}],
+  url:'https://www.google.com/search?q=ハピタス+ポイント交換+公式',
+  history:[{d:'2022-01',r:(1.0)*(25000/60000)},{d:'2025-04',r:(330/500)*(25000/60000)},{d:'2026-01',r:(330/500)*(25000/60000)}],
+  change:'down',
+  notices:['マリオット経由の間接ルート。2025年4月のハピタス→マリオット改悪（500P→330pt）により、このルートのレートも41.7%から27.5%に低下しました。','【別ルート】三井住友カード「ワールドプレゼント」保有者であれば、ハピタス→PeX→ワールドプレゼント→Avios経由で60%程度まで狙えるとの情報もありますが、当ツールでは未検証のため参考情報にとどめます。']});
+d('hapitas','united',{rate:0,url:'https://www.google.com/search?q=ハピタス+ユナイテッドMP+直接交換',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['ハピタスの交換メニューにユナイテッドMileagePlusは含まれておらず、直接交換ルートは存在しません（構造上不可）。','マリオットBonvoy経由の間接ルート（下記参照）をご利用ください。']});
+id('hapitas','united',{rate:(330/500)*(30000/60000),
+  route:[{from:'ハピタス',to:'マリオットBonvoy',rate:parseFloat((330/500).toFixed(4)),url:'https://www.google.com/search?q=ハピタス+ポイント交換+公式'},{from:'マリオットBonvoy',to:'ユナイテッドMileagePlus',rate:30000/60000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/points-to-miles.mi'}],
+  url:'https://www.google.com/search?q=ハピタス+ポイント交換+公式',
+  history:[{d:'2025-04',r:(330/500)*(30000/60000)},{d:'2026-01',r:(330/500)*(30000/60000)}],
+  notices:['マリオット経由の間接ルート。ユナイテッドはマリオットの優遇対象で60,000pt→30,000マイル（50%）と、ANA/JAL/KF(41.7%)より高いレートです。']});
+// ハピタス→ANA SKYコイン: 明示エントリーなし。ANAマイル基準で自動算出されます（getRD関数のanacoinフォールバック）。
+
+// ─── ファンくる ───
+// ファンくる: 10ポイント=1円 が単位。レートは1ファンくるポイントあたりの実際の交換率で表示（他サイトと同じ基準）
+// ※ファンくる→Gポイント: 10P→1G（手数料無料）
+// ※ファンくる→ドットマネー: 10P→1マネー（手数料無料）
+// ※Gポイント内での次ステップ（nimoca等への交換）時に手数料10%が発生
+// ※Gポイントの手数料還元サービス: 対象期間内に対象サービスで1件以上ポイント獲得で最大5%キャッシュバック
+// ※手数料還元適用時: 実質手数料5%（10%-5%還元）。条件次第で全額還元も（交換先による）
+// ファンくる→ANAマイル: 直接交換ルートなし（確認済み）。Rポイントは一旦ドットマネー/Gポイント/PeXへの交換が必須。
+d('fancrew','ana',{rate:0,url:'https://www.google.com/search?q=ファンくる+ANAマイル+直接交換',
+  history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['Rポイント（ファンくる独自のポイント単位。運営会社の株式会社ROIが発行、10Rポイント=1円）をANAマイルに直接交換することはできません（複数のブログで確認）。','ANAマイルを狙う場合は、ドットマネー・Gポイント・PeX等を経由した間接ルート（下記参照、最大70%）を利用してください。']});
+id('fancrew','ana',{rate:0.9*0.70,
+  route:[{from:'ファンくる(10P=1円→1G・等価)',to:'Gポイント(手数料無料)',rate:1.0,url:'https://www.google.com/search?q=ファンくる+Gポイント+交換'},{from:'Gポイント',to:'nimocaポイント(10%手数料)',rate:0.90,url:'https://www.gpoint.co.jp/scripts/partner/detail/pen.jsp?partnerid=81058773'},{from:'nimocaポイント',to:'ANAマイル',rate:0.70,url:'https://www.ana.co.jp/ja/jp/shoppingandlife/point/tameru_nimoca/'}],
+  url:'https://www.google.com/search?q=ファンくる+ポイント交換+ANAマイル+JALマイル',
+  history:[{d:'2020-01',r:0.70},{d:'2022-01',r:0.70},{d:'2026-01',r:0.9*0.70},{d:'2026-07',r:0.9*0.70}],
+  verified:true,
+  notices:['✅ 2026年7月時点で確認：Gポイント公式ページで確認。交換には手数料分を加えたGポイントが必要で、手数料還元サービス対象サービス利用で5%が戻る仕組み（基本手数料10%・還元適用後の実質負担5%という構造は変更なし）。ANA公式nimocaポイントページでも70%（10P→7マイル）を確認。',
+    '【単位注意】ファンくるは10ポイント=1円相当（他サイトの1P=1円とは異なる）。表示レートは他のポイントサイトと同じく「1円相当あたり」の換算率です（ファンくる10P＝1円分あたり）。電卓に入力する際はファンくるのポイント数をそのまま入力すれば自動で1/10換算されます。',
+    '【手数料の発生箇所】ファンくる→Gポイントは手数料無料（10P→1G）。Gポイント内での次の交換（nimoca等）時に10%手数料が発生します。',
+    '【手数料還元】Gポイントの対象サービスで期間内（交換申請前月〜4ヶ月後末日）に1件でもポイント獲得があれば最大5%キャッシュバック。還元適用時は実質5%手数料（ただし交換先によって全額還元の場合あり）。',
+    'nimocaルート(九州・函館在住者向け、ANA VISA nimocaカード必須)経由でANA70%相当。Gポイント手数料10%控除後の実質レートは63%（1円相当あたり。ファンくる10,000P→約630マイル）。手数料還元適用なら約66.5%。']});
+// ファンくる→JALマイル: 直接交換ルートなし（確認済み）。Rポイントはドットマネー等への交換が必須。
+d('fancrew','jal',{rate:0,url:'https://www.google.com/search?q=ファンくる+JALマイル+直接交換',
+  history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['Rポイント（ファンくる独自のポイント単位。10Rポイント=1円）をJALマイルに直接交換することはできません（複数のブログで確認、交換先一覧はAmazonギフト券・Gポイント・PeX・デジタルウォレット・ドットマネーの5つのみ）。','JALマイルを狙う場合は、ドットマネー経由の間接ルート（下記参照、実質50%）を利用してください。']});
+id('fancrew','jal',{rate:0.50,
+  route:[{from:'ファンくる(10P=1円→1マネー・等価)',to:'ドットマネー(手数料無料)',rate:1.0,url:'https://www.google.com/search?q=ファンくる+ドットマネー+交換'},{from:'ドットマネー',to:'JALマイル',rate:0.50,url:'https://d-money.jp/withdrawal/point/detail/1119'}],
+  url:'https://www.google.com/search?q=ファンくる+ポイント交換+JALマイル',
+  history:[{d:'2020-01',r:0.50},{d:'2022-01',r:0.50},{d:'2026-01',r:0.50}],
+  verified:true,
+  notices:["✅ 2026年7月時点で確認：ファンくる→ドットマネー(等価・手数料無料)→JALマイル50%の各ホップに変更がないことを確認。",'【単位注意】ファンくるは10ポイント=1円相当（他サイトの1P=1円とは異なる）。表示レートは他のポイントサイトと同じく「1円相当あたり」の換算率です（ファンくる10P＝1円分あたり）。電卓に入力する際はファンくるのポイント数をそのまま入力すれば自動で1/10換算されます。',
+    '【推奨ルート★】ファンくる→ドットマネー（手数料無料・10P→1マネー）→JALマイル（50%）。実質50%（ファンくる10,000P→500マイル）。Gポイント経由より有利。',
+    'ドットマネー→JALは500マネー単位。申請月の下旬または翌月上旬に積算。',
+    '【Gポイント経由の場合】Gポイント内交換で手数料が発生（Ponta(au)向けは3%）。Pontaキャンペーン時60%なら手数料引後約58%。キャンペーン時以外はドットマネー経由の50%の方が手間が少なく有利。']});
+// ファンくる→マリオットBonvoy: 直接交換ルートなし（確認済み）
+d('fancrew','marriott',{rate:0,url:'https://www.google.com/search?q=ファンくる+マリオットBonvoy+直接交換',
+  history:[{d:'2023-10',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['ファンくるからマリオットBonvoyへの直接交換ルートは存在しません。','Gポイント経由の間接ルートも、Gポイントの公式交換先にマリオットBonvoyが含まれていないため存在しません（下記参照）。']});
+// ファンくる→マリオットBonvoy (Gポイント経由): 追加調査の結果、ルートなしと判明
+id('fancrew','marriott',{rate:0,
+  url:'https://www.google.com/search?q=Gポイント+マリオットBonvoy+ポイント交換',
+  history:[{d:'2023-10',r:0},{d:'2026-07',r:0}],
+  notices:['⚠ よくある誤情報にご注意: 「Gポイント経由でマリオットBonvoyに交換できる」という情報が一部で見られますが、Gポイント公式の交換先一覧にマリオットBonvoyは含まれていません（2026年7月確認）。','マリオットBonvoyの国内ポイントモール提携先は、モッピー・ハピタス・楽天ポイントの3サイトのみで、Gポイントは含まれません。','したがって、ファンくる→Gポイント→マリオットBonvoyというルートは実在せず、ファンくるからマリオットBonvoy・KrisFlyer・デルタSkyMilesへの間接ルートは存在しません。']});
+// ファンくる→KrisFlyer: 直接・間接ともに変換ルートなし（確認済み）
+d('fancrew','kris',{rate:0,url:'https://www.google.com/search?q=ファンくる+KrisFlyer+マイル+交換',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['KFへの直接換算ルートなし。ファンくる→Gポイント→ANAマイル経由のnimocaルートはANA専用で、ANAマイルからKFマイルへの変換ルートは存在しません。',
+    'Gポイント経由を含め、マリオットBonvoyへの交換ルート自体が存在しないため、KrisFlyerへの間接ルートはありません。']});
+id('fancrew','kris',{rate:0,
+  url:'https://www.google.com/search?q=Gポイント+マリオットBonvoy+ポイント交換',
+  history:[{d:'2023-10',r:0},{d:'2026-07',r:0}],
+  notices:['⚠ よくある誤情報にご注意: 「Gポイント経由でマリオットBonvoy→KFに交換できる」という情報が一部で見られますが、Gポイント公式の交換先一覧にマリオットBonvoyは含まれていません。この中継ルート自体が存在しないため、間接ルートもありません。']});
+
+// ─── エポスポイント（2026年9月時点で新規追加・要継続検証） ───
+// 2026年3月31日をもってゴールド/プラチナカード限定のANAマイル優遇レート(60%)が終了し、
+// 2026年4月1日以降は全カード種別でANA/JALともに一律50%に統一。
+d('epos','ana',{rate:0.50,url:'https://www.google.com/search?q=エポスポイント+ANAマイル+交換+公式',
+  history:[{d:'2022-01',r:0.50},{d:'2024-01',r:0.60},{d:'2026-03',r:0.60},{d:'2026-04',r:0.50}],
+  change:'down',verified:true,
+  notices:['1,000P→500マイル(50%)。最低1,000P、500P単位。反映まで2〜3日程度。','⚠️ 2026年3月31日まではゴールド・プラチナカード会員限定で60%（1,000P→600マイル）の優遇レートがあったが、2026年4月1日より廃止され、カード種別を問わず一律50%に統一された。','移行手数料無料。']});
+d('epos','jal',{rate:0.50,url:'https://www.google.com/search?q=エポスポイント+JALマイル+交換+公式',
+  history:[{d:'2022-01',r:0.50},{d:'2026-01',r:0.50}],
+  verified:true,
+  notices:['1,000P→500マイル(50%)。最低1,000P、500P単位。反映まで1ヶ月程度。カード種別による差はなし。','📅 不定期でレートアップキャンペーンが開催されることがある（直近実績: 2026年9月1〜30日交換分対象で+20%増量、実質60%）。参加登録などの条件は都度公式サイトで要確認。']});
+// エポスポイント→ANA SKYコイン: ANA公式(ポイントから交換する)で確認。直接100%はマイル経由(50%)より高レート。
+d('epos','anacoin',{rate:1.0,url:'https://www.ana.co.jp/ja/jp/guide/amc/skycoin/point/',
+  history:[{d:'2022-01',r:1.0},{d:'2026-01',r:1.0}],verified:true,
+  notices:['✅ ANA公式サイトで確認: 1エポスポイントごとに1コイン（100%）。1,000ポイント以上500ポイント単位。交換完了まで約2日。','ANAマイル経由（直接50%→コイン1:1）より大幅に高レート。SKYコインが目的なら本ルートが最良。']});
+// エポスの交換メニューにKrisFlyerは含まれておらず、直接交換は構造上不可。マリオットBonvoyへの交換ルートも持たない。
+d('epos','kris',{rate:0,url:'https://www.google.com/search?q=エポスポイント+KrisFlyer+マイル+交換',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['KFへの直接換算ルートなし。エポスポイント→ANA/JALマイル経由でも、いずれもKrisFlyerへの変換経路が存在しないためKF目標には貢献できません。','マリオットBonvoyへの交換ルートも持たないため、マリオット経由のブリッジも利用できません。','KFマイルを目指す場合は、ANAまたはJAL目標への切替を推奨します。']});
+d('epos','marriott',{rate:0,url:'https://www.google.com/search?q=エポスポイント+マリオットBonvoy+交換',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['マリオットBonvoyへの直接換算ルートなし。エポスポイントからマリオットへの変換経路は存在しません。','マリオット経由でKFマイルに集約したい場合は、先にANAまたはJALマイルへ変換（各50%）した上で、それぞれのマイル目標として集計することを推奨します。']});
+
+// ─── AMEXメンバーシップリワード ───
+// ※MRプラス=「メンバーシップ・リワード・プラス」（年間参加費3,300円税込）
+// ※プラチナカード・ゴールドプリファードカード会員はMRプラスに無料・自動登録
+// ※ANA移行にはANAコース参加費5,500円/年が別途必要（プラチナカードは無料）
+// MRプラス登録時レートをメインレートとして設定
+d('amex_mr','ana',{rate:1.0,
+  url:'https://www.americanexpress.com/ja-jp/point/mile-point/airline/',
+  history:[{d:'2020-01',r:0.5},{d:'2024-01',r:1.0},{d:'2026-01',r:1.0}],
+  verified:true,
+  notices:[
+    '【MRプラス登録済み】1,000pt=1,000ANAマイル（1:1・100%）。未登録は2,000pt=1,000マイル（50%）。',
+    '【年間移行上限】暦年（1/1〜12/31）で40,000マイルまで。AmExカード複数枚保有の場合は合算計算。',
+    '【ANAコース参加費】年間5,500円（税込）。プラチナカード会員は無料。ANAアメックスカード会員は「ポイント移行コース」（年間6,600円税込）への登録が別途必要。',
+    '【MRプラス参加費】年間3,300円（税込）。プラチナカード・ゴールドプリファード会員は無料・自動登録。',
+    '1,000pt単位。1日1回（1日1,000pt〜999,000ptまで）申請可能。初回移行は約2週間、2回目以降は約5営業日。']});
+id('amex_mr','ana',{rate:0,
+  url:'https://www.americanexpress.com/ja-jp/point/mile-point/airline/',
+  history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],
+  notices:['✅ 調査済み: 直接移行（MRプラス登録時100%）が既にほぼ上限のレートのため、マリオットBonvoy等ホテル経由の間接ルートを使っても上回ることはできません（マリオット経由で計算すると0.99×0.4167≈41.3%にしかならず、直接の100%を大幅に下回ります）。直接移行が唯一かつ最良のルートです。']});
+// AMEX MR→ANA SKYコイン: ANA公式(ポイントから交換する)で確認。MRプラス等登録時は1,000pt→1,000コイン(100%)だが、2026年7月時点で交換自体が一時停止中。
+d('amex_mr','anacoin',{rate:0,url:'https://www.ana.co.jp/ja/jp/guide/amc/skycoin/point/',
+  history:[{d:'2024-01',r:1.0},{d:'2026-07',r:0}],change:'down',verified:true,
+  notices:['✅ ANA公式サイト(2026年7月時点)で確認: メンバーシップ・リワード・プラス等の登録済みカード会員は本来1,000pt→1,000コイン（100%）だが、「当面の間、メンバーシップ・リワードポイントからANA SKY コインへの交換を中止」と案内されており、交換再開時期は未定。','再開時期未定のため現時点では利用不可（0%扱い）。','✅ 2026年10月にANA公式ページで再確認：引き続き「当面の間交換を中止・再開時期未定」。未登録カード会員の本来レートは3,000pt→1,000コイン（33.3%）。','⚠ 同ページのお知らせ欄に「2027年9月30日をもってポイントからの交換を終了」「交換中止前に発行されたURLは2027年9月30日までに受け取りを」との告知あり。再開されないまま終了する可能性が高い点にご注意ください。']});
+d('amex_mr','jal',{rate:1000/2500,
+  url:'https://partner.jal.co.jp/shop/?tp=200354',
+  history:[{d:'2020-01',r:1000/3000},{d:'2024-01',r:1000/2500},{d:'2026-01',r:1000/2500}],
+  verified:true,
+  notices:[
+    '【MRプラス登録済み】2,500pt=1,000JALマイル（40%）。未登録は3,000pt=1,000マイル（33.3%）。',
+    '年間移行上限なし。2,500pt単位。移行手数料なし。',
+    '【MRプラス参加費】年間3,300円（税込）。プラチナカード・ゴールドプリファード会員は無料。',
+    '対象カード：グリーン/ゴールド/ゴールドプリファード/プラチナ/ビジネスグリーン/ビジネスゴールド/ビジネスプラチナ。ANAカード3種はJALへ移行不可。']});
+id('amex_mr','jal',{rate:0.99*(25000/60000),
+  route:[{from:'AMEX MR',to:'マリオットBonvoy(MRプラス登録時)',rate:0.99,url:'https://www.americanexpress.com/ja-jp/point/mile-point/hotel/'},{from:'マリオットBonvoy',to:'JALマイル',rate:25000/60000,url:'https://www.google.com/search?q=JALマイル+マリオットBonvoy+交換+公式'}],
+  url:'https://www.americanexpress.com/ja-jp/point/mile-point/hotel/',
+  history:[{d:'2026-04',r:0.99*(25000/60000)}],
+  notices:['MRプラス登録時、マリオットBonvoy経由（1,000pt→990pt→JALマイル60,000pt→25,000マイル）だと実質約41.3%となり、直接移行（MRプラス登録時40%）をわずかに上回ります。','ただし移行に2段階の手続きと2週間程度の時間がかかり、改善幅もごくわずか（1.3pt）のため、実用上は直接移行で十分です。','MRプラス未登録の場合はマリオット経由が0.495×0.4167≈20.6%まで下がり、直接（33.3%）を大幅に下回るため非推奨。']});
+d('amex_mr','kris',{rate:1000/1250,
+  url:'https://www.americanexpress.com/ja-jp/point/mile-point/airline/',
+  history:[{d:'2020-01',r:1000/1250},{d:'2024-01',r:1000/1250},{d:'2026-01',r:1000/1250}],
+  verified:true,
+  notices:[
+    '1,250pt=1,000KrisFlyer(SQ)マイル（80%）。MRプラス未登録でも同レート。',
+    '年間移行上限なし。移行手数料なし。1,250pt単位。',
+    '対象カード：グリーン/ゴールド/ゴールドプリファード/プラチナ等（スカイ・トラベラー2種はKFへ移行可）。ANAカード3種はKFへ移行不可。']});
+d('amex_mr','avios',{rate:1000/1250,
+  url:'https://www.americanexpress.com/ja-jp/point/mile-point/airline/',
+  history:[{d:'2022-01',r:1000/1250},{d:'2026-01',r:1000/1250}],
+  verified:true,
+  notices:['1,250pt=1,000Avios（80%）。年間上限なし。移行手数料なし。']});
+d('amex_mr','delta',{rate:1000/1250,
+  url:'https://www.americanexpress.com/ja-jp/point/mile-point/airline/',
+  history:[{d:'2022-01',r:1000/1250},{d:'2026-01',r:1000/1250}],
+  verified:true,
+  notices:['1,250pt=1,000デルタSkyMiles（80%）。年間上限なし。移行手数料なし。']});
+// AMEX MR→ホテル: ⚠ 重大な修正: 従来「マリオットへの直接移行ルートなし」としていたが、
+// 日本のAMEXメンバーシップ・リワードは公式に「ヒルトン・オナーズ／Marriott Bonvoy／ALL Accor」の3ホテルへ移行可能（公式サイトで確認）。
+// ※Accorは2026年4月6日開始の新パートナーシップ。IHG・ハイアットは提携先に含まれていない。
+d('amex_mr','marriott',{rate:990/1000,url:'https://www.americanexpress.com/ja-jp/rewards/membership-rewards/partner/Marriott_Bonvoy/MARR-N',
+  history:[{d:'2026-07',r:990/1000},{d:'2026-10',r:990/1000}],verified:true,
+  notices:['⚠ よくある誤情報にご注意: 「AMEX MRからマリオットBonvoyへの移行ルートはない」という情報が一部で見られますが、実際にはAMEX公式サイトで移行が可能です: 「メンバーシップ・リワード・プラス」登録（年間参加費3,300円）時は1,000pt→990ポイント（99%）。','✅ 2026年10月、AMEX公式の移行アイテムページ（ログイン前表示）で「2,000ポイント＝990ポイント、2,000ポイント単位、最少2,000ポイント、移行は通常同日中」を確認。これが未登録時（49.5%）のレートです。','✅ 2026年10月、AMEX会員ログイン後の移行画面で「1,000ポイント＝990ポイント、最少移行1,000ポイント、移行は通常同日中」を確認（最少1,000ptはAMEX公式が案内するMRプラス登録時の条件と一致）。表示の99%はこのレートです。','【表示について】本ツールではANA/JAL/KFのAMEX MR欄と同様、MRプラス登録時の値（99%）を基準レートとして表示しています（未登録の場合は49.5%）。','初回移行は約2週間、2回目以降は通常同日中に反映。']});
+d('amex_mr','hilton',{rate:1250/1000,url:'https://www.americanexpress.com/ja-jp/point/mile-point/hotel/',
+  history:[{d:'2022-01',r:1250/1000},{d:'2026-01',r:1250/1000}],verified:true,
+  notices:['【表示基準の統一】AMEX MR欄はANA/JAL/KF/マリオットと同じく「メンバーシップ・リワード・プラス登録時」のレートで表示しています（旧版はこの欄だけ未登録時のレートになっており、基準が不揃いでした）。','AMEX公式サイトで確認: 未登録は2,000pt→1,250ポイント（62.5%）、最少移行2,000pt。','「メンバーシップ・リワード・プラス」登録（年間参加費3,300円）で1,000pt→1,250ポイント（125%、増量）に優遇。','初回移行は約2週間、2回目以降は通常5日程度で反映。']});
+d('amex_mr','accor',{rate:1000/3500,url:'https://www.americanexpress.com/ja-jp/rewards/membership-rewards/partner/ALL_Accor/ACCR-NFTO',
+  history:[{d:'2026-04',r:1000/3500}],verified:true,
+  notices:['【表示基準の統一】AMEX MR欄はANA/JAL/KF/マリオットと同じく「メンバーシップ・リワード・プラス登録時」のレートで表示しています（旧版はこの欄だけ未登録時のレートになっており、基準が不揃いでした）。','2026年4月開始の新パートナーシップ（ALL公式の提携条件ページでも確認）。AMEX公式サイトで確認: 通常7,000pt→1,000 ALL Accorポイント（14.3%）。','「メンバーシップ・リワード・プラス」登録（年間参加費3,300円）で3,500pt→1,000ポイント（28.6%）に優遇。','初回移行は約2週間、2回目以降は通常同日中に反映。']});
+d('amex_mr','ihg',{rate:0,url:'https://www.americanexpress.com/ja-jp/point/mile-point/hotel/',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['日本のAMEX MRの提携ホテルは「ヒルトン・オナーズ／Marriott Bonvoy／ALL Accor」の3社のみで、IHGは含まれていません（公式サイトで確認）。']});
+d('amex_mr','hyatt',{rate:0,url:'https://www.americanexpress.com/ja-jp/point/mile-point/hotel/',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['日本のAMEX MRの提携ホテルは「ヒルトン・オナーズ／Marriott Bonvoy／ALL Accor」の3社のみで、World of Hyattは含まれていません（公式サイトで確認）。']});
+
+
+
+// ─── げん玉・ポイントインカム・dポイント・Pontaポイント・auポイント → マリオットBonvoy: 交換ルートなし（確認済み） ───
+d('gendama','marriott',{rate:0,url:'https://www.google.com/search?q=%E3%81%92%E3%82%93%E7%8E%89%20%E3%83%9E%E3%83%AA%E3%82%AA%E3%83%83%E3%83%88Bonvoy%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: げん玉からマリオットBonvoyへの直接・間接の交換ルートは存在しません。マリオットBonvoyへの交換ルートを持つのはモッピー・ハピタス・楽天ポイントの3サイトのみです。']});
+d('pincm','marriott',{rate:0,url:'https://www.google.com/search?q=%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%E3%82%A4%E3%83%B3%E3%82%AB%E3%83%A0%20%E3%83%9E%E3%83%AA%E3%82%AA%E3%83%83%E3%83%88Bonvoy%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ポイントインカムからマリオットBonvoyへの直接・間接の交換ルートは存在しません。マリオットBonvoyへの交換ルートを持つのはモッピー・ハピタス・楽天ポイントの3サイトのみです。']});
+d('dpoint','marriott',{rate:0,url:'https://www.google.com/search?q=d%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%9E%E3%83%AA%E3%82%AA%E3%83%83%E3%83%88Bonvoy%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: dポイントからマリオットBonvoyへの直接・間接の交換ルートは存在しません。マリオットBonvoyへの交換ルートを持つのはモッピー・ハピタス・楽天ポイントの3サイトのみです。']});
+d('ponta','marriott',{rate:0,url:'https://www.google.com/search?q=Ponta%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%9E%E3%83%AA%E3%82%AA%E3%83%83%E3%83%88Bonvoy%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: PontaポイントからマリオットBonvoyへの直接・間接の交換ルートは存在しません。マリオットBonvoyへの交換ルートを持つのはモッピー・ハピタス・楽天ポイントの3サイトのみです。']});
+d('au','marriott',{rate:0,url:'https://www.google.com/search?q=au%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%9E%E3%83%AA%E3%82%AA%E3%83%83%E3%83%88Bonvoy%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: auポイントからマリオットBonvoyへの直接・間接の交換ルートは存在しません。マリオットBonvoyへの交換ルートを持つのはモッピー・ハピタス・楽天ポイントの3サイトのみです。']});
+// ─── ポイントサイト・共通ポイント → ヒルトン/IHG/ハイアット/Accor: 全て交換ルートなし（2026年7月時点で確認） ───
+// 国内のポイントサイト・共通ポイントは、マリオットBonvoy（モッピー・ハピタス・楽天ポイント経由）を除き、
+// ヒルトン・IHG・ハイアット・Accorへの直接/間接の交換ルートを一切持たない（各社公式交換先一覧・複数のポイ活ブログで横断確認）。
+d('moppy','hilton',{rate:0,url:'https://www.google.com/search?q=%E3%83%A2%E3%83%83%E3%83%94%E3%83%BC%20%E3%83%92%E3%83%AB%E3%83%88%E3%83%B3%E3%83%BB%E3%82%AA%E3%83%8A%E3%83%BC%E3%82%BA%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: モッピーからヒルトン・オナーズへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','ヒルトン・オナーズポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('hapitas','hilton',{rate:0,url:'https://www.google.com/search?q=%E3%83%8F%E3%83%94%E3%82%BF%E3%82%B9%20%E3%83%92%E3%83%AB%E3%83%88%E3%83%B3%E3%83%BB%E3%82%AA%E3%83%8A%E3%83%BC%E3%82%BA%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ハピタスからヒルトン・オナーズへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','ヒルトン・オナーズポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('fancrew','hilton',{rate:0,url:'https://www.google.com/search?q=%E3%83%95%E3%82%A1%E3%83%B3%E3%81%8F%E3%82%8B%20%E3%83%92%E3%83%AB%E3%83%88%E3%83%B3%E3%83%BB%E3%82%AA%E3%83%8A%E3%83%BC%E3%82%BA%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ファンくるからヒルトン・オナーズへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','ヒルトン・オナーズポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('dmoney','hilton',{rate:0,url:'https://www.google.com/search?q=%E3%83%89%E3%83%83%E3%83%88%E3%83%9E%E3%83%8D%E3%83%BC%20%E3%83%92%E3%83%AB%E3%83%88%E3%83%B3%E3%83%BB%E3%82%AA%E3%83%8A%E3%83%BC%E3%82%BA%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ドットマネーからヒルトン・オナーズへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','ヒルトン・オナーズポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('gendama','hilton',{rate:0,url:'https://www.google.com/search?q=%E3%81%92%E3%82%93%E7%8E%89%20%E3%83%92%E3%83%AB%E3%83%88%E3%83%B3%E3%83%BB%E3%82%AA%E3%83%8A%E3%83%BC%E3%82%BA%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: げん玉からヒルトン・オナーズへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','ヒルトン・オナーズポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('pincm','hilton',{rate:0,url:'https://www.google.com/search?q=%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%E3%82%A4%E3%83%B3%E3%82%AB%E3%83%A0%20%E3%83%92%E3%83%AB%E3%83%88%E3%83%B3%E3%83%BB%E3%82%AA%E3%83%8A%E3%83%BC%E3%82%BA%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ポイントインカムからヒルトン・オナーズへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','ヒルトン・オナーズポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('ecnavi','hilton',{rate:0,url:'https://www.google.com/search?q=EC%E3%83%8A%E3%83%93%20%E3%83%92%E3%83%AB%E3%83%88%E3%83%B3%E3%83%BB%E3%82%AA%E3%83%8A%E3%83%BC%E3%82%BA%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ECナビからヒルトン・オナーズへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','ヒルトン・オナーズポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('ptown','hilton',{rate:0,url:'https://www.google.com/search?q=%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%E3%82%BF%E3%82%A6%E3%83%B3%20%E3%83%92%E3%83%AB%E3%83%88%E3%83%B3%E3%83%BB%E3%82%AA%E3%83%8A%E3%83%BC%E3%82%BA%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ポイントタウンからヒルトン・オナーズへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','ヒルトン・オナーズポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('pex','hilton',{rate:0,url:'https://www.google.com/search?q=PeX%20%E3%83%92%E3%83%AB%E3%83%88%E3%83%B3%E3%83%BB%E3%82%AA%E3%83%8A%E3%83%BC%E3%82%BA%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: PeXからヒルトン・オナーズへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','ヒルトン・オナーズポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('dpoint','hilton',{rate:0,url:'https://www.google.com/search?q=d%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%92%E3%83%AB%E3%83%88%E3%83%B3%E3%83%BB%E3%82%AA%E3%83%8A%E3%83%BC%E3%82%BA%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: dポイントからヒルトン・オナーズへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','ヒルトン・オナーズポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('rakuten','hilton',{rate:0,url:'https://www.google.com/search?q=%E6%A5%BD%E5%A4%A9%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%92%E3%83%AB%E3%83%88%E3%83%B3%E3%83%BB%E3%82%AA%E3%83%8A%E3%83%BC%E3%82%BA%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: 楽天ポイントからヒルトン・オナーズへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','ヒルトン・オナーズポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('ponta','hilton',{rate:0,url:'https://www.google.com/search?q=Ponta%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%92%E3%83%AB%E3%83%88%E3%83%B3%E3%83%BB%E3%82%AA%E3%83%8A%E3%83%BC%E3%82%BA%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: Pontaポイントからヒルトン・オナーズへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','ヒルトン・オナーズポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('vpoint','hilton',{rate:0,url:'https://www.google.com/search?q=V%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%92%E3%83%AB%E3%83%88%E3%83%B3%E3%83%BB%E3%82%AA%E3%83%8A%E3%83%BC%E3%82%BA%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: Vポイントからヒルトン・オナーズへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','ヒルトン・オナーズポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('paypay','hilton',{rate:0,url:'https://www.google.com/search?q=PayPay%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%92%E3%83%AB%E3%83%88%E3%83%B3%E3%83%BB%E3%82%AA%E3%83%8A%E3%83%BC%E3%82%BA%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: PayPayポイントからヒルトン・オナーズへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','ヒルトン・オナーズポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('jre','hilton',{rate:0,url:'https://www.google.com/search?q=JRE%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%92%E3%83%AB%E3%83%88%E3%83%B3%E3%83%BB%E3%82%AA%E3%83%8A%E3%83%BC%E3%82%BA%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: JREポイントからヒルトン・オナーズへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','ヒルトン・オナーズポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('nanaco','hilton',{rate:0,url:'https://www.google.com/search?q=nanaco%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%92%E3%83%AB%E3%83%88%E3%83%B3%E3%83%BB%E3%82%AA%E3%83%8A%E3%83%BC%E3%82%BA%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: nanacoポイントからヒルトン・オナーズへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','ヒルトン・オナーズポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('waon','hilton',{rate:0,url:'https://www.google.com/search?q=WAON%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%92%E3%83%AB%E3%83%88%E3%83%B3%E3%83%BB%E3%82%AA%E3%83%8A%E3%83%BC%E3%82%BA%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: WAONポイントからヒルトン・オナーズへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','ヒルトン・オナーズポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('au','hilton',{rate:0,url:'https://www.google.com/search?q=au%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%92%E3%83%AB%E3%83%88%E3%83%B3%E3%83%BB%E3%82%AA%E3%83%8A%E3%83%BC%E3%82%BA%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: auポイントからヒルトン・オナーズへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','ヒルトン・オナーズポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('gpoint','hilton',{rate:0,url:'https://www.google.com/search?q=G%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%92%E3%83%AB%E3%83%88%E3%83%B3%E3%83%BB%E3%82%AA%E3%83%8A%E3%83%BC%E3%82%BA%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: Gポイントからヒルトン・オナーズへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','ヒルトン・オナーズポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('yamada','hilton',{rate:0,url:'https://www.google.com/search?q=%E3%83%A4%E3%83%9E%E3%83%80%E9%9B%BB%E6%A9%9F%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%92%E3%83%AB%E3%83%88%E3%83%B3%E3%83%BB%E3%82%AA%E3%83%8A%E3%83%BC%E3%82%BA%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ヤマダ電機ポイントからヒルトン・オナーズへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','ヒルトン・オナーズポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('moppy','ihg',{rate:0,url:'https://www.google.com/search?q=%E3%83%A2%E3%83%83%E3%83%94%E3%83%BC%20IHG%20One%20Rewards%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: モッピーからIHG One Rewardsへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','IHG One Rewardsポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('hapitas','ihg',{rate:0,url:'https://www.google.com/search?q=%E3%83%8F%E3%83%94%E3%82%BF%E3%82%B9%20IHG%20One%20Rewards%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ハピタスからIHG One Rewardsへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','IHG One Rewardsポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('fancrew','ihg',{rate:0,url:'https://www.google.com/search?q=%E3%83%95%E3%82%A1%E3%83%B3%E3%81%8F%E3%82%8B%20IHG%20One%20Rewards%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ファンくるからIHG One Rewardsへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','IHG One Rewardsポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('dmoney','ihg',{rate:0,url:'https://www.google.com/search?q=%E3%83%89%E3%83%83%E3%83%88%E3%83%9E%E3%83%8D%E3%83%BC%20IHG%20One%20Rewards%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ドットマネーからIHG One Rewardsへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','IHG One Rewardsポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('gendama','ihg',{rate:0,url:'https://www.google.com/search?q=%E3%81%92%E3%82%93%E7%8E%89%20IHG%20One%20Rewards%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: げん玉からIHG One Rewardsへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','IHG One Rewardsポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('pincm','ihg',{rate:0,url:'https://www.google.com/search?q=%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%E3%82%A4%E3%83%B3%E3%82%AB%E3%83%A0%20IHG%20One%20Rewards%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ポイントインカムからIHG One Rewardsへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','IHG One Rewardsポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('ecnavi','ihg',{rate:0,url:'https://www.google.com/search?q=EC%E3%83%8A%E3%83%93%20IHG%20One%20Rewards%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ECナビからIHG One Rewardsへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','IHG One Rewardsポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('ptown','ihg',{rate:0,url:'https://www.google.com/search?q=%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%E3%82%BF%E3%82%A6%E3%83%B3%20IHG%20One%20Rewards%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ポイントタウンからIHG One Rewardsへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','IHG One Rewardsポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('pex','ihg',{rate:0,url:'https://www.google.com/search?q=PeX%20IHG%20One%20Rewards%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: PeXからIHG One Rewardsへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','IHG One Rewardsポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('dpoint','ihg',{rate:0,url:'https://www.google.com/search?q=d%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20IHG%20One%20Rewards%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: dポイントからIHG One Rewardsへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','IHG One Rewardsポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('rakuten','ihg',{rate:0,url:'https://www.google.com/search?q=%E6%A5%BD%E5%A4%A9%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20IHG%20One%20Rewards%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: 楽天ポイントからIHG One Rewardsへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','IHG One Rewardsポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('ponta','ihg',{rate:0,url:'https://www.google.com/search?q=Ponta%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20IHG%20One%20Rewards%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: PontaポイントからIHG One Rewardsへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','IHG One Rewardsポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('vpoint','ihg',{rate:0,url:'https://www.google.com/search?q=V%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20IHG%20One%20Rewards%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: VポイントからIHG One Rewardsへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','IHG One Rewardsポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('paypay','ihg',{rate:0,url:'https://www.google.com/search?q=PayPay%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20IHG%20One%20Rewards%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: PayPayポイントからIHG One Rewardsへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','IHG One Rewardsポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('jre','ihg',{rate:0,url:'https://www.google.com/search?q=JRE%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20IHG%20One%20Rewards%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: JREポイントからIHG One Rewardsへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','IHG One Rewardsポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('nanaco','ihg',{rate:0,url:'https://www.google.com/search?q=nanaco%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20IHG%20One%20Rewards%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: nanacoポイントからIHG One Rewardsへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','IHG One Rewardsポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('waon','ihg',{rate:0,url:'https://www.google.com/search?q=WAON%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20IHG%20One%20Rewards%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: WAONポイントからIHG One Rewardsへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','IHG One Rewardsポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('au','ihg',{rate:0,url:'https://www.google.com/search?q=au%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20IHG%20One%20Rewards%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: auポイントからIHG One Rewardsへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','IHG One Rewardsポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('gpoint','ihg',{rate:0,url:'https://www.google.com/search?q=G%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20IHG%20One%20Rewards%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: GポイントからIHG One Rewardsへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','IHG One Rewardsポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('yamada','ihg',{rate:0,url:'https://www.google.com/search?q=%E3%83%A4%E3%83%9E%E3%83%80%E9%9B%BB%E6%A9%9F%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20IHG%20One%20Rewards%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ヤマダ電機ポイントからIHG One Rewardsへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','IHG One Rewardsポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('moppy','hyatt',{rate:0,url:'https://www.google.com/search?q=%E3%83%A2%E3%83%83%E3%83%94%E3%83%BC%20World%20of%20Hyatt%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: モッピーからWorld of Hyattへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','World of Hyattポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('hapitas','hyatt',{rate:0,url:'https://www.google.com/search?q=%E3%83%8F%E3%83%94%E3%82%BF%E3%82%B9%20World%20of%20Hyatt%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ハピタスからWorld of Hyattへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','World of Hyattポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('fancrew','hyatt',{rate:0,url:'https://www.google.com/search?q=%E3%83%95%E3%82%A1%E3%83%B3%E3%81%8F%E3%82%8B%20World%20of%20Hyatt%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ファンくるからWorld of Hyattへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','World of Hyattポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('dmoney','hyatt',{rate:0,url:'https://www.google.com/search?q=%E3%83%89%E3%83%83%E3%83%88%E3%83%9E%E3%83%8D%E3%83%BC%20World%20of%20Hyatt%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ドットマネーからWorld of Hyattへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','World of Hyattポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('gendama','hyatt',{rate:0,url:'https://www.google.com/search?q=%E3%81%92%E3%82%93%E7%8E%89%20World%20of%20Hyatt%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: げん玉からWorld of Hyattへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','World of Hyattポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('pincm','hyatt',{rate:0,url:'https://www.google.com/search?q=%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%E3%82%A4%E3%83%B3%E3%82%AB%E3%83%A0%20World%20of%20Hyatt%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ポイントインカムからWorld of Hyattへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','World of Hyattポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('ecnavi','hyatt',{rate:0,url:'https://www.google.com/search?q=EC%E3%83%8A%E3%83%93%20World%20of%20Hyatt%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ECナビからWorld of Hyattへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','World of Hyattポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('ptown','hyatt',{rate:0,url:'https://www.google.com/search?q=%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%E3%82%BF%E3%82%A6%E3%83%B3%20World%20of%20Hyatt%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ポイントタウンからWorld of Hyattへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','World of Hyattポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('pex','hyatt',{rate:0,url:'https://www.google.com/search?q=PeX%20World%20of%20Hyatt%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: PeXからWorld of Hyattへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','World of Hyattポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('dpoint','hyatt',{rate:0,url:'https://www.google.com/search?q=d%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20World%20of%20Hyatt%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: dポイントからWorld of Hyattへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','World of Hyattポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('rakuten','hyatt',{rate:0,url:'https://www.google.com/search?q=%E6%A5%BD%E5%A4%A9%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20World%20of%20Hyatt%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: 楽天ポイントからWorld of Hyattへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','World of Hyattポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('ponta','hyatt',{rate:0,url:'https://www.google.com/search?q=Ponta%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20World%20of%20Hyatt%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: PontaポイントからWorld of Hyattへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','World of Hyattポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('vpoint','hyatt',{rate:0,url:'https://www.google.com/search?q=V%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20World%20of%20Hyatt%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: VポイントからWorld of Hyattへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','World of Hyattポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('paypay','hyatt',{rate:0,url:'https://www.google.com/search?q=PayPay%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20World%20of%20Hyatt%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: PayPayポイントからWorld of Hyattへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','World of Hyattポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('jre','hyatt',{rate:0,url:'https://www.google.com/search?q=JRE%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20World%20of%20Hyatt%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: JREポイントからWorld of Hyattへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','World of Hyattポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('nanaco','hyatt',{rate:0,url:'https://www.google.com/search?q=nanaco%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20World%20of%20Hyatt%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: nanacoポイントからWorld of Hyattへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','World of Hyattポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('waon','hyatt',{rate:0,url:'https://www.google.com/search?q=WAON%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20World%20of%20Hyatt%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: WAONポイントからWorld of Hyattへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','World of Hyattポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('au','hyatt',{rate:0,url:'https://www.google.com/search?q=au%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20World%20of%20Hyatt%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: auポイントからWorld of Hyattへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','World of Hyattポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('gpoint','hyatt',{rate:0,url:'https://www.google.com/search?q=G%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20World%20of%20Hyatt%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: GポイントからWorld of Hyattへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','World of Hyattポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('yamada','hyatt',{rate:0,url:'https://www.google.com/search?q=%E3%83%A4%E3%83%9E%E3%83%80%E9%9B%BB%E6%A9%9F%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20World%20of%20Hyatt%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ヤマダ電機ポイントからWorld of Hyattへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','World of Hyattポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('moppy','accor',{rate:0,url:'https://www.google.com/search?q=%E3%83%A2%E3%83%83%E3%83%94%E3%83%BC%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: モッピーからAccor ALLへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','Accor ALLポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('hapitas','accor',{rate:0,url:'https://www.google.com/search?q=%E3%83%8F%E3%83%94%E3%82%BF%E3%82%B9%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ハピタスからAccor ALLへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','Accor ALLポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('fancrew','accor',{rate:0,url:'https://www.google.com/search?q=%E3%83%95%E3%82%A1%E3%83%B3%E3%81%8F%E3%82%8B%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ファンくるからAccor ALLへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','Accor ALLポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('dmoney','accor',{rate:0,url:'https://www.google.com/search?q=%E3%83%89%E3%83%83%E3%83%88%E3%83%9E%E3%83%8D%E3%83%BC%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ドットマネーからAccor ALLへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','Accor ALLポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('gendama','accor',{rate:0,url:'https://www.google.com/search?q=%E3%81%92%E3%82%93%E7%8E%89%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: げん玉からAccor ALLへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','Accor ALLポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('pincm','accor',{rate:0,url:'https://www.google.com/search?q=%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%E3%82%A4%E3%83%B3%E3%82%AB%E3%83%A0%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ポイントインカムからAccor ALLへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','Accor ALLポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('ecnavi','accor',{rate:0,url:'https://www.google.com/search?q=EC%E3%83%8A%E3%83%93%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ECナビからAccor ALLへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','Accor ALLポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('ptown','accor',{rate:0,url:'https://www.google.com/search?q=%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%E3%82%BF%E3%82%A6%E3%83%B3%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ポイントタウンからAccor ALLへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','Accor ALLポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('pex','accor',{rate:0,url:'https://www.google.com/search?q=PeX%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: PeXからAccor ALLへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','Accor ALLポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('dpoint','accor',{rate:0,url:'https://www.google.com/search?q=d%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: dポイントからAccor ALLへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','Accor ALLポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('rakuten','accor',{rate:0,url:'https://www.google.com/search?q=%E6%A5%BD%E5%A4%A9%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: 楽天ポイントからAccor ALLへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','Accor ALLポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('ponta','accor',{rate:0,url:'https://www.google.com/search?q=Ponta%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: PontaポイントからAccor ALLへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','Accor ALLポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('vpoint','accor',{rate:0,url:'https://www.google.com/search?q=V%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: VポイントからAccor ALLへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','Accor ALLポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('paypay','accor',{rate:0,url:'https://www.google.com/search?q=PayPay%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: PayPayポイントからAccor ALLへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','Accor ALLポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('jre','accor',{rate:0,url:'https://www.google.com/search?q=JRE%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: JREポイントからAccor ALLへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','Accor ALLポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('nanaco','accor',{rate:0,url:'https://www.google.com/search?q=nanaco%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: nanacoポイントからAccor ALLへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','Accor ALLポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('waon','accor',{rate:0,url:'https://www.google.com/search?q=WAON%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: WAONポイントからAccor ALLへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','Accor ALLポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('au','accor',{rate:0,url:'https://www.google.com/search?q=au%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: auポイントからAccor ALLへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','Accor ALLポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('gpoint','accor',{rate:0,url:'https://www.google.com/search?q=G%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: GポイントからAccor ALLへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','Accor ALLポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+d('yamada','accor',{rate:0,url:'https://www.google.com/search?q=%E3%83%A4%E3%83%9E%E3%83%80%E9%9B%BB%E6%A9%9F%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ヤマダ電機ポイントからAccor ALLへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','Accor ALLポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
+
+// ─── げん玉・ポイントインカム・ECナビ ───
+d('gendama','dpoint',{rate:1.0,url:'https://www.google.com/search?q=げん玉+ポイント交換+公式',history:[{d:'2022-01',r:1},{d:'2026-01',r:1}],verified:true,notices:[]});
+d('gendama','rakuten',{rate:1.0,url:'https://www.google.com/search?q=げん玉+ポイント交換+公式',history:[{d:'2022-01',r:1},{d:'2026-01',r:1}],verified:true,notices:[]});
+d('gendama','jal',{rate:0.50,url:'https://www.google.com/search?q=げん玉+ポイント交換+公式',history:[{d:'2022-01',r:0.5},{d:'2026-01',r:0.5}],verified:true,notices:['より高いレートを狙う場合は楽天ポイント経由の間接ルート（下記参照）も検討可能。']});
+id('gendama','jal',{rate:1.0*0.60,
+  route:[{from:'げん玉',to:'楽天ポイント',rate:1.0,url:'https://www.google.com/search?q=げん玉+ポイント交換+公式'},{from:'楽天ポイント',to:'JALマイル(レートアップキャンペーン)',rate:0.60,url:'https://www.google.com/search?q=楽天ポイント+JALマイル+レートアップキャンペーン'}],
+  url:'https://www.google.com/search?q=げん玉+楽天ポイント+交換+公式',
+  history:[{d:'2019-01',r:0.60},{d:'2026-01',r:0.60}],
+  notices:['げん玉→楽天ポイントは等価交換。楽天ポイント→JALマイルは通常50%だが、年1回程度のレートアップキャンペーン中は60%前後（過去実績62.5%・65%等）まで上昇。','キャンペーン時期以外は直接交換(50%)と同水準。開催時期は楽天ポイント公式サイトで要確認。']});
+d('gendama','ana',{rate:0,url:'https://www.google.com/search?q=げん玉+ANAマイル+直接交換',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['げん玉の交換先一覧にANAマイルは含まれていません（PeX経由の間接交換のみ）。直接交換ルートは確認済みで存在しません。','ANAマイルを狙う場合は、ドットマネー等を経由した間接ルート（下記参照、最大70%）を利用してください。']});
+id('gendama','ana',{rate:0.70,route:[{from:'げん玉',to:'ドットマネー',rate:1,url:'https://www.google.com/search?q=げん玉+ドットマネー+交換+公式'},{from:'ドットマネー',to:'Vポイント',rate:1,url:'https://www.google.com/search?q=ドットマネー+Vポイント+交換+公式'},{from:'Vポイント',to:'ANAマイル(みずほ)',rate:0.70,url:'https://www.google.com/search?q=ANAマイル+みずほルート+交換+公式'}],url:'https://www.google.com/search?q=げん玉+ドットマネー+交換+公式',history:[{d:'2022-01',r:0.50},{d:'2024-01',r:0.70},{d:'2026-07',r:0.70}],notices:["✅ 2026年7月時点で確認：げん玉→ドットマネー(等価)→Vポイント(等価)→ANAマイル(みずほ70%)の各ホップを個別に再確認。ドットマネー→Vポイントの等価交換・手数料無料は公式ページで確認済み。",'げん玉→Vポイントの直接交換ルートはなし。ドットマネー経由（げん玉→ドットマネー→Vポイント、ともに等価・手数料無料）が必要。']});
+d('gendama','kris',{rate:0,url:'https://www.google.com/search?q=げん玉+KrisFlyer+マイル+交換',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['KFへの直接換算ルートなし。げん玉→ANA/JALマイル経由でも、そこからKrisFlyerへの変換ルートは存在しないためKF目標には貢献できません。','マリオットBonvoy経由のブリッジも、げん玉→マリオットの交換ルートが存在しないため利用できません。','KFマイルを目指す場合は、ANAまたはJAL目標への切替を推奨します。']});
+d('pincm','dpoint',{rate:0.95,url:'https://www.google.com/search?q=ポイントインカム+dポイント+交換+公式',history:[{d:'2022-01',r:0.95},{d:'2026-01',r:0.95}],verified:true,notices:['直接交換は5%の手数料が発生（実質95%）。ドットマネー経由なら手数料無料で等価交換可能。','1ポイントインカムポイント=0.1円（10P=1円）。']});
+d('pincm','jal',{rate:1/3,url:'https://www.google.com/search?q=ポイントインカム+JALマイル+直接交換',history:[{d:'2022-01',r:1/3},{d:'2026-01',r:1/3}],verified:true,notices:['直接交換は4,500P(450円相当)→150マイルで実質33%と低レート。','★推奨★ ドットマネー経由（等価交換→JALマイル50%）の方が高レート。','1ポイントインカムポイント=0.1円（10P=1円）。']});
+d('pincm','ana',{rate:100/350,url:'https://www.ana.co.jp/ja/jp/shoppingandlife/point/tameru_pointi/',
+  history:[{d:'2022-01',r:100/350},{d:'2026-01',r:100/350}],verified:true,
+  notices:['ANA公式提携先ページで直接交換に対応（ポイントインカムのマイページ「ポイント交換」→「ANAのマイル」から手続き可）。','直接交換は3,500P(350円相当)→100マイルで実質28.6%と低レート。1回の交換上限は5,000マイルまで（回数無制限）。','★推奨★ ドットマネー経由（等価交換→Vポイント→ANA みずほルート70%）の方が大幅に高レート（下記参照）。','1ポイントインカムポイント=0.1円（10P=1円）。']});
+id('pincm','jal',{rate:1.0*0.50,
+  route:[{from:'ポイントインカム',to:'ドットマネー',rate:1.0,url:'https://www.google.com/search?q=ポイントインカム+ドットマネー+交換+公式'},{from:'ドットマネー',to:'JALマイル',rate:0.50,url:'https://www.google.com/search?q=ドットマネー+JALマイル+交換+公式'}],
+  url:'https://www.google.com/search?q=ポイントインカム+ドットマネー+交換+公式',
+  history:[{d:'2022-01',r:0.50},{d:'2026-01',r:0.50}],
+  notices:['ポイントインカム→ドットマネーは完全等価・手数料無料。ドットマネー→JALマイルは直接交換で50%。総合50%で、直接交換(33%)より高レート。','1ポイントインカムポイント=0.1円（10P=1円）。']});
+d('pincm','dmoney',{rate:1.0,url:'https://www.google.com/search?q=ポイントインカム+ドットマネー+交換+公式',history:[{d:'2022-01',r:1.0},{d:'2026-01',r:1.0}],verified:true,notices:['5,000P(500円相当)→500マネーで完全等価・手数料無料。1ポイントインカムポイント=0.1円（10P=1円）。']});
+id('pincm','ana',{rate:1.0*1.0*0.70,route:[{from:'ポイントインカム',to:'ドットマネー',rate:1.0,url:'https://www.google.com/search?q=ポイントインカム+ドットマネー+交換+公式'},{from:'ドットマネー',to:'Vポイント',rate:1.0,url:'https://www.google.com/search?q=ドットマネー+Vポイント+交換+公式'},{from:'Vポイント',to:'ANAマイル(みずほ)',rate:0.70,url:'https://www.google.com/search?q=ANAマイル+みずほルート+交換+公式'}],url:'https://www.google.com/search?q=ポイントインカム+ポイント交換+公式',history:[{d:'2022-01',r:0.50},{d:'2024-01',r:1.0*1.0*0.70},{d:'2026-07',r:1.0*1.0*0.70}],notices:["✅ 2026年7月時点で確認：ポイントインカム→ドットマネー→Vポイント→ANAマイル(みずほ)の各ホップを個別に再確認。ドットマネー→Vポイントが等価・手数料無料であることを公式ページで確認済み。",'【ルート改善】ポイントインカム→Vポイント直接交換（5,250P→500Vポイント=95.2%）経由で総合66.7%というルートもありますが、ドットマネー経由（完全等価・手数料無料）→Vポイント（等価）→ANAマイル(みずほ)の方が高レートです。','★推奨★ ポイントインカム→ドットマネー(等価)→Vポイント(等価)→ANAマイル(みずほ70%)で総合70%。','1ポイントインカムポイント=0.1円（10P=1円）。']});
+d('pincm','kris',{rate:0,url:'https://www.google.com/search?q=ポイントインカム+KrisFlyer+マイル+交換',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['KFへの直接換算ルートなし。ポイントインカム→ANA/JALマイル経由でも、そこからKrisFlyerへの変換ルートは存在しないためKF目標には貢献できません。','マリオットBonvoy経由のブリッジも、ポイントインカム→マリオットの交換ルートが存在しないため利用できません。','KFマイルを目指す場合は、ANAまたはJAL目標への切替を推奨します。','1ポイントインカムポイント=0.1円（10P=1円）。']});
+// ECナビ: 交換先はPeXのみ（dポイント・JALマイル等への直接交換ルートは存在しない）。
+// ECナビ→PeXは1:1（ともに1pt=0.1円のため価値の目減りなし）。3,000P(300円相当)から交換可能。
+id('ecnavi','dpoint',{rate:1.0*1.0,
+  route:[{from:'ECナビ',to:'PeX',rate:1.0,url:'https://ecnavi.jp/help/point/point_info/41/'},{from:'PeX',to:'dポイント(100P→10P・手数料無料)',rate:1.0,url:'https://pex.jp/exchange/dpoint/show'}],
+  url:'https://pex.jp/exchange/dpoint/show',
+  history:[{d:'2022-01',r:1.0},{d:'2026-01',r:1.0}],
+  verified:true,
+  notices:['⚠ よくある誤情報にご注意: 「PeX→dポイントは100P→10P=10%」という情報が一部で見られますが、PeXは10P=1円・dポイントは1P=1円のため、100PeX(10円)→10dポイント(10円)は完全な等価交換（100%）です。手数料無料。PeX公式サイトの手数料無料交換先一覧にも掲載。','ECナビ→PeXも等価（1:1）のため、ECナビ→dポイントは実質100%（等価）で交換可能。']});
+id('ecnavi','jal',{rate:1.0*1.0*0.50,
+  route:[{from:'ECナビ',to:'PeX',rate:1.0,url:'https://ecnavi.jp/help/point/point_info/41/'},{from:'PeX',to:'dポイント(100P→10P・手数料無料・等価)',rate:1.0,url:'https://pex.jp/exchange/dpoint/show'},{from:'dポイント',to:'JALマイル',rate:0.50,url:'https://www.google.com/search?q=JALマイル+dポイント+交換+公式'}],
+  url:'https://pex.jp/exchange/jal/show',
+  history:[{d:'2022-01',r:0.50},{d:'2026-01',r:0.50}],
+  verified:true,
+  notices:["✅ 2026年7月時点で確認：PeX→dポイントの等価・手数料無料交換、dポイント→JALマイル50%に変更がないことを確認。",'⚠ よくある誤情報にご注意: 「PeX→dポイントは10%」という情報が一部で見られますが、正しくはPeX→dポイントは等価交換（100%、手数料無料）です。ECナビ→PeX(等価)→dポイント(等価)→JALマイル(50%)で実質50%。','PeX→JALマイルの直接交換（4,000P→100マイル=25%）より高レート。','dポイント→JALマイルは年1回程度のレートアップキャンペーンで55%になることも。','★さらに高レートを狙うなら★ PeX→Ponta(1,100P→100P≈90.9%)→JALマイル(通常50%・キャンペーン時60%)で最大約54.5%も可能（下記notices参照）。']});
+// ECナビは交換先がPeXのみのため、ANA/JALマイルへの直接交換メニュー自体が存在しない（構造上不可）。間接ルート(下記)のみ利用可能。
+d('ecnavi','jal',{rate:0,url:'https://ecnavi.jp/help/point/point_info/41/',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['ECナビの交換先はPeXのみで、JALマイルへの直接交換メニューは存在しません（構造上、直接交換は不可）。','PeX経由の間接ルート（下記参照、実質50%）をご利用ください。']});
+// ECナビは交換先がPeXのみのため、ANA/JALマイルへの直接交換メニュー自体が存在しない（構造上不可）。間接ルート(下記)のみ利用可能。
+d('ecnavi','ana',{rate:0,url:'https://ecnavi.jp/help/point/point_info/41/',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['ECナビの交換先はPeXのみで、ANAマイルへの直接交換メニューは存在しません（構造上、直接交換は不可）。','PeX経由の間接ルート（下記参照）をご利用ください。']});
+id('ecnavi','ana',{rate:1.0*0.95*0.70,
+  route:[{from:'ECナビ',to:'PeX',rate:1.0,url:'https://ecnavi.jp/help/point/point_info/41/'},{from:'PeX',to:'Vポイント(基本等価、1回500PeXPの定額手数料)',rate:0.95,url:'https://pex.jp/exchange/tpointjapan/show'},{from:'Vポイント',to:'ANAマイル(みずほルート)',rate:0.70,url:'https://www.google.com/search?q=ANAマイル+みずほルート+交換+公式'}],
+  url:'https://pex.jp/exchange/tpointjapan/show',
+  history:[{d:'2022-01',r:0.665},{d:'2026-01',r:0.665}],
+  verified:true,
+  notices:["✅ 2026年7月時点で確認：PeX→Vポイントの定額手数料500P構造、Vポイント→ANAマイル(みずほ)の70%に変更がないことを確認。",'⚠ よくある誤情報にご注意: 「PeX→Vポイントは1,000P→100P=10%」という情報が一部で見られますが、PeX公式サイトによれば基本レートは1,000P→100Vポイントの完全等価（100%）で、手数料は割合ではなく「1回あたりPeXポイント500P（50円相当）」の定額です。','定額手数料のため、まとまった額を一度に交換するほど実質レートは100%に近づく（例: 10,000P交換なら手数料負担は約5%で実質95%、30,000P以上ならほぼ100%）。ECナビ経由のサービス利用でこの手数料を無料にするキャンペーンも随時開催。','Vポイント→ANAマイル(みずほルート、Vポイント→JRキューポ→永久不滅P→ANA)で70%。まとまった額の交換＋手数料無料キャンペーン活用でほぼ70%を達成可能。','2026年1月21日以降、みずほマイレージクラブカード/ANAは新規発行終了（既存保有者のみ利用可）。','nimocaルート（PeX→nimoca、1,000P→100P=完全等価）→ANA(70%)なら手数料なしで70%達成可能だが、nimocaは九州・函館エリアの交換機必須。']});
+d('ecnavi','kris',{rate:0,url:'https://pex.jp/exchange',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['KFへの直接・間接換算ルートなし。ECナビの交換先PeXにもKrisFlyerへの変換ルートがないため、マリオット経由のKFブリッジも利用不可。']});
+d('ecnavi','marriott',{rate:0,url:'https://pex.jp/exchange',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['マリオットBonvoyへの直接・間接換算ルートなし。ECナビの交換先PeXにもマリオットへの変換経路が存在しません。']});
+
+// ─── ポイントタウン ───
+// 直接ANA: ポイントタウン公式 350P→100マイル(≈28.57%) ※旧42%から2026年以降に改悪
+// 直接JAL: ポイントタウン公式 1,250P→500マイル(40%) ←間接(ドットマネー50%)の方が有利
+// 実用ルート: Vポイント経由50% / ドットマネー経由JAL50%
+d('ptown','ana',{rate:100/350,url:'https://www.google.com/search?q=ポイントタウン+ANAマイル+交換+公式',
+  history:[{d:'2022-01',r:0.42},{d:'2026-01',r:100/350}],
+  change:'down',verified:true,
+  notices:['⚠ 単位修正: ポイントタウンは20pt=1円。公式レートは7,000pt（350円相当）→100マイル（≈28.6%）。旧レート約42%から改悪。最低7,000pt。当月末締め翌月10営業日前後。手数料無料。','⚠ 間接ルート（Vポイント経由50%）の方が高レートのため、直接交換は非推奨。']});
+id('ptown','ana',{rate:0.50,
+  route:[{from:'ポイントタウン',to:'ドットマネー',rate:1.0,url:'https://www.google.com/search?q=ポイントタウン+ドットマネー+交換'},{from:'ドットマネー',to:'Vポイント',rate:1.0,url:'https://www.google.com/search?q=ドットマネー+Vポイント+交換+公式'},{from:'Vポイント',to:'ANAマイル',rate:0.50,url:'https://t-point.tsite.jp/store/list/ana/'}],
+  url:'https://www.google.com/search?q=ポイントタウン+ANAマイル+Vポイント+交換ルート',
+  history:[{d:'2022-01',r:0.50},{d:'2026-01',r:0.50}],
+  notices:["✅ 2026年7月時点で確認：ポイントタウン→ドットマネーが手数料無料・等価交換であることを公式FAQ・複数ブログで再確認。",'★推奨★ ポイントタウン→ドットマネー(等価・手数料無料)→Vポイント(等価)→ANAマイル(50%)で実質50%。直接交換（≈28.57%）より高レート。','ポイントタウン→Vポイントの直接交換には約8%の手数料がかかるため、手数料無料のドットマネー経由が推奨ルートです。','みずほルート（Vポイント→JRキューポ→永久不滅P→ANA）経由なら70%も可能だが、2026年1月21日以降みずほカードは新規発行終了（既存保有者のみ継続利用可）。']});
+d('ptown','jal',{rate:500/1250,url:'https://www.google.com/search?q=ポイントタウン+JALマイル+交換+公式',
+  history:[{d:'2022-01',r:500/1250},{d:'2026-01',r:500/1250}],
+  verified:true,
+  notices:['⚠ 単位修正: ポイントタウンは20pt=1円。公式レートは25,000pt（1,250円相当）→500マイル（40%）。最低25,000pt。当月末締め翌月5営業日前後。手数料無料。','ドットマネー経由の間接ルート（50%）の方が高レートのため、通常は間接ルートを推奨。']});
+id('ptown','jal',{rate:0.50,
+  route:[{from:'ポイントタウン',to:'ドットマネー',rate:1.0,url:'https://www.google.com/search?q=ポイントタウン+ドットマネー+交換'},{from:'ドットマネー',to:'JALマイル',rate:0.50,url:'https://d-money.jp/withdrawal/point/detail/1119'}],
+  url:'https://www.google.com/search?q=ポイントタウン+JALマイル+ドットマネー+交換ルート',
+  history:[{d:'2022-01',r:0.50},{d:'2026-01',r:0.50}],
+  notices:["✅ 2026年7月時点で確認：ポイントタウン→ドットマネーが手数料無料・等価交換であることを公式FAQ・複数ブログで再確認。",'★推奨★ ポイントタウン→ドットマネー(10,000pt→500マネー＝等価交換)→JALマイル(50%)で実質50%。直接交換（40%）より高レート。500マネー単位（ドットマネー側）。申請月の下旬〜翌月上旬に積算。']});
+d('ptown','kris',{rate:0,url:'https://www.google.com/search?q=ポイントタウン+KrisFlyer+マイル+交換',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['KFへの直接・間接換算ルートなし。ポイントタウンからマリオットBonvoyへの変換経路がないため、マリオット経由のKFブリッジも利用不可。KFを目指す場合はANA/JAL目標への切替を推奨。']});
+d('ptown','marriott',{rate:0,url:'https://www.google.com/search?q=ポイントタウン+マリオットBonvoy+交換',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['マリオットBonvoyへの直接・間接換算ルートなし。ポイントタウンからマリオットへの変換経路は存在しません。']});
+
+// ─── PeX ───
+// 直接レート: ANA 1,000P→30マイル(3%) / JAL 4,000P→100マイル(2.5%) ← pex.jp/exchange 確認
+// 実用ルート: ANAはVポイント経由(100P→10%)→ANA(50%)=実質5% / JALはdポイント経由(10%)→JAL(50%)=実質5%
+d('pex','ana',{rate:30/100,url:'https://pex.jp/exchange/ana/show',
+  history:[{d:'2022-01',r:30/100},{d:'2026-01',r:30/100}],
+  verified:true,
+  notices:['⚠ よくある誤情報にご注意: 「PeX→ANAは1,000P→30マイル(3%)」という情報が一部で見られますが、PeXは10P=1円のため1,000P=100円。PeX公式サイト(pex.jp/exchange/ana/show)で確認: 1,000P→30マイル=30マイル/100円=30%です。','直接交換は間接ルート（Vポイント経由、下記参照）より低レートのため非推奨。最低1,000P単位。約2日で反映。']});
+id('pex','ana',{rate:0.95*0.70,
+  route:[{from:'PeX',to:'Vポイント(基本等価、1回500PeXPの定額手数料)',rate:0.95,url:'https://pex.jp/exchange/tpointjapan/show'},{from:'Vポイント',to:'ANAマイル(みずほルート)',rate:0.70,url:'https://www.google.com/search?q=ANAマイル+みずほルート+交換+公式'}],
+  url:'https://pex.jp/exchange/tpointjapan/show',
+  history:[{d:'2022-01',r:0.665},{d:'2026-01',r:0.665}],
+  verified:true,
+  notices:['★推奨★ ⚠ よくある誤情報にご注意: 「PeX→Vポイントは1,000P→100P=10%」という情報が一部で見られますが、PeX公式サイトによれば基本レートは1,000P→100Vポイントの完全等価（100%）です。手数料は割合ではなく「1回あたりPeXポイント500P（50円相当）」の定額。','定額手数料のため、まとまった額を一度に交換するほど実質レートは100%に近づく（例: 10,000P交換なら実質95%、30,000P以上ならほぼ100%）。手数料無料キャンペーンも随時開催。','Vポイント→ANAマイル(みずほルート)の70%と組み合わせて、まとまった額なら実質65〜70%。直接交換（30%）より大幅に高レート。','nimocaルート（PeX→nimoca、1,000P→100P=完全等価・手数料なし）→ANA(70%)なら70%達成可能だが、nimocaは九州・函館エリアの交換機必須。','2026年1月21日以降、みずほマイレージクラブカード/ANAは新規発行終了（既存保有者のみ利用可）。']});
+// PeX→ANA SKYコイン: ANA公式(ポイントから交換する)で確認。直接10%と低いため、Vポイント経由でANAマイルに変換後1:1でコイン化する間接ルートの方が高レート。
+d('pex','anacoin',{rate:1.0,url:'https://www.ana.co.jp/ja/jp/guide/amc/skycoin/point/',
+  history:[{d:'2022-01',r:1.0},{d:'2026-01',r:1.0},{d:'2026-10',r:1.0}],verified:true,
+  notices:['⚠ 2026年10月訂正: 旧版は「10%」としていましたが単位の誤りでした。ANA公式: 1,000ポイントごとに100コイン。PeXは10P=1円なので1,000P（100円相当）→100コイン＝実質100%（等価）です。','単位1,000P、上限990,000P、交換1回ごとに手数料500P（50円相当）。交換完了まで約2日。','手数料は定額のため、まとめて交換するほど実質レートは100%に近づきます（例: 10,000P交換なら実質約95%）。下記の間接ルート（約66.5%）より高レートで、SKYコインが目的なら本ルートが最良。']});
+id('pex','anacoin',{rate:0.95*0.70,
+  route:[{from:'PeX',to:'Vポイント(定額手数料)',rate:0.95,url:'https://pex.jp/exchange/tpointjapan/show'},{from:'Vポイント',to:'ANAマイル(みずほルート)',rate:0.70,url:'https://www.google.com/search?q=ANAマイル+みずほルート+交換+公式'},{from:'ANAマイル',to:'ANA SKYコイン',rate:1.0,url:'https://www.ana.co.jp/ja/jp/guide/amc/skycoin/skycoin/'}],
+  url:'https://pex.jp/exchange/tpointjapan/show',
+  history:[{d:'2022-01',r:0.665},{d:'2026-01',r:0.665}],
+  notices:['（参考）直接交換（上記・実質ほぼ100%）の方が高レートです。','PeX→Vポイント→ANAマイル(みずほルート)の66.5%に、ANAマイル→SKYコインの基本1:1を適用した参考値。まとまったマイル数(10,000マイル以上)を一括交換すればステイタス等に応じてさらに1.2〜2.0倍の優遇レートが乗る場合がある。','直接のSKYコインルート（10%）より大幅に高レート。']});
+d('pex','jal',{rate:100/400,url:'https://pex.jp/exchange/jal/show',
+  history:[{d:'2022-01',r:100/400},{d:'2026-01',r:100/400}],
+  verified:true,
+  notices:['⚠ よくある誤情報にご注意: 「PeX→JALは1,000P→2.5マイル(2.5%)」という情報が一部で見られますが、PeXは10P=1円のため4,000P=400円。PeX公式サイトで確認: 4,000P→100マイル=100マイル/400円=25%です。','直接交換は間接ルート（dポイント経由、下記参照）より低レートのため非推奨。']});
+id('pex','jal',{rate:1.0*0.50,
+  route:[{from:'PeX',to:'dポイント(100P→10P・手数料無料・等価)',rate:1.0,url:'https://pex.jp/exchange/dpoint/show'},{from:'dポイント',to:'JALマイル',rate:0.50,url:'https://www.google.com/search?q=JALマイル+dポイント+交換+公式'}],
+  url:'https://pex.jp/exchange/dpoint/show',
+  history:[{d:'2022-01',r:0.50},{d:'2026-01',r:0.50}],
+  verified:true,
+  notices:["✅ 2026年7月時点で確認：PeX→dポイントの等価・手数料無料交換に変更がないことを確認。",'★推奨★ ⚠ よくある誤情報にご注意: 「PeX→dポイントは100P→10P=10%」という情報が一部で見られますが、PeXは10P=1円・dポイントは1P=1円のため、100PeX(10円)→10dポイント(10円)は完全な等価交換（100%、手数料無料）です。PeX→dポイント(等価)→JALマイル(50%)で実質50%。','直接交換（25%）より高レート。dポイント→JALは年1回程度のレートアップキャンペーンで55%になることも。','★さらに高レートを狙うなら★ PeX→Ponta(1,100P→100P≈90.9%)→JALマイル(通常50%・キャンペーン時60%)で最大約54.5%も可能。']});
+d('pex','kris',{rate:0,url:'https://pex.jp/exchange',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['KFへの直接・間接換算ルートなし。PeXからマリオットBonvoyへの変換経路がないため、マリオット経由のKFブリッジも利用不可。']});
+d('pex','marriott',{rate:0,url:'https://pex.jp/exchange',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['マリオットBonvoyへの直接・間接換算ルートなし。PeXからマリオットへの変換経路は存在しません。']});
+
+// ─── 永久不滅ポイント（セゾン/UCカード・単体起点として追加） ───
+// これまでJRキューポ経由の中間ホップとしてのみ登場していたが、セゾン/UCカードの利用で
+// 直接貯めている保有者向けに、単体の起点としても電卓・マトリクスに登場させる。
+// ANA公式サイト(tameru_saison)で確認: 1ポイントごとに3マイル、200ポイント(600マイル)単位、手数料無料。
+d('eikyuu','ana',{rate:3.0/5,url:'https://www.ana.co.jp/ja/jp/shoppingandlife/point/tameru_saison/',
+  history:[{d:'2022-01',r:3.0/5},{d:'2026-01',r:3.0/5}],
+  verified:true,
+  notices:['✅ ANA公式サイトで確認: 永久不滅ポイント1ポイント(=5円相当)ごとに3マイル（実質60%）。200ポイント(600マイル)以上、200ポイント単位。移行手数料無料。積算まで約3週間。','⚠️「みずほマイレージクラブカード/ANA」の既存カード会員に限り、100ポイント→350マイル（実質70%）にアップする優遇レートがある。ただし同カードは2026年1月21日をもって新規発行を終了しており、これから永久不滅ポイントを貯め始める方は上記の通常レート(60%)が対象。']});
+// 永久不滅ポイント→JALマイル: セゾン公式で確認。ANAと異なりカード種別・保有カードによる優遇差はない。
+d('eikyuu','jal',{rate:2.5/5,url:'https://www.saisoncard.co.jp/credictionary/dictionary/article121.html',
+  history:[{d:'2022-01',r:2.5/5},{d:'2026-01',r:2.5/5}],
+  verified:true,
+  notices:['セゾン公式で確認: 永久不滅ポイント200ポイント(=1,000円相当)→500JALマイル（実質50%）。移行手数料無料。積算まで3〜4週間。','📅 不定期（年数回程度）で+20%のレートアップキャンペーンが実施され、その間は200ポイント→600マイル（実質60%）にアップする。直近実績は2025年12月開催。公式サイトで開催有無を要確認。']});
+// 永久不滅ポイント→ANA SKYコイン: ANA公式(ポイントから交換する)で確認。マイル経由(60%=3.0)よりコイン直接交換(90%)の方が高レート。
+d('eikyuu','anacoin',{rate:4.5/5,url:'https://www.ana.co.jp/ja/jp/guide/amc/skycoin/point/',
+  history:[{d:'2022-01',r:4.5/5},{d:'2026-01',r:4.5/5},{d:'2026-10',r:4.5/5}],verified:true,
+  notices:['✅ ANA公式サイトで確認: 永久不滅ポイント1ポイントごとに4.5コイン（実質90%）。200／1,000／3,000ポイント単位。セゾンカードの会員専用サービス「Netアンサー」での手続きが必要。','ANAマイル経由（直接60%→コイン1:1）より大幅に高レート。SKYコインが目的なら本ルートが最良。','⚠ ANA公式のお知らせ: 2027年3月31日（水）をもって永久不滅ポイントからANA SKYコインへの交換は終了予定（2026年10月確認）。','【単位注意】永久不滅ポイントは1P=5円相当。表のレートは他と同じ「1円相当あたり」で表示しています（電卓ではポイント数をそのまま入力すれば自動で5倍の円換算をします）。']});
+d('eikyuu','kris',{rate:0,url:'https://www.google.com/search?q=永久不滅ポイント+KrisFlyer+マイル+交換',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['KFへの直接換算ルートなし。永久不滅ポイント→ANA/JALマイル経由でも、いずれもKrisFlyerへの変換経路が存在しないためKF目標には貢献できません。','マリオットBonvoyへの交換ルートも持たないため、マリオット経由のブリッジも利用できません。','KFマイルを目指す場合は、ANAまたはJAL目標への切替を推奨します。']});
+d('eikyuu','marriott',{rate:0,url:'https://www.google.com/search?q=永久不滅ポイント+マリオットBonvoy+交換',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['マリオットBonvoyへの直接換算ルートなし。永久不滅ポイントからマリオットへの変換経路は存在しません。','マリオット経由でKFマイルに集約したい場合は、先にANAまたはJALマイルへ変換（60%/50%）した上で、それぞれのマイル目標として集計することを推奨します。']});
+
+// ─── 共通ポイント相互 ───
+// ⚠️ 重大な修正: dポイント⇔Pontaポイントの相互交換サービスは2020年9月30日23:30をもって終了済み（NTTドコモ・ロイヤリティマーケティング公式発表、複数メディアで確認）。
+// KDDIとロイヤリティマーケティングの資本業務提携（au経済圏へのPonta統合）に伴う終了とされる。以降、直接の相互交換ルートは存在しない。
+d('dpoint','ponta',{rate:0,url:'https://www.google.com/search?q=dポイント+Pontaポイント+相互交換+終了',
+  history:[{d:'2015-12',r:1.0},{d:'2020-09',r:0},{d:'2026-07',r:0}],verified:true,
+  notices:['⚠ ご注意（サービス終了）: 「dポイント⇔Pontaポイントは等価交換できる」という情報が一部で見られますが、この相互交換サービスは2020年9月30日23:30をもって終了済みです。現在は直接交換ルートが存在しません（複数の公式発表・報道で確認）。','迂回ルート（Ponta→Sポイント→はぴeポイント→Vポイント→dポイント等）が一部で紹介されているが、関西電力等との契約が必要で提携変更により使えなくなるリスクも高いため、恒久的なルートとしては非推奨。','✅ 2026年7月時点で確認：再開の動きは確認されず、終了状態が継続していることを確認。']});
+d('ponta','dpoint',{rate:0,url:'https://www.google.com/search?q=Pontaポイント+dポイント+相互交換+終了',
+  history:[{d:'2015-12',r:1.0},{d:'2020-09',r:0},{d:'2026-07',r:0}],verified:true,
+  notices:['⚠ ご注意（サービス終了）: 「Pontaポイント⇔dポイントは等価交換できる」という情報が一部で見られますが、この相互交換サービスは2020年9月30日23:30をもって終了済みです。現在は直接交換ルートが存在しません（複数の公式発表・報道で確認）。','✅ 2026年7月時点で確認：終了状態が継続していることを確認。']});
+d('au','ponta',{rate:1.0,url:'https://www.google.com/search?q=auポイント+Pontaポイント+交換+公式',history:[{d:'2022-01',r:1},{d:'2026-01',r:1}],verified:true,notices:['auポイント⇔Ponta互換。']});
+// auポイント⇔Pontaポイントは等価交換（互換）のため、Pontaポイントの各交換先と
+// 同条件でau→マイル/共通ポイントへの間接ルートが利用できる。
+// auポイントの交換メニューにJALマイルは含まれておらず、直接交換は構造上不可。Pontaポイント経由（等価ブリッジ）でのみ利用可。
+d('au','jal',{rate:0,url:'https://www.google.com/search?q=auポイント+JALマイル+直接交換',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['auポイントの交換メニューにJALマイルは含まれておらず、直接交換ルートは存在しません（構造上不可）。','Pontaポイント経由（等価交換）の間接ルート（下記参照）をご利用ください。']});
+id('au','jal',{rate:1.0*0.50,
+  route:[{from:'auポイント',to:'Pontaポイント',rate:1.0,url:'https://www.google.com/search?q=auポイント+Pontaポイント+交換+公式'},{from:'Pontaポイント',to:'JALマイル',rate:0.50,url:'https://www.google.com/search?q=JALマイル+Pontaポイント+交換+公式'}],
+  url:'https://www.google.com/search?q=auポイント+Pontaポイント+交換+公式',
+  history:[{d:'2022-01',r:1.0*0.50},{d:'2026-01',r:1.0*0.50}],
+  notices:["✅ 2026年7月時点で確認：auポイント⇔Pontaポイントの等価交換、Pontaポイント→JALマイル基本50%・キャンペーン時60%に変更がないことを確認。",'auポイント⇔Pontaポイントは等価交換（互換）。Pontaポイント→JALマイル（1,000P→500マイル・50%）と同条件で利用できます。','1,000P単位。']});
+// au→dポイント: ⚠ 重大な修正 従来「au→Ponta→dポイント」の等価ブリッジとしていたが、Ponta⇔dポイントの相互交換自体が2020年9月に終了しているため、このルートは現在利用不可。
+d('au','dpoint',{rate:0,url:'https://www.google.com/search?q=auポイント+dポイント+交換',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['⚠ ご注意（サービス終了）: 「au→Ponta→dポイント」で等価交換できるという情報が一部で見られますが、Pontaポイント⇔dポイントの相互交換サービス自体が2020年9月30日に終了済みのため、このルートは現在存在しません。','auポイントからdポイントへの直接・間接ルートは確認できませんでした。']});
+d('au','ana',{rate:0,url:'https://www.google.com/search?q=auポイント+ANAマイル+交換',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['auポイントはPontaポイントと等価交換可能ですが、PontaポイントそのものにANAマイルへの直接交換ルートが存在しないため、auポイント経由でもANAマイルへは到達できません。','ANAマイルを目指す場合は、auポイント→Vポイントなど、みずほルートの入口となるポイントへの交換を検討してください。']});
+id('au','ana',{rate:0,url:'https://www.google.com/search?q=auポイント+ANAマイル+間接交換',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['✅ 調査済み: auポイントの唯一の等価ブリッジ先であるPontaポイントが「みずほルート」に乗せられないため、間接ルートも存在しません。']});
+d('au','kris',{rate:0,url:'https://www.google.com/search?q=auポイント+KrisFlyer+マイル+交換',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['KFへの直接換算ルートなし。auポイント→Pontaポイント→JALマイル経由でも、JALマイルからKrisFlyerへの変換ルートは存在しないためKF目標には貢献できません。','マリオットBonvoy経由のブリッジも、au/Pontaポイント→マリオットの交換ルートが存在しないため利用できません。']});
+
+
+// ─── 共通ポイント→マイル ───
+d('dpoint','jal',{rate:0.50,url:'https://www.google.com/search?q=JALマイル+dポイント+交換+公式',history:[{d:'2019-01',r:0.50},{d:'2022-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-01',r:0.50}],verified:true,notices:['500P単位。']});
+id('dpoint','jal',{rate:0,url:'https://www.google.com/search?q=dポイント+JALマイル+間接交換',
+  history:[{d:'2019-01',r:0},{d:'2026-01',r:0}],
+  notices:['✅ 調査済み: dポイント⇔Pontaポイントの相互交換は2020年9月に終了済みのため、Pontaの60%レートアップキャンペーンへブリッジすることはできません。他の出口ブリッジも見つからず、直接交換(50%)が唯一のルートです。']});
+d('dpoint','ana',{rate:0,url:'https://www.google.com/search?q=dポイント+ANAマイル+交換',
+  history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['dポイントからANAマイルへの直接交換ルートは存在しません。ANA公式の提携ポイント一覧にもdポイントは含まれていません（2026年3月時点、複数のポイ活ブログで確認）。','高還元の「みずほルート」もVポイント・永久不滅ポイントなどが起点で、dポイントはこの入口ポイントに交換できないため利用不可。','ANAマイルを目指す場合はVポイントやdポイント以外のポイントサイト（モッピー等）を起点にするのが現実的です。dポイントはJALマイル（直接50%）に使うのが実用的です。']});
+id('dpoint','ana',{rate:0,url:'https://www.google.com/search?q=dポイント+ANAマイル+間接交換',
+  history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],
+  notices:['✅ 調査済み: dポイントはVポイント・ドットマネー等の「みずほルート」入口ポイントへの出口ブリッジを持たないため、間接ルートも存在しません。']});
+d('dpoint','kris',{rate:0,url:'https://www.google.com/search?q=dポイント+KrisFlyer+マイル+交換',
+  history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],
+  notices:['KFへの直接換算ルートなし。dポイント→JALマイル経由でも、JALマイルからKrisFlyerへの変換ルートは存在しないためKF目標には貢献できません。','マリオットBonvoy経由のブリッジも、dポイント→マリオットの交換ルート自体が存在しないため利用できません。','KFマイルを目指す場合は、JAL目標への切替、またはモッピー・ハピタス・楽天ポイントなどマリオットBonvoyへの交換ルートを持つポイントサイトの活用を推奨します。']});
+d('rakuten','ana',{rate:0.50,url:'https://point.rakuten.co.jp/exchange/ana/rule/',history:[{d:'2019-01',r:0.50},{d:'2022-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-01',r:0.50},{d:'2026-07',r:0.50}],verified:true,notices:['✅ 2026年7月時点で確認：楽天PointClub公式ページ（point.rakuten.co.jp/exchange/ana/rule/）で確認。楽天ポイント2P→ANAマイル1マイル（50%）は変更なし。','交換単位：50P以上・2P単位。上限：1回5,000P・月20,000P。楽天の1ID・ANAの1お客様番号につき24時間に1回まで。移行手数料無料。','マイル積算まで約3〜4週間。期間限定ポイント・他社ポイントから交換した楽天ポイントは対象外。','✅ 調査済み: 楽天ポイントから他の共通ポイント（Vポイント・ドットマネー等）へ出口ブリッジがないため、みずほルート等の間接ルートは利用不可。直接交換(50%)が現時点での最良レート。']});
+id('rakuten','ana',{rate:0,url:'https://www.google.com/search?q=楽天ポイント+ANAマイル+間接交換',
+  history:[{d:'2019-01',r:0},{d:'2026-01',r:0}],
+  notices:['✅ 調査済み: 楽天ポイントはVポイント・ドットマネー等「みずほルート」入口への出口ブリッジを持たないため、間接ルートは存在しません。直接交換(50%)のみ。']});
+d('rakuten','jal',{rate:0.50,url:'https://point.rakuten.co.jp/exchange/jal/rule/',history:[{d:'2019-01',r:0.50},{d:'2022-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-01',r:0.50},{d:'2026-07',r:0.50}],verified:true,notices:['✅ 2026年7月時点で確認：楽天PointClub公式ページ（point.rakuten.co.jp/exchange/jal/rule/）で確認。楽天ポイント2P→JALマイル1マイル（50%）は変更なし。','交換単位：50P以上・2P単位。上限：1回5,000P・月20,000P。','年1回程度（1月が多い）JALマイルへの交換レートアップキャンペーンを実施しており、過去実績では62.5%（2025年1月、+25%増量）まで上昇。2026年3月のキャンペーン対象リストには楽天ポイントは含まれていなかったため、開催時期は年によって変動する点に注意。']});
+id('rakuten','jal',{rate:0,url:'https://www.google.com/search?q=楽天ポイント+JALマイル+間接交換',
+  history:[{d:'2019-01',r:0},{d:'2026-01',r:0}],
+  notices:['✅ 調査済み: 楽天ポイントは他の共通ポイントへの出口ブリッジを持たないため、独立した間接ルートは存在しません。直接交換の自社レートアップキャンペーン（年1回・最大60〜65%）を狙うのが最良の戦略です。']});
+d('rakuten','marriott',{rate:1/3,url:'https://point.rakuten.co.jp/exchange/',history:[{d:'2024-01',r:1/3},{d:'2026-01',r:1/3}],verified:true,notices:['楽天ポイント3P→マリオットBonvoy1pt（約33.3%）。最低3,000P単位（3P単位）。24時間につき1回まで。反映まで最大約2週間。']});
+// 楽天ポイント→KrisFlyer (マリオット経由間接)
+// 楽天ポイントの交換メニューにKrisFlyerは含まれておらず、直接交換は構造上不可。マリオットBonvoy経由のみ利用可。
+d('rakuten','kris',{rate:0,url:'https://www.google.com/search?q=楽天ポイント+KrisFlyer+直接交換',
+  history:[{d:'2019-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['楽天ポイントの交換メニューにKrisFlyerマイルは含まれておらず、直接交換ルートは存在しません（構造上不可）。','マリオットBonvoy経由の間接ルート（下記参照）をご利用ください。']});
+id('rakuten','kris',{rate:(1/3)*(25000/60000),
+  route:[{from:'楽天ポイント',to:'マリオットBonvoy',rate:parseFloat((1/3).toFixed(4)),url:'https://point.rakuten.co.jp/exchange/'},{from:'マリオットBonvoy',to:'KrisFlyer',rate:parseFloat((25000/60000).toFixed(4)),url:'https://www.google.com/search?q=シンガポール航空+KrisFlyer+マイル+交換+公式'}],
+  url:'https://point.rakuten.co.jp/exchange/',
+  history:[{d:'2024-01',r:(1/3)*(25000/60000)},{d:'2026-01',r:(1/3)*(25000/60000)}],
+  notices:['マリオット経由の間接ルート（楽天ポイント3P→マリオットBonvoy1pt→KF）。','楽天→マリオットは3,000P単位（3P単位）、24時間に1回まで。','マリオット60,000pt単位でKF25,000マイル（+5,000ボーナス込み・≈41.7%）。','所要時間: 楽天→マリオット最大2週間＋マリオット→KFで最大3週間程度、合計1〜2ヶ月程度を想定。']});
+// 楽天ポイントの交換メニューにデルタSkyMilesは含まれておらず、直接交換は構造上不可。マリオットBonvoy経由のみ利用可。
+d('rakuten','delta',{rate:0,url:'https://www.google.com/search?q=楽天ポイント+デルタSkyMiles+直接交換',
+  history:[{d:'2019-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['楽天ポイントの交換メニューにデルタSkyMilesは含まれておらず、直接交換ルートは存在しません（構造上不可）。','マリオットBonvoy経由の間接ルート（下記参照）をご利用ください。']});
+id('rakuten','delta',{rate:(1/3)*(20000/60000),
+  route:[{from:'楽天ポイント',to:'マリオットBonvoy',rate:parseFloat((1/3).toFixed(4)),url:'https://point.rakuten.co.jp/exchange/'},{from:'マリオットBonvoy',to:'デルタSkyMiles',rate:20000/60000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/points-to-miles.mi'}],
+  url:'https://point.rakuten.co.jp/exchange/',
+  history:[{d:'2024-01',r:(1/3)*(20000/60000)},{d:'2026-01',r:(1/3)*(20000/60000)}],
+  notices:['マリオット経由の間接ルート。デルタはボーナス対象外の低い方の枠（60,000pt→20,000マイル）のため、KF/ANA/JAL向けよりさらに低いレートになります。']});
+// ─── PayPayポイント → Vポイント経由でANA/JAL ───
+// ⚠️ 2026年3月24日から正式相互交換開始。ただしPayPay由来VポイントはANA/JALマイル交換に制限あり。
+// 「Vポイント運用」を経由で通常Vポイント化する裏技あり（運用リスク・手数料1%）
+// PayPayポイントの交換メニューにANA/JALマイルは含まれておらず、直接交換は構造上不可。
+d('paypay','ana',{rate:0,url:'https://www.google.com/search?q=PayPayポイント+ANAマイル+直接交換',
+  history:[{d:'2024-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['PayPayポイントの交換メニューにANAマイルは含まれておらず、直接交換ルートは存在しません（構造上不可）。','Vポイント経由の間接ルート（下記参照）をご利用ください。']});
+d('paypay','jal',{rate:0,url:'https://www.google.com/search?q=PayPayポイント+JALマイル+直接交換',
+  history:[{d:'2024-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['PayPayポイントの交換メニューにJALマイルは含まれておらず、直接交換ルートは存在しません（構造上不可）。','Vポイント経由の間接ルート（下記参照）をご利用ください。']});
+id('paypay','ana',{rate:1.0*0.50,
+  route:[{from:'PayPayポイント',to:'Vポイント(制限あり)',rate:1.0,url:'https://www.google.com/search?q=PayPayポイント+Vポイント+相互交換+2026'},{from:'Vポイント運用(自動追加)',to:'通常Vポイント',rate:1.0,url:'https://www.google.com/search?q=Vポイント運用+PayPay+マイル交換'},{from:'Vポイント',to:'ANAマイル',rate:0.50,url:'https://t-point.tsite.jp/store/list/ana/'}],
+  url:'https://www.google.com/search?q=PayPayポイント+ANAマイル+交換+Vポイント+2026',
+  history:[{d:'2024-01',r:0.50},{d:'2026-03',r:0.50}],verified:true,
+  notices:["✅ 2026年7月時点で確認：PayPayポイント→Vポイントの相互交換制限、Vポイント→ANAマイル50%の仕組みに変更がないことを確認。",'2026年3月24日よりPayPay→Vポイント等価交換が正式開始（1日1回100Pから、月間上限30,000P。PayPay公式発表で確認）。',
+    '⚠️【重要】PayPayから交換したVポイントは「制限付き」でANAマイル等への交換が直接不可。',
+    '裏技: 制限付きVポイント→「Vポイント運用」に追加→引き出すと通常Vポイントになりマイル交換可。',
+    '【手数料】自動追加（定期設定）なら無料で実質50%。スポット（手動）追加の場合は1%手数料がかかり実質49.5%。',
+    '運用中のポイント価値変動リスクあり。公式ルートではなく変更の可能性あり。要最新情報確認。']});
+id('paypay','jal',{rate:1.0*0.50,
+  route:[{from:'PayPayポイント',to:'Vポイント(制限あり)',rate:1.0,url:'https://www.google.com/search?q=PayPayポイント+Vポイント+相互交換+2026'},{from:'Vポイント運用(自動追加)',to:'通常Vポイント',rate:1.0,url:'https://www.google.com/search?q=Vポイント運用+PayPay+マイル交換'},{from:'Vポイント',to:'JALマイル',rate:0.50,url:'https://www.google.com/search?q=JALマイル+Vポイント+交換+公式'}],
+  url:'https://www.google.com/search?q=PayPayポイント+JALマイル+交換+Vポイント+2026',
+  history:[{d:'2024-01',r:0.50},{d:'2026-03',r:0.50}],verified:true,
+  notices:["✅ 2026年7月時点で確認：PayPayポイント→Vポイント経由ルートの仕組みに変更がないことを確認。",'2026年3月24日よりPayPay→Vポイント等価交換が正式開始（月上限30,000P）。',
+    '⚠️【重要】PayPayから交換したVポイントは「制限付き」でJALマイル等への交換が直接不可。',
+    '裏技: 制限付きVポイント→「Vポイント運用」に追加→引き出すと通常Vポイントになりマイル交換可。',
+    '【手数料】自動追加（定期設定）なら無料で実質50%。スポット（手動）追加の場合は1%手数料がかかり実質49.5%。',
+    'JRキューポ→永久不滅P→JALマイル経由50%（キャンペーン時最大60%）、またはWAON POINT→JALマイル経由も可。']});
+d('ponta','jal',{rate:0.50,url:'https://www.google.com/search?q=JALマイル+Pontaポイント+交換+公式',history:[{d:'2019-01',r:0.50},{d:'2022-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-01',r:0.50}],verified:true,notices:['1,000P単位。通常レートは50%。','年3回程度（3月・7〜8月・11〜12月頃）実施される「レートアップキャンペーン」中は60%（一部年では20〜25%増量で60〜62.5%相当）にアップ。他の共通ポイント（Vポイント・楽天ポイント・au PAY等）からPontaへブリッジしてこのキャンペーンを活用するルートも多数存在。']});
+id('ponta','jal',{rate:0,url:'https://www.google.com/search?q=Pontaポイント+JALマイル+間接交換',
+  history:[{d:'2019-01',r:0},{d:'2026-01',r:0}],
+  notices:['✅ 調査済み: Pontaポイント自体がJAL交換の基点（他の多くのポイントがPonta経由でJALマイルを狙う）であるため、Pontaからさらに優れた別ルートは存在しません。直接交換の自社レートアップキャンペーン（年3回・最大60%）が最良です。']});
+d('ponta','ana',{rate:0,url:'https://www.google.com/search?q=Pontaポイント+ANAマイル+交換',
+  history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['PontaポイントからANAマイルへの直接交換ルートは存在しません（複数のポイ活ブログで横断確認済み）。','ANAマイルの高還元ルート「みずほルート」もVポイント・永久不滅ポイント等が起点で、Pontaポイントはこの入口に交換できないため利用不可。','ANAマイルを目指す場合は、Pontaポイントにこだわらず別のポイント戦略（Vポイント・楽天ポイント等）を選ぶのが現実的です。Pontaポイントは直接交換可能なJALマイル（50%）に使うのがおすすめです。']});
+id('ponta','ana',{rate:0,url:'https://www.google.com/search?q=Pontaポイント+ANAマイル+間接交換',
+  history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],
+  notices:['✅ 調査済み: Pontaポイントは「みずほルート」入口ポイント（Vポイント等）への出口ブリッジを持たないため、間接ルートも存在しません。']});
+d('ponta','kris',{rate:0,url:'https://www.google.com/search?q=Pontaポイント+KrisFlyer+マイル+交換',
+  history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],
+  notices:['KFへの直接換算ルートなし。Ponta→JALマイル経由でも、JALマイルからKrisFlyerへの変換ルートは存在しないためKF目標には貢献できません。','マリオットBonvoy経由のブリッジも、Pontaポイント→マリオットの交換ルート自体が存在しないため利用できません。','KFマイルを目指す場合は、JAL目標への切替、またはモッピー・ハピタス・楽天ポイントなどマリオットBonvoyへの交換ルートを持つポイントサイトの活用を推奨します。']});
+// vpoint->ana の直接レートは下記「Vポイント→ANAマイル」セクション（約1200行目付近）にまとめて定義。
+// Vポイントの交換メニューにJALマイルは含まれておらず、直接交換は構造上不可（ANAとは異なる）。
+d('vpoint','jal',{rate:0,url:'https://www.google.com/search?q=Vポイント+JALマイル+直接交換',
+  history:[{d:'2024-04',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['Vポイントの交換メニューにJALマイルは含まれておらず、直接交換ルートは存在しません（構造上不可）。ANAマイルへは直接交換可能なので注意。','下記の間接ルート（JRキューポ→永久不滅ポイント経由）をご利用ください。']});
+id('vpoint','jal',{rate:0.50,
+  route:[{from:'Vポイント',to:'JRキューポ',rate:1.0,url:'https://www.google.com/search?q=JRキューポ+Vポイント+交換+公式'},{from:'JRキューポ',to:'永久不滅P(1,000P→200P)',rate:0.2,url:'https://www.jrkyushu.co.jp/jq/support/faq/7-4.html'},{from:'永久不滅P',to:'JALマイル(100P→250マイル)',rate:2.5,url:'https://www.google.com/search?q=永久不滅ポイント+JALマイル+交換+セゾン'}],
+  url:'https://www.google.com/search?q=Vポイント+JALマイル+交換ルート',
+  history:[{d:'2024-04',r:0.50},{d:'2026-01',r:0.50},{d:'2026-07',r:0.50}],
+  notices:['✅ 2026年7月時点で確認：Vポイント→JRキューポ→永久不滅ポイント→JALマイルのルート（50%、キャンペーン時60%）は現在も有効であることを確認。',
+    '⚠️ VポイントからJALマイルへの直接交換ルートはありません（ANAとは異なる点に注意）。',
+    'JRキューポ→永久不滅P経由ルート（50%）。定期的に永久不滅P→JALマイル20%増量キャンペーンあり（その際60%）。',
+    '⚠️ 2026年10月訂正：「Vポイント→JRキューポ→Pontaポイント→JALマイル」経路は、JR九州の公式発表（2024年12月20日付）により、JRキューポ→Pontaポイントの交換サービスが2025年8月31日をもって終了済みです（旧版の「2026年8月末で終了予定」は誤り）。当ツールが採用している永久不滅ポイント経由ルートはこの終了の影響を受けません。',
+    'Vポイント→WAON POINTへの等価交換→JALマイル50%（イオンカード必須・所要1〜2ヶ月）も可。',
+    '所要時間: 複数のポイントを経由するため合計3〜8週間程度。',
+    'JRキューポ→永久不滅Pは1,000P→200P（永久不滅Pは1P=5円のため金額としては等価交換）。永久不滅P→JALマイルは100P→250マイル（通常50%）。']});
+// ─── Vポイント→ソラシドマイル（通称「ソラシドルート」）───
+// ソラシドエア(Solaseed Air)は九州・沖縄路線中心の地方航空会社。マイル名称は「ソラシドエアマイル」。
+d('vpoint','solaseed',{rate:1.0,
+  url:'https://www.smbc-card.com/mem/cardinfo/25/cardinfo4010961.jsp',
+  history:[{d:'2020-01',r:2.0},{d:'2024-04',r:2.0},{d:'2025-11',r:2.0},{d:'2025-12',r:1.0},{d:'2026-01',r:1.0}],
+  change:'down',verified:true,
+  notices:[
+    '✅ 2026年7月時点で公式確認：三井住友カード公式発表(smbc-card.com)およびソラシドエア公式サイトで、2025年12月1日申込分より交換レートが1Vポイント→2マイル(200%)から1Vポイント→1マイル(100%)へ改定されたことを確認。',
+    '⚠️ 交換には「Solaseed Airカード」（三井住友カード発行のクレジットカード）の保有とVpass（三井住友カード会員サイト）への登録が必須。このカードを持たないVポイントは交換できません（他のカードで貯めたVポイントでも、Solaseed Airカードを保有していれば交換可）。',
+    '改悪後も100%は主要マイル（ANA/JAL:直接50%、みずほルート70%）と比べて高水準。特に東京-九州・沖縄路線に強く、家族以外への特典利用や変更手数料無料など使い勝手も良い。',
+    '交換申請から反映まで約2日程度（複数ブログで一致）。',
+    '⚠ 参考情報（未検証）：一部利用者からは「特典航空券の空席（座席在庫）が近年逼迫しており、マイルが貯まっても発券できないケースがある」との報告あり（価格.com口コミ等）。マイルを貯める前に、狙う路線・時期の特典航空券空席状況を公式サイトで確認することを推奨。',
+    'ソラシドマイルは他のマイル・ポイントへの出口ルートを持たない「終点」。特典航空券への交換が主な使い道。',
+  ]});
+
+d('vpoint','kris',{rate:0,url:'https://www.google.com/search?q=Vポイント+KrisFlyer+マイル+交換',
+  history:[{d:'2024-04',r:0},{d:'2026-01',r:0}],
+  notices:['KFへの直接換算ルートなし。VポイントからKrisFlyerへの変換経路は存在しません（マリオットBonvoyへの変換ルートもないため、マリオット経由のブリッジも利用不可）。','KFマイルを目指す場合は、ANAマイルへ変換（直接50%・JQみずほルート70%）した上でANA目標として集計することを推奨します。']});
+d('vpoint','marriott',{rate:0,url:'https://www.google.com/search?q=Vポイント+マリオットBonvoy+交換',
+  history:[{d:'2024-04',r:0},{d:'2026-01',r:0}],
+  notices:['マリオットBonvoyへの直接換算ルートなし。Vポイントからマリオットへの変換経路は存在しません。','マリオット経由でKFマイルに集約したい場合は、先にANAマイルへ変換（直接50%・JQみずほルート70%）した上でANA目標として集計することを推奨します。']});
+d('nanaco','ana',{rate:0.50,url:'https://www.google.com/search?q=nanacoポイント+ANAマイル+交換+公式',history:[{d:'2020-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-01',r:0.50}],verified:true,notices:['通常500P→250マイル（50%）。','📅 開催中: 2026年10月1日〜10月31日交換申請分は20%レートアップで500P→300マイル（実質60%）（ANA公式キャンペーンページで確認）。過去は年1〜2回（3月・10月頃）開催。']});
+id('nanaco','ana',{rate:0,url:'https://www.google.com/search?q=nanacoポイント+ANAマイル+間接交換',
+  history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],
+  notices:['✅ 調査済み: nanacoポイントはVポイント・ドットマネー等への出口ブリッジを持たないため、間接ルートは存在しません。直接交換(50%、通称「nanacoルート」)が唯一かつ最良のルートです。']});
+// nanacoポイント→ANA SKYコイン: ANA公式(ポイントから交換する)で確認。直接100%はマイル経由(50%)より大幅に高レート。
+d('nanaco','anacoin',{rate:1.0,url:'https://www.ana.co.jp/ja/jp/guide/amc/skycoin/point/',
+  history:[{d:'2022-01',r:1.0},{d:'2026-01',r:1.0}],verified:true,
+  notices:['✅ ANA公式サイトで確認: nanacoポイント500ポイントごとに500コイン（100%）。500P単位。交換完了まで約2日。','ANAマイル経由(直接50%→コイン1:1)より大幅に高レート。SKYコインが目的なら本ルートが最良。']});
+d('nanaco','jal',{rate:0,url:'https://www.google.com/search?q=nanacoポイント+JALマイル+交換',
+  history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['nanacoポイントはJALマイルに直接交換できません（公式交換先はANAマイルのみ）。','2020年3月11日までは、リクルートカード等でnanacoにチャージ→Pontaポイント経由でJALマイルに変換する裏ルートがありましたが、セブンカード・プラス以外のクレジットカードがnanacoに新規登録できなくなったため、現在は利用不可。','JALマイルを目指す場合はdポイントまたはPontaポイント（いずれも直接交換50%）への切替を推奨。']});
+id('nanaco','jal',{rate:0,url:'https://www.google.com/search?q=nanacoポイント+JALマイル+間接交換',
+  history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],
+  notices:['✅ 調査済み: nanacoポイントはVポイント・ドットマネー等への出口ブリッジを持たないため、間接ルートも存在しません（旧Pontaチャージ経由ルートも2020年に閉鎖済み）。']});
+// nanaco→KF・マリオットBonvoy: ANAマイル経由でもKF/マリオットへの変換ルートは存在しないため確認済み0%。
+d('nanaco','kris',{rate:0,url:'https://www.google.com/search?q=nanacoポイント+KrisFlyer+マイル+交換',
+  history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],
+  notices:['KFへの直接換算ルートなし。nanacoポイント→ANAマイル経由でも、ANAマイルからKrisFlyerへの変換ルートは存在しないためKF目標には貢献できません。','KFマイルを目指す場合は、ANA目標への切替を推奨します。']});
+d('nanaco','marriott',{rate:0,url:'https://www.google.com/search?q=nanacoポイント+マリオットBonvoy+交換',
+  history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],
+  notices:['マリオットBonvoyへの直接換算ルートなし。nanacoポイントからマリオットへの変換経路は存在しません。','マリオット経由でKF/ANAマイルに集約したい場合は、先にANAマイルへ変換（50%）した上でANA目標として集計することを推奨します。']});
+d('waon','ana',{rate:0.50,url:'https://www.google.com/search?q=WAONポイント+ANAマイル+JALマイル+交換+公式',history:[{d:'2020-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-01',r:0.50}],verified:true,notices:['200P単位。より高いレートを狙う場合はVポイント経由の間接ルート（下記参照）も検討可能。']});
+id('waon','ana',{rate:1.0*0.70,
+  route:[{from:'WAON POINT',to:'Vポイント',rate:1.0,url:'https://faq.waonpoint.jp/category/show/40?site_domain=default'},{from:'Vポイント',to:'ANAマイル(みずほ)',rate:0.70,url:'https://www.google.com/search?q=ANAマイル+みずほルート+交換+公式'}],
+  url:'https://faq.waonpoint.jp/category/show/40?site_domain=default',
+  history:[{d:'2023-04',r:0.70},{d:'2026-01',r:0.70}],
+  notices:["✅ 2026年7月時点で確認：WAON POINT⇔Vポイントの等価交換（2023年4月開始）が現在も有効であることを確認。",'WAON POINT⇔Vポイントは2023年4月5日より相互に完全等価交換（1:1、iAEONアプリ経由）。Vポイント→ANAマイル(みずほルート)の70%と組み合わせて総合70%。直接交換(50%)より高レート。','交換上限は1カ月30,000ポイントまで。みずほマイレージクラブカード/ANAは2026年1月21日以降新規発行終了（既存保有者のみ利用可）。']});
+d('waon','jal',{rate:0.50,url:'https://www.google.com/search?q=JALマイル+WAONポイント+交換+公式',history:[{d:'2020-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-01',r:0.50}],verified:true,notices:['200P単位。']});
+id('waon','jal',{rate:0,url:'https://www.google.com/search?q=WAONポイント+JALマイル+間接交換',
+  history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],
+  notices:['✅ 調査済み: WAON POINT→Vポイント(等価)というブリッジはあるものの、Vポイント自体もJALマイルへは直接交換不可でPonta経由(50%)となるため、経由しても同じ50%にしかならず改善なし。直接交換(50%)で十分です。']});
+// WAONポイント→KF・マリオットBonvoy: ANA/JALマイル経由でもKF/マリオットへの変換ルートは存在しないため確認済み0%。
+d('waon','kris',{rate:0,url:'https://www.google.com/search?q=WAONポイント+KrisFlyer+マイル+交換',
+  history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],
+  notices:['KFへの直接換算ルートなし。WAONポイント→ANAマイルまたは→JALマイル経由でも、いずれもKrisFlyerへの変換経路が存在しないためKF目標には貢献できません。','KFマイルを目指す場合は、ANAまたはJAL目標への切替を推奨します。']});
+d('waon','marriott',{rate:0,url:'https://www.google.com/search?q=WAONポイント+マリオットBonvoy+交換',
+  history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],
+  notices:['マリオットBonvoyへの直接換算ルートなし。WAONポイントからマリオットへの変換経路は存在しません。','マリオット経由でKF/ANA/JALマイルに集約したい場合は、先にANAまたはJALマイルへ変換（各50%）した上で、それぞれのマイル目標として集計することを推奨します。']});
+d('jre','jal',{rate:0.50,url:'https://www.google.com/search?q=JREポイント+JALマイル+交換+JALカードSuica',history:[{d:'2022-01',r:0.50},{d:'2026-01',r:0.50}],verified:true,notices:['⚠️ JALカードSuicaの保有が交換条件です（一般JREポイント会員は利用不可）。','交換レートはショッピングマイル・プレミアム加入状況により変動します：','　・プレミアム未加入：1,500pt → 500マイル（実質33.3%）','　・プレミアム加入（年4,950円）：1,500pt → 1,000マイル（実質66.7%）','表示の50%は中間参考値です。交換前にJRE POINT公式サイトでご確認ください。','交換申請後、1〜2週間でJALマイルが積算されます。通常ポイントのみ対象（期間限定ポイント不可）。']});
+id('jre','jal',{rate:0,url:'https://www.google.com/search?q=JREポイント+JALマイル+間接交換',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['✅ 調査済み: JREポイント自身の直接交換（プレミアム加入で最大66.7%）が既に他ブリッジの水準（Ponta経由60%等）を上回るため、これ以上の間接ルートはありません。']});
+// JREポイント→ANAマイル: 直接ルートなし。「JQセゾンルート」経由で間接的に交換可能（複雑・要複数カード）
+// JREポイントの交換メニューにANAマイルは含まれておらず、直接交換は構造上不可。JQセゾンルート（間接）のみ利用可。
+d('jre','ana',{rate:0,url:'https://www.google.com/search?q=JREポイント+ANAマイル+直接交換',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['JREポイントの交換メニューにANAマイルは含まれておらず、直接交換ルートは存在しません（構造上不可、JALマイルは直接交換可）。','JQセゾンルート経由の間接ルート（下記参照）をご利用ください。']});
+id('jre','ana',{rate:1400/3000,
+  route:[{from:'JRE POINT',to:'ビックポイント',rate:1.0,url:'https://www.google.com/search?q=JRE+POINT+ビックポイント+交換+公式'},{from:'ビックポイント',to:'JRキューポ',rate:1.0,url:'https://www.google.com/search?q=ビックポイント+JRキューポ+交換+公式'},{from:'JRキューポ',to:'永久不滅ポイント→ANAマイル(みずほ)',rate:1400/3000,url:'https://www.google.com/search?q=JRキューポ+永久不滅ポイント+ANAマイル+みずほルート'}],
+  url:'https://www.google.com/search?q=JRE+POINT+ANAマイル+JQセゾンルート',
+  history:[{d:'2022-01',r:1400/3000},{d:'2026-01',r:1400/3000}],
+  notices:["✅ 2026年7月時点で確認：JQセゾンルートの各ホップ、およびみずほカード新規発行終了（既存保有者のみ利用可）の状況に変更がないことを確認。",'JREポイント→ビックポイント→JRキューポ→永久不滅ポイント→ANAマイル(みずほ)の「JQセゾンルート」経由で、3,000JRE POINT→1,400ANAマイル(約46.7%)程度が目安。','JQ CARDセゾンに加え「みずほマイレージクラブカード/ANA」の保有が必要ですが、同カードは2026年1月21日で新規発行を終了（既存保有者のみ利用可）。','経路が長く手間もかかるため、新規でANAマイルを狙うなら他のポイント（Vポイント・楽天ポイント等）を起点にする方が現実的。JREポイントはJALマイル（直接交換）に使う方がシンプルです。']});
+// JREポイント→KrisFlyer・マリオットBonvoy: 直接・間接ともに変換ルートなし（確認済み）
+d('jre','kris',{rate:0,url:'https://www.google.com/search?q=JREポイント+KrisFlyer+マイル+交換',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['KFへの直接換算ルートなし。JREポイント→ANAマイルまたは→JALマイル経由でも、いずれもKrisFlyerへの変換経路が存在しないためKF目標には貢献できません。','KFマイルを目指す場合は、ANAまたはJAL目標への切替を推奨します。']});
+d('jre','marriott',{rate:0,url:'https://www.google.com/search?q=JREポイント+マリオットBonvoy+交換',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['マリオットBonvoyへの直接換算ルートなし。JREポイントからマリオットへの変換経路は存在しません。','マリオット経由でKF/ANA/JALマイルに集約したい場合は、先にANAまたはJALマイルへ変換（各50%）した上で、それぞれのマイル目標として集計することを推奨します。']});
+d('gpoint','ana',{rate:0.50,url:'https://www.google.com/search?q=Gポイント+ANAマイル+JALマイル+交換+公式',history:[{d:'2022-01',r:0.50},{d:'2026-01',r:0.50}],verified:true,notices:['直接交換は500P→250マイル(50%)。より高いレートを狙う場合はVポイント経由の間接ルート（下記参照）も検討可能。']});
+id('gpoint','ana',{rate:0.90*0.70,
+  route:[{from:'Gポイント',to:'Vポイント(手数料10%)',rate:0.90,url:'https://www.gpoint.co.jp/scripts/partner/detail/pen.jsp?partnerid=81043377'},{from:'Vポイント',to:'ANAマイル(みずほ)',rate:0.70,url:'https://www.google.com/search?q=ANAマイル+みずほルート+交換+公式'}],
+  url:'https://www.gpoint.co.jp/scripts/partner/detail/pen.jsp?partnerid=81043377',
+  history:[{d:'2022-01',r:0.90*0.70},{d:'2026-01',r:0.90*0.70}],
+  notices:["✅ 2026年7月時点で確認：Gポイント→Vポイントの手数料10%は変更なしを確認。",'Gポイント→Vポイントは公式に交換手数料10%（100P単位、実質90%）。Vポイント→ANAマイル(みずほルート)の70%と組み合わせて総合63%。','直接交換(50%)より高レートだが、みずほマイレージクラブカード/ANAが必要（2026年1月21日以降新規発行終了、既存保有者のみ）。','Gポイントには手数料還元サービスがあるが、Vポイント交換は対象外の場合が多いため要事前確認。']});
+// Gポイント→ANA SKYコイン: ANA公式(ポイントから交換する)で確認。直接100%はマイル経由(50〜63%)より高レート。
+d('gpoint','anacoin',{rate:1.0,url:'https://www.ana.co.jp/ja/jp/guide/amc/skycoin/point/',
+  history:[{d:'2022-01',r:1.0},{d:'2026-01',r:1.0}],verified:true,
+  notices:['✅ ANA公式サイトで確認: 1Gポイントごとに1コイン（100%）。1P単位。交換完了まで約2日。','ANAマイル経由（直接50%・みずほルート63%→コイン1:1）より大幅に高レート。SKYコインが目的なら本ルートが最良。','⚠ 2026年10月時点、ANA公式ページに「現在、システムメンテナンスのためサービスを停止」と掲載中。再開まで本ルートは利用できません（再開時期は要確認）。過去にも一時停止の例あり（2026年GW期間など）。']});
+d('gpoint','jal',{rate:0.50,url:'https://www.google.com/search?q=Gポイント+ANAマイル+JALマイル+交換+公式',history:[{d:'2022-01',r:0.50},{d:'2026-01',r:0.50}],verified:true,notices:['直接交換は500P→250マイル(50%)。より高いレートを狙う場合はPonta(au)経由の間接ルート（下記参照）も検討可能。']});
+id('gpoint','jal',{rate:0.97*0.60,
+  route:[{from:'Gポイント',to:'Pontaポイント(au)(手数料3%)',rate:0.97,url:'https://www.gpoint.co.jp/scripts/partner/detail/pen.jsp?partnerid=81172371'},{from:'Pontaポイント',to:'JALマイル(レートアップキャンペーン)',rate:0.60,url:'https://www.google.com/search?q=Pontaポイント+JALマイル+レートアップキャンペーン'}],
+  url:'https://www.gpoint.co.jp/scripts/partner/detail/pen.jsp?partnerid=81172371',
+  history:[{d:'2022-01',r:0.97*0.60},{d:'2026-01',r:0.97*0.60}],
+  notices:["✅ 2026年7月時点で確認：Gポイント→Pontaポイント(au)の手数料3%は変更なしを確認。",'Gポイント→Pontaポイント(au)は手数料3%（実質97%、Gポイント公式・複数ブログで確認、以前は5〜10%だったが引き下げ）。Pontaポイント→JALマイルは通常50%だが、年3回程度のレートアップキャンペーン中は60%。組み合わせて総合約58%。','キャンペーン時期以外は総合約48.5%となり、直接交換(50%)とほぼ同水準。auポイント連携（au ID）が必要。']});
+// Gポイント→KF・マリオットBonvoy: ANA/JALマイル経由でもKF/マリオットへの変換ルートは存在しないため確認済み0%。
+d('gpoint','kris',{rate:0,url:'https://www.google.com/search?q=Gポイント+KrisFlyer+マイル+交換',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['KFへの直接換算ルートなし。Gポイント→ANAマイルまたは→JALマイル経由でも、いずれもKrisFlyerへの変換経路が存在しないためKF目標には貢献できません。','KFマイルを目指す場合は、ANAまたはJAL目標への切替を推奨します。']});
+d('gpoint','marriott',{rate:0,url:'https://www.google.com/search?q=Gポイント+マリオットBonvoy+交換',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['マリオットBonvoyへの直接換算ルートなし。Gポイントからマリオットへの変換経路は存在しません。','マリオット経由でKF/ANA/JALマイルに集約したい場合は、先にANAまたはJALマイルへ変換（各50%）した上で、それぞれのマイル目標として集計することを推奨します。']});
+
+// ─── ホテル→マイル ───
+d('marriott','ana',{rate:25000/60000,url:'https://www.google.com/search?q=ANAマイル+マリオットBonvoy+交換+公式',
+  history:[{d:'2018-01',r:20000/60000},{d:'2019-01',r:25000/60000},{d:'2024-01',r:25000/60000},{d:'2026-01',r:25000/60000}],
+  change:'up',verified:true,
+  notices:['60,000pt単位で+5,000マイルボーナス → 合計25,000マイル(41.7%)。','60,000pt未満は3:1(33.3%)。','交換上限240,000pt/回。申請間隔48時間以上。','マイル反映まで1〜2週間。']});
+d('marriott','jal',{rate:25000/60000,url:'https://www.google.com/search?q=JALマイル+マリオットBonvoy+交換+公式',
+  history:[{d:'2018-01',r:20000/60000},{d:'2019-01',r:25000/60000},{d:'2024-01',r:25000/60000},{d:'2026-01',r:25000/60000}],
+  change:'up',verified:true,notices:['60,000pt単位で合計25,000マイル。1〜2週間。']});
+d('marriott','kris',{rate:25000/60000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/points-to-miles.mi',
+  history:[{d:'2018-01',r:20000/60000},{d:'2019-01',r:25000/60000},{d:'2024-01',r:25000/60000},{d:'2026-07',r:25000/60000}],
+  verified:true,notices:['60,000pt単位。ボーナス込み25,000KrisFlyer。','2026年7月、マリオット公式・複数の独立ブログで再確認済み（数値に変更なし）。']});
+d('marriott','avios',{rate:25000/60000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/points-to-miles.mi',
+  history:[{d:'2019-01',r:25000/60000},{d:'2024-01',r:25000/60000},{d:'2026-07',r:25000/60000}],
+  verified:true,notices:['60,000pt単位。ボーナス込み25,000Avios。','2026年7月、マリオット公式・複数の独立ブログで再確認済み（数値に変更なし）。']});
+d('marriott','delta',{rate:20000/60000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/points-to-miles.mi',
+  history:[{d:'2019-01',r:20000/60000},{d:'2024-01',r:20000/60000},{d:'2026-07',r:20000/60000}],
+  verified:true,notices:['デルタはボーナス対象外。60,000pt=20,000マイル(33.3%)。','2026年7月、マリオット公式・複数の独立ブログで再確認済み（数値に変更なし）。']});
+d('marriott','united',{rate:30000/60000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/points-to-miles.mi',
+  history:[{d:'2019-01',r:25000/60000},{d:'2022-01',r:30000/60000},{d:'2024-01',r:30000/60000},{d:'2026-07',r:30000/60000}],
+  change:'up',verified:true,notices:['ユナイテッドはボーナスが5,000多い。60,000pt=30,000マイル(50%)。','2026年7月、マリオット公式・複数の独立ブログで再確認済み（数値に変更なし）。']});
+// マリオットBonvoy→Alaska Mileage Plan（アラスカ航空）: 標準の3:1＋60,000pt単位5,000マイルボーナス対象（除外リストにAlaskaは含まれない）
+d('marriott','alaska',{rate:25000/60000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/points-to-miles.mi',
+  history:[{d:'2019-01',r:25000/60000},{d:'2024-01',r:25000/60000},{d:'2026-07',r:25000/60000}],
+  verified:true,
+  notices:['60,000pt単位で+5,000マイルボーナス→合計25,000マイル(41.7%)。ANA/JAL/KFと同水準。60,000pt未満は3:1(33.3%)。','⚠ 日本語ブログの一部で「Alaskaはボーナス対象外」という誤情報が見られるが、マリオット公式のボーナス除外対象はAAdvantage(アメリカン航空)・Avianca LifeMiles・デルタSkyMilesの3社のみで、Alaska Mileage Planはボーナス対象に含まれる（複数の英語圏の一次情報で確認）。','Alaska Mileage Planは提携航空会社が多く（oneworldを含む）、特典航空券の狙い目として陸マイラーの間で人気が高い。','交換上限240,000pt/回、1日あたり3,000〜240,000pt。申請間隔48時間以上。マイル反映まで数日程度。']});
+// マリオットBonvoy→Aeroplan（エアカナダ）: 標準の3:1＋60,000pt単位5,000マイルボーナス対象
+d('marriott','aeroplan',{rate:25000/60000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/points-to-miles.mi',
+  history:[{d:'2019-01',r:25000/60000},{d:'2024-01',r:25000/60000},{d:'2026-07',r:25000/60000}],
+  verified:true,
+  notices:['60,000pt単位で+5,000マイルボーナス→合計25,000マイル(41.7%)。ANA/JAL/KF/Alaskaと同水準。60,000pt未満は3:1(33.3%)。','Aeroplan(エアカナダ)はStar Allianceに加盟しており、ANAと同じアライアンス内での特典航空券活用にも使える点が特徴。','交換上限240,000pt/回、1日あたり3,000〜240,000pt。申請間隔48時間以上。マイル反映まで数日程度。']});
+d('marriott','dpoint',{rate:0,url:'https://www.marriott.com/ja/loyalty/partners/points-transfer.mi',
+  history:[{d:'2019-01',r:0.25},{d:'2021-01',r:0.27},{d:'2024-01',r:0.27},{d:'2026-07',r:0}],
+  verified:true,
+  notices:['⚠ よくある誤情報にご注意: 「マリオットBonvoy→dポイントは27%で交換できる」という情報が一部で見られますが、マリオット公式のポイント移行提携先一覧にdポイントは含まれておらず、直接交換ルートは確認できませんでした。','マリオット公式が明示しているポイント相互交換先は楽天ポイントのみ（3:1）。dポイントに変換したい場合は、一度楽天ポイントに交換してからdポイントへ交換する迂回ルートを検討してください。']});
+d('marriott','rakuten',{rate:1/3,url:'https://www.marriott.com/ja/loyalty/partners/points-transfer.mi',
+  history:[{d:'2019-01',r:0.25},{d:'2021-01',r:0.27},{d:'2024-01',r:0.27},{d:'2026-07',r:1/3}],
+  verified:true,
+  notices:['⚠ よくある誤情報にご注意: 「マリオットBonvoy→楽天ポイントは27%」という情報が一部で見られますが、マリオット公式・楽天公式で確認したところ「マリオットBonvoyポイント3,000pt→楽天ポイント1,000pt」の3:1（33.3%）が正しいレートです。','3,000pt単位、24時間に1回まで。マリオットポイントは変動価値（ホテル宿泊利用なら1P=0.8〜1.5円程度）のため、楽天ポイント化すると大きく目減りする点に注意。']});
+d('hilton','ana',{rate:0.10,url:'https://www.ana.co.jp/ja/jp/shoppingandlife/point/tameru_hilton/',
+  history:[{d:'2019-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-07',r:0.10}],
+  verified:true,
+  notices:['⚠ よくある誤情報にご注意: 「2ヒルトン=1ANAマイル(50%)」という情報が一部で見られますが、実際は10,000ヒルトンポイント→1,000マイル（10%）です。ANA公式・複数の独立ブログで確認。','ヒルトンポイントは1P≈0.5〜1円程度の価値のため、マイル交換すると大きく目減りする。ホテル宿泊利用の方が高効率。','反映まで約1〜2ヶ月。']});
+d('hilton','jal',{rate:0.10,url:'https://www.google.com/search?q=ヒルトンHonors+JALマイル+交換+公式',
+  history:[{d:'2019-01',r:0.25},{d:'2024-01',r:0.25},{d:'2026-07',r:0.10}],
+  verified:true,
+  notices:['⚠ よくある誤情報にご注意: 「4ヒルトン=1JALマイル(25%)」という情報が一部で見られますが、実際は10,000ヒルトンポイント→1,000マイル（10%、ANA向けと同水準）です。','ヒルトンポイントは1P≈0.5〜1円程度の価値のため、マイル交換すると大きく目減りする。ホテル宿泊利用の方が高効率。']});
+d('hilton','kris',{rate:0.125,url:'https://www.google.com/search?q=ヒルトンHonors+KrisFlyer+交換+公式',
+  history:[{d:'2019-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-07',r:0.125}],
+  verified:true,
+  notices:['⚠ よくある誤情報にご注意: 50%という情報が一部で見られますが、実際はシンガポール航空(KrisFlyer)向けは12.5%です（ANA/JALの10%よりやや高いが、それでも低レート）。']});
+d('hilton','delta',{rate:0.10,url:'https://ja.delta.com/us/ja/skymiles/how-to-earn-miles/convert-partner-points',
+  history:[{d:'2022-01',r:0.10},{d:'2026-07',r:0.10}],verified:true,
+  notices:['デルタ航空公式サイトで確認: 10,000ポイント→1,000マイル（10%）。ANA/JAL向けと同水準の低レート。']});
+d('hilton','united',{rate:0.10,url:'https://www.google.com/search?q=ヒルトンHonors+ユナイテッド+マイル+交換+公式',
+  history:[{d:'2019-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-07',r:0.10}],
+  verified:true,
+  notices:['⚠ よくある誤情報にご注意: 50%という情報が一部で見られますが、実際はユナイテッド航空向けも10%です（ANA/JALと同水準）。']});
+d('ihg','ana',{rate:0.20,url:'https://www.ana.co.jp/ja/us/amc/exchange-point/intercontinental-hotels-group/',
+  history:[{d:'2021-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-07',r:0.20}],
+  verified:true,
+  notices:['⚠ よくある誤情報にご注意: 50%という情報が一部で見られますが、実際は10,000ポイント→2,000マイル（20%）です。ANA公式・IHG公式で確認。','交換単位1万ポイント、上限なし、手数料無料。反映まで約1〜2ヶ月。','直接ANAマイルとして貯める設定（1USドル=1〜3マイル）の方が、ポイントとして貯めて後から交換するより高レートになるケースが多い。']});
+d('ihg','jal',{rate:0.20,url:'https://www.google.com/search?q=IHGリワード+JALマイル+交換+公式',
+  history:[{d:'2021-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-07',r:0.20}],
+  verified:true,
+  notices:['⚠ よくある誤情報にご注意: 50%という情報が一部で見られますが、実際は10,000ポイント→2,000マイル（20%、ANA向けと同水準）です。','交換単位1万ポイント、上限なし、手数料無料。反映まで約1〜2ヶ月。','JALマイルを直接貯める設定（1滞在=500マイル程度）は還元率が低いため、ポイントで貯めてマイルに移行する方が有利なケースが多い。']});
+d('ihg','avios',{rate:0.20,url:'https://www.google.com/search?q=IHGリワード+Avios+交換+公式',
+  history:[{d:'2021-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-07',r:0.20}],
+  verified:true,
+  notices:['⚠ よくある誤情報にご注意: 50%という情報が一部で見られますが、実際は10,000ポイント→2,000マイル（20%、提携航空会社共通レート）です。','交換単位1万ポイント、上限なし、手数料無料。']});
+d('ihg','kris',{rate:0.20,url:'https://www.singaporeair.com/en_UK/us/ppsclub-krisflyer/earn-miles/earn-on-the-ground/hotels-serviced-residences/',
+  history:[{d:'2026-07',r:0.20}],verified:true,
+  notices:['シンガポール航空公式(KrisFlyer提携ページ)で確認: 10,000ポイント→2,000マイル（20%、ANA/JAL/Aviosと同水準の標準レート）。','交換単位1万ポイント、上限なし。反映まで約1〜2ヶ月。']});
+d('ihg','delta',{rate:0.20,url:'https://www.ihg.com/onerewards/content/us/en/earn-rewards/miles/deltaairlines',
+  history:[{d:'2026-07',r:0.20}],verified:true,
+  notices:['IHG公式サイトで確認: 10,000ポイント→2,000マイル（20%）。ANA/JAL/KFと同水準。IHG One Rewardsサービスセンターへの連絡が必要、反映まで最大6週間。']});
+d('hyatt','ana',{rate:0.40,url:'https://www.ana.co.jp/ja/us/amc/exchange-point/hyatt/',
+  history:[{d:'2026-07',r:0.40}],verified:true,
+  notices:['ANA公式ページで確認: 2.5ポイント＝1マイル（標準レート）。5,000pt以上、5,000pt単位（5,000pt超は1,250pt単位）。','一度に50,000pt以上移行の場合は50,000ptごとに5,000ボーナスマイル加算。','申込後、マイル積算まで約1〜2ヶ月。']});
+d('hyatt','jal',{rate:0.40,url:'https://world.hyatt.com/content/gp/ja/rewards/air-auto.html',
+  history:[{d:'2026-07',r:0.40}],verified:true,
+  notices:['ハイアット公式の例外リストにJALは含まれないため、標準レート1,250pt→500マイル（2.5:1＝40%）が適用されると判断。ANA向け(2.5pt=1マイル)と同水準。','5,000pt以上、5,000pt単位で交換可能。']});
+d('hyatt','kris',{rate:0.40,url:'https://www.singaporeair.com/en_UK/us/ppsclub-krisflyer/earn-miles/earn-on-the-ground/hotels-serviced-residences/',
+  history:[{d:'2026-07',r:0.40}],verified:true,
+  notices:['シンガポール航空公式(KrisFlyer提携ページ)で確認: 5,000ポイント→2,000マイル（40%、標準レート）。','宿泊時にKrisFlyer会員番号を提示すれば1滞在500マイルの直接付与も選択可（ポイント経由よりお得なケースが多い）。']});
+d('hyatt','delta',{rate:0,url:'https://ja.delta.com/us/ja/skymiles/how-to-earn-miles/skymiles-partners-offers',
+  history:[{d:'2026-07',r:0}],verified:true,
+  notices:['⚠ 他のANA/JAL/KF向けとは仕組みが異なります。デルタ公式サイトによれば、ハイアットはSkyMiles会員が「対象となるご滞在ごとに500マイル」を直接獲得する方式（滞在時にポイントかマイルかを選択）であり、既存のハイアットポイント残高をマイルに変換する制度ではありません。','したがって、既に貯まっているWorld of Hyattポイントをデルタマイルに変換するルートは存在しません。']});
+d('accor','ana',{rate:0.50,url:'https://www.google.com/search?q=Accorライブ+ポイント+マイル+交換+公式',history:[{d:'2021-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-07',r:0.50}],verified:false,notices:['公式サイトで要確認。ANA向けの公式レート記載ページが未特定のため、引き続き要検証。','✅ 2026年7月に追加調査：ALL公式サイトでANAとの提携は確認できたが、内容は「対象ホテル宿泊でANAマイルを直接獲得する」プロモーションで、既存ALLポイントをANAマイルへ変換する制度とは異なる可能性がある（World of Hyatt→デルタと同様の構造の疑い）。50%という数値の直接的な公式裏付けは今回も見つからず、未検証のまま据え置き。']});
+d('accor','avios',{rate:0.50,url:'https://all.accor.com/loyalty-program/partners/qatarairways/index.ja.shtml',history:[{d:'2021-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-07',r:0.50}],verified:false,notices:['公式サイトで要確認。','ALL公式のカタール航空Aviosパートナーページでは「2,000リワードポイント→1,500Avios（75%）」との記載も見られ、現在の50%と食い違う可能性あり。ホテルブランド・提携航空会社によりレートが異なる可能性が高いため、要件を確定する前に必ずALL公式サイトで最新レートをご確認ください。','✅ 2026年7月に追加調査：状況に変化なし。引き続き要検証。']});
+d('accor','jal',{rate:0.50,url:'https://www.jal.co.jp/jp/ja/jmb/partner/allrewardpoint/',
+  history:[{d:'2026-07',r:0.50}],verified:true,
+  notices:['JAL公式提携ページで確認: JALマイルは4,000ポイント→2,000マイル（50%）が目安（複数の独立ブログでも一致）。','ALLアカウント側で「マイルへの自動交換」設定が必要。特典交換後のポイントが自動でJALマイルに変換される仕組み。']});
+d('accor','delta',{rate:0.50,url:'https://all.accor.com/loyalty-program/partners/delta/index.ja.shtml',
+  history:[{d:'2026-07',r:0.50}],verified:true,
+  notices:['Accor公式・デルタ航空公式の両方で確認: 4,000リワードポイント→2,000マイル（50%）。JAL/KFと同水準。']});
+id('marriott','delta',{rate:0,url:'https://www.google.com/search?q=%E3%83%9E%E3%83%AA%E3%82%AA%E3%83%83%E3%83%88Bonvoy%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: マリオットBonvoyは他のホテル/カードプログラムへの移行制度を持たないため、デルタSkyMilesへのブリッジ経由の間接ルートは存在しません。直接移行が唯一のルートです。']});
+id('hilton','delta',{rate:0,url:'https://www.google.com/search?q=%E3%83%92%E3%83%AB%E3%83%88%E3%83%B3Honors%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: ヒルトンHonorsは他のホテル/カードプログラムへの移行制度を持たないため、デルタSkyMilesへのブリッジ経由の間接ルートは存在しません。直接移行が唯一のルートです。']});
+id('ihg','delta',{rate:0,url:'https://www.google.com/search?q=IHG%E3%83%AA%E3%83%AF%E3%83%BC%E3%83%89%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: IHGリワードは他のホテル/カードプログラムへの移行制度を持たないため、デルタSkyMilesへのブリッジ経由の間接ルートは存在しません。直接移行が唯一のルートです。']});
+id('accor','delta',{rate:0,url:'https://www.google.com/search?q=Accor%E3%83%A9%E3%82%A4%E3%83%96%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: Accorライブは他のホテル/カードプログラムへの移行制度を持たないため、デルタSkyMilesへのブリッジ経由の間接ルートは存在しません。直接移行が唯一のルートです。']});
+id('amex_mr','delta',{rate:0,url:'https://www.google.com/search?q=AMEX%20MR%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: AMEX MRはマリオット・ヒルトン・Accorへ移行可能ですが、いずれ経由してもデルタ換算は0.99×33.3%≈33%（マリオット）、1.25×10%≈12.5%（ヒルトン）、0.286×50%≈14.3%（Accor）などとなり、直接移行(80%)を大幅に下回るため実用上のメリットはありません。']});
+id('hyatt','delta',{rate:0,url:'https://www.google.com/search?q=World%20of%20Hyatt%20Delta%20SkyMiles%20間接交換',history:[{d:'2026-07',r:0},{d:'2026-07',r:0}],notices:['✅ 調査済み: ハイアットはデルタ向けに既存ポイントの変換制度自体を持たない（滞在ごとのマイル直接付与のみ）ため、間接ルートも存在しません。']});
+d('accor','kris',{rate:0.50,url:'https://www.google.com/search?q=Accor+ALL+KrisFlyer+ポイント+交換',
+  history:[{d:'2026-07',r:0.50}],verified:true,
+  notices:['複数の独立ブログで確認: シンガポール航空KrisFlyerも4,000ポイント→2,000マイル（50%）のグループに含まれる（BA Avios・JALと同水準）。','ユナイテッド航空・エールフランス航空など一部提携先は2,000pt→1,000マイル（同じく50%）と単位のみ異なる。']});
+id('amex_mr','kris',{rate:0,url:'https://www.google.com/search?q=AMEX%E3%83%A1%E3%83%B3%E3%83%90%E3%83%BC%E3%82%B7%E3%83%83%E3%83%97%E3%83%AA%E3%83%AF%E3%83%BC%E3%83%89%20KrisFlyer%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: AMEX MRはマリオット・ヒルトン・Accorへ移行可能ですが、いずれ経由してもKF換算は0.99×41.7%≈41.3%（マリオット）、1.25×12.5%≈15.6%（ヒルトン）、0.286×50%≈14.3%（Accor）などとなり、直接移行(80%)を大幅に下回るため実用上のメリットはありません。']});
+id('marriott','kris',{rate:0,url:'https://www.google.com/search?q=%E3%83%9E%E3%83%AA%E3%82%AA%E3%83%83%E3%83%88Bonvoy%20KrisFlyer%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: マリオットBonvoyは他のホテル/カードプログラムへの移行制度を持たないため、KrisFlyerへのブリッジ経由の間接ルートは存在しません。直接移行が唯一のルートです。']});
+id('hilton','kris',{rate:0,url:'https://www.google.com/search?q=%E3%83%92%E3%83%AB%E3%83%88%E3%83%B3Honors%20KrisFlyer%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: ヒルトンHonorsは他のホテル/カードプログラムへの移行制度を持たないため、KrisFlyerへのブリッジ経由の間接ルートは存在しません。直接移行が唯一のルートです。']});
+id('ihg','kris',{rate:0,url:'https://www.google.com/search?q=IHG%E3%83%AA%E3%83%AF%E3%83%BC%E3%83%89%20KrisFlyer%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: IHGリワードは他のホテル/カードプログラムへの移行制度を持たないため、KrisFlyerへのブリッジ経由の間接ルートは存在しません。直接移行が唯一のルートです。']});
+id('hyatt','kris',{rate:0,url:'https://www.google.com/search?q=World%20of%20Hyatt%20KrisFlyer%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: World of Hyattは他のホテル/カードプログラムへの移行制度を持たないため、KrisFlyerへのブリッジ経由の間接ルートは存在しません。直接移行が唯一のルートです。']});
+id('accor','kris',{rate:0,url:'https://www.google.com/search?q=Accor%E3%83%A9%E3%82%A4%E3%83%96%20KrisFlyer%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: Accorライブは他のホテル/カードプログラムへの移行制度を持たないため、KrisFlyerへのブリッジ経由の間接ルートは存在しません。直接移行が唯一のルートです。']});
+id('marriott','ana',{rate:0,url:'https://www.google.com/search?q=%E3%83%9E%E3%83%AA%E3%82%AA%E3%83%83%E3%83%88Bonvoy%20ANA%E3%83%9E%E3%82%A4%E3%83%AB%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: マリオットBonvoyは他のホテルロイヤリティプログラムへの移行制度を持たないため、ANAマイルへのブリッジ経由の間接ルートは存在しません。直接移行が唯一のルートです。']});
+id('marriott','jal',{rate:0,url:'https://www.google.com/search?q=%E3%83%9E%E3%83%AA%E3%82%AA%E3%83%83%E3%83%88Bonvoy%20JAL%E3%83%9E%E3%82%A4%E3%83%AB%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: マリオットBonvoyは他のホテルロイヤリティプログラムへの移行制度を持たないため、JALマイルへのブリッジ経由の間接ルートは存在しません。直接移行が唯一のルートです。']});
+id('hilton','ana',{rate:0,url:'https://www.google.com/search?q=%E3%83%92%E3%83%AB%E3%83%88%E3%83%B3Honors%20ANA%E3%83%9E%E3%82%A4%E3%83%AB%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: ヒルトンHonorsは他のホテルロイヤリティプログラムへの移行制度を持たないため、ANAマイルへのブリッジ経由の間接ルートは存在しません。直接移行が唯一のルートです。']});
+id('hilton','jal',{rate:0,url:'https://www.google.com/search?q=%E3%83%92%E3%83%AB%E3%83%88%E3%83%B3Honors%20JAL%E3%83%9E%E3%82%A4%E3%83%AB%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: ヒルトンHonorsは他のホテルロイヤリティプログラムへの移行制度を持たないため、JALマイルへのブリッジ経由の間接ルートは存在しません。直接移行が唯一のルートです。']});
+id('ihg','ana',{rate:0,url:'https://www.google.com/search?q=IHG%E3%83%AA%E3%83%AF%E3%83%BC%E3%83%89%20ANA%E3%83%9E%E3%82%A4%E3%83%AB%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: IHGリワードは他のホテルロイヤリティプログラムへの移行制度を持たないため、ANAマイルへのブリッジ経由の間接ルートは存在しません。直接移行が唯一のルートです。']});
+id('ihg','jal',{rate:0,url:'https://www.google.com/search?q=IHG%E3%83%AA%E3%83%AF%E3%83%BC%E3%83%89%20JAL%E3%83%9E%E3%82%A4%E3%83%AB%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: IHGリワードは他のホテルロイヤリティプログラムへの移行制度を持たないため、JALマイルへのブリッジ経由の間接ルートは存在しません。直接移行が唯一のルートです。']});
+id('hyatt','ana',{rate:0,url:'https://www.google.com/search?q=World%20of%20Hyatt%20ANA%E3%83%9E%E3%82%A4%E3%83%AB%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: World of Hyattは他のホテルロイヤリティプログラムへの移行制度を持たないため、ANAマイルへのブリッジ経由の間接ルートは存在しません。直接移行が唯一のルートです。']});
+id('hyatt','jal',{rate:0,url:'https://www.google.com/search?q=World%20of%20Hyatt%20JAL%E3%83%9E%E3%82%A4%E3%83%AB%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: World of Hyattは他のホテルロイヤリティプログラムへの移行制度を持たないため、JALマイルへのブリッジ経由の間接ルートは存在しません。直接移行が唯一のルートです。']});
+id('accor','ana',{rate:0,url:'https://www.google.com/search?q=Accor%E3%83%A9%E3%82%A4%E3%83%96%20ANA%E3%83%9E%E3%82%A4%E3%83%AB%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: Accorライブは他のホテルロイヤリティプログラムへの移行制度を持たないため、ANAマイルへのブリッジ経由の間接ルートは存在しません。直接移行が唯一のルートです。']});
+id('accor','jal',{rate:0,url:'https://www.google.com/search?q=Accor%E3%83%A9%E3%82%A4%E3%83%96%20JAL%E3%83%9E%E3%82%A4%E3%83%AB%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: Accorライブは他のホテルロイヤリティプログラムへの移行制度を持たないため、JALマイルへのブリッジ経由の間接ルートは存在しません。直接移行が唯一のルートです。']});
+
+// ─── ヤマダ電機ポイント ───
+// 公式確認済み情報（2026年5月時点）:
+// ・ヤマダP→ANAマイル: 4,000P→1,000マイル（25%）直接交換可
+// ・ANAマイル→ヤマダP: 10,000マイル→10,000P（100%・逆方向）
+// ・楽天P・dポイント・Ponta等への交換は【不可】
+// ・ヤマダポイントの提携先拡大サービスは2026年3月31日終了
+d('yamada','ana',{rate:1000/4000,url:'https://www.yamada-denki.jp/point/',
+  history:[{d:'2022-01',r:1000/4000},{d:'2026-01',r:1000/4000}],verified:true,
+  notices:['ヤマダポイント4,000P→ANAマイル1,000マイル（25%）。直接交換。',
+    '【重要】楽天・dポイント・Pontaポイント等への交換は不可。マイル交換先はANAのみ。',
+    'ANAマイル→ヤマダP（逆方向）: 10,000マイル→10,000P（100%）の相互交換あり。',
+    'ポイント共通化（店舗・アプリ・ウェブ）が必要な場合は公式サイト参照。',
+    '✅ 調査済み: Vポイント・ドットマネー等への出口ブリッジが存在しないため、みずほルート等の間接ルートは利用不可。直接交換(25%)が唯一のルート。']});
+id('yamada','ana',{rate:0,url:'https://www.yamada-denki.jp/point/',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['✅ 調査済み: ヤマダポイントは他の共通ポイントへの出口ブリッジを一切持たないため、間接ルートは存在しません。']});
+// ヤマダポイント→ANA SKYコイン: ANA公式(ポイントから交換する)で確認。直接100%はマイル経由(25%)より大幅に高レート。
+d('yamada','anacoin',{rate:1.0,url:'https://www.ana.co.jp/ja/jp/guide/amc/skycoin/point/',
+  history:[{d:'2023-08',r:1.0},{d:'2026-01',r:1.0}],verified:true,
+  notices:['✅ ANA公式サイトで確認: ヤマダポイント1ポイントごとに1コイン（100%）。1,000P単位。交換完了まで約2日。','事前にヤマダデンキ「ヤマダデジタル会員」の登録が必要。スマートフォンアプリからのみ申込可（2026年10月ANA公式で再確認）。','ANAマイル経由（直接25%→コイン1:1）より大幅に高レート。SKYコインが目的なら本ルートが最良。']});
+// ヤマダ→KF・JAL: 直接交換不可。ANAマイル→マリオット逆方向交換は存在しないためKFルートなし
+// ※ANAマイル→マリオットBonvoyの直接交換は存在しない（逆方向のマリオット→ANAは可能）
+d('yamada','kris',{rate:0,
+  url:'https://www.yamada-denki.jp/point/',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['ヤマダP→KFマイルの変換ルートなし。','ヤマダP→ANAマイル（4,000P→1,000マイル・25%）は可能。ANAからKFへの直接変換は存在しないためKFターゲットでは利用不可。','KFマイルを目指す場合はANA目標に切替えてヤマダポイントをANAマイルとして集計することを推奨。']});
+
+
+// ─── 上記各ポイント → デルタSkyMiles: 直接・間接ともに交換ルートなし（Delta航空は国内ポイントサイト・共通ポイントの提携網に含まれない） ───
+d('fancrew','delta',{rate:0,url:'https://www.google.com/search?q=%E3%83%95%E3%82%A1%E3%83%B3%E3%81%8F%E3%82%8B%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E7%9B%B4%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ファンくるの交換メニューにデルタSkyMilesは含まれておらず、直接交換ルートは存在しません。デルタ航空は国内の主要ポイントサイト・共通ポイントの提携網に含まれていません。']});
+id('fancrew','delta',{rate:0,
+  url:'https://www.google.com/search?q=Gポイント+マリオットBonvoy+ポイント交換',
+  history:[{d:'2023-10',r:0},{d:'2026-07',r:0}],
+  notices:['⚠ よくある誤情報にご注意: 「Gポイント経由でマリオットBonvoy→デルタに交換できる」という情報が一部で見られますが、Gポイント公式の交換先一覧にマリオットBonvoyは含まれていません。この中継ルート自体が存在しないため、間接ルートもありません。']});
+d('dmoney','delta',{rate:0,url:'https://www.google.com/search?q=%E3%83%89%E3%83%83%E3%83%88%E3%83%9E%E3%83%8D%E3%83%BC%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E7%9B%B4%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ドットマネーの交換メニューにデルタSkyMilesは含まれておらず、直接交換ルートは存在しません。デルタ航空は国内の主要ポイントサイト・共通ポイントの提携網に含まれていません。']});
+id('dmoney','delta',{rate:0,url:'https://www.google.com/search?q=%E3%83%89%E3%83%83%E3%83%88%E3%83%9E%E3%83%8D%E3%83%BC%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: ドットマネーはマリオットBonvoyへの交換ルートを持たないため、デルタSkyMilesへの間接ルートも存在しません。']});
+d('gendama','delta',{rate:0,url:'https://www.google.com/search?q=%E3%81%92%E3%82%93%E7%8E%89%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E7%9B%B4%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: げん玉の交換メニューにデルタSkyMilesは含まれておらず、直接交換ルートは存在しません。デルタ航空は国内の主要ポイントサイト・共通ポイントの提携網に含まれていません。']});
+id('gendama','delta',{rate:0,url:'https://www.google.com/search?q=%E3%81%92%E3%82%93%E7%8E%89%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: げん玉はマリオットBonvoyへの交換ルートを持たないため、デルタSkyMilesへの間接ルートも存在しません。']});
+d('pincm','delta',{rate:0,url:'https://www.google.com/search?q=%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%E3%82%A4%E3%83%B3%E3%82%AB%E3%83%A0%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E7%9B%B4%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ポイントインカムの交換メニューにデルタSkyMilesは含まれておらず、直接交換ルートは存在しません。デルタ航空は国内の主要ポイントサイト・共通ポイントの提携網に含まれていません。']});
+id('pincm','delta',{rate:0,url:'https://www.google.com/search?q=%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%E3%82%A4%E3%83%B3%E3%82%AB%E3%83%A0%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: ポイントインカムはマリオットBonvoyへの交換ルートを持たないため、デルタSkyMilesへの間接ルートも存在しません。']});
+d('ecnavi','delta',{rate:0,url:'https://www.google.com/search?q=EC%E3%83%8A%E3%83%93%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E7%9B%B4%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ECナビの交換メニューにデルタSkyMilesは含まれておらず、直接交換ルートは存在しません。デルタ航空は国内の主要ポイントサイト・共通ポイントの提携網に含まれていません。']});
+id('ecnavi','delta',{rate:0,url:'https://www.google.com/search?q=EC%E3%83%8A%E3%83%93%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: ECナビはマリオットBonvoyへの交換ルートを持たないため、デルタSkyMilesへの間接ルートも存在しません。']});
+d('ptown','delta',{rate:0,url:'https://www.google.com/search?q=%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%E3%82%BF%E3%82%A6%E3%83%B3%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E7%9B%B4%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ポイントタウンの交換メニューにデルタSkyMilesは含まれておらず、直接交換ルートは存在しません。デルタ航空は国内の主要ポイントサイト・共通ポイントの提携網に含まれていません。']});
+id('ptown','delta',{rate:0,url:'https://www.google.com/search?q=%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%E3%82%BF%E3%82%A6%E3%83%B3%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: ポイントタウンはマリオットBonvoyへの交換ルートを持たないため、デルタSkyMilesへの間接ルートも存在しません。']});
+d('pex','delta',{rate:0,url:'https://www.google.com/search?q=PeX%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E7%9B%B4%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: PeXの交換メニューにデルタSkyMilesは含まれておらず、直接交換ルートは存在しません。デルタ航空は国内の主要ポイントサイト・共通ポイントの提携網に含まれていません。']});
+id('pex','delta',{rate:0,url:'https://www.google.com/search?q=PeX%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: PeXはマリオットBonvoyへの交換ルートを持たないため、デルタSkyMilesへの間接ルートも存在しません。']});
+d('dpoint','delta',{rate:0,url:'https://www.google.com/search?q=d%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E7%9B%B4%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: dポイントの交換メニューにデルタSkyMilesは含まれておらず、直接交換ルートは存在しません。デルタ航空は国内の主要ポイントサイト・共通ポイントの提携網に含まれていません。']});
+id('dpoint','delta',{rate:0,url:'https://www.google.com/search?q=d%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: dポイントはマリオットBonvoyへの交換ルートを持たないため、デルタSkyMilesへの間接ルートも存在しません。']});
+d('ponta','delta',{rate:0,url:'https://www.google.com/search?q=Ponta%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E7%9B%B4%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: Pontaポイントの交換メニューにデルタSkyMilesは含まれておらず、直接交換ルートは存在しません。デルタ航空は国内の主要ポイントサイト・共通ポイントの提携網に含まれていません。']});
+id('ponta','delta',{rate:0,url:'https://www.google.com/search?q=Ponta%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: PontaポイントはマリオットBonvoyへの交換ルートを持たないため、デルタSkyMilesへの間接ルートも存在しません。']});
+d('vpoint','delta',{rate:0,url:'https://www.google.com/search?q=V%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E7%9B%B4%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: Vポイントの交換メニューにデルタSkyMilesは含まれておらず、直接交換ルートは存在しません。デルタ航空は国内の主要ポイントサイト・共通ポイントの提携網に含まれていません。']});
+id('vpoint','delta',{rate:0,url:'https://www.google.com/search?q=V%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: VポイントはマリオットBonvoyへの交換ルートを持たないため、デルタSkyMilesへの間接ルートも存在しません。']});
+d('paypay','delta',{rate:0,url:'https://www.google.com/search?q=PayPay%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E7%9B%B4%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: PayPayポイントの交換メニューにデルタSkyMilesは含まれておらず、直接交換ルートは存在しません。デルタ航空は国内の主要ポイントサイト・共通ポイントの提携網に含まれていません。']});
+id('paypay','delta',{rate:0,url:'https://www.google.com/search?q=PayPay%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: PayPayポイントはマリオットBonvoyへの交換ルートを持たないため、デルタSkyMilesへの間接ルートも存在しません。']});
+d('jre','delta',{rate:0,url:'https://www.google.com/search?q=JRE%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E7%9B%B4%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: JREポイントの交換メニューにデルタSkyMilesは含まれておらず、直接交換ルートは存在しません。デルタ航空は国内の主要ポイントサイト・共通ポイントの提携網に含まれていません。']});
+id('jre','delta',{rate:0,url:'https://www.google.com/search?q=JRE%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: JREポイントはマリオットBonvoyへの交換ルートを持たないため、デルタSkyMilesへの間接ルートも存在しません。']});
+d('nanaco','delta',{rate:0,url:'https://www.google.com/search?q=nanaco%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E7%9B%B4%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: nanacoポイントの交換メニューにデルタSkyMilesは含まれておらず、直接交換ルートは存在しません。デルタ航空は国内の主要ポイントサイト・共通ポイントの提携網に含まれていません。']});
+id('nanaco','delta',{rate:0,url:'https://www.google.com/search?q=nanaco%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: nanacoポイントはマリオットBonvoyへの交換ルートを持たないため、デルタSkyMilesへの間接ルートも存在しません。']});
+d('waon','delta',{rate:0,url:'https://www.google.com/search?q=WAON%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E7%9B%B4%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: WAONポイントの交換メニューにデルタSkyMilesは含まれておらず、直接交換ルートは存在しません。デルタ航空は国内の主要ポイントサイト・共通ポイントの提携網に含まれていません。']});
+id('waon','delta',{rate:0,url:'https://www.google.com/search?q=WAON%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: WAONポイントはマリオットBonvoyへの交換ルートを持たないため、デルタSkyMilesへの間接ルートも存在しません。']});
+d('au','delta',{rate:0,url:'https://www.google.com/search?q=au%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E7%9B%B4%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: auポイントの交換メニューにデルタSkyMilesは含まれておらず、直接交換ルートは存在しません。デルタ航空は国内の主要ポイントサイト・共通ポイントの提携網に含まれていません。']});
+id('au','delta',{rate:0,url:'https://www.google.com/search?q=au%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: auポイントはマリオットBonvoyへの交換ルートを持たないため、デルタSkyMilesへの間接ルートも存在しません。']});
+d('gpoint','delta',{rate:0,url:'https://www.google.com/search?q=G%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E7%9B%B4%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: Gポイントの交換メニューにデルタSkyMilesは含まれておらず、直接交換ルートは存在しません。デルタ航空は国内の主要ポイントサイト・共通ポイントの提携網に含まれていません。']});
+id('gpoint','delta',{rate:0,url:'https://www.google.com/search?q=G%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: GポイントはマリオットBonvoyへの交換ルートを持たないため、デルタSkyMilesへの間接ルートも存在しません。']});
+d('yamada','delta',{rate:0,url:'https://www.google.com/search?q=%E3%83%A4%E3%83%9E%E3%83%80%E9%9B%BB%E6%A9%9F%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E7%9B%B4%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ヤマダ電機ポイントの交換メニューにデルタSkyMilesは含まれておらず、直接交換ルートは存在しません。デルタ航空は国内の主要ポイントサイト・共通ポイントの提携網に含まれていません。']});
+id('yamada','delta',{rate:0,url:'https://www.google.com/search?q=%E3%83%A4%E3%83%9E%E3%83%80%E9%9B%BB%E6%A9%9F%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20%E3%83%87%E3%83%AB%E3%82%BFSkyMiles%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: ヤマダ電機ポイントはマリオットBonvoyへの交換ルートを持たないため、デルタSkyMilesへの間接ルートも存在しません。']});
+
+// ─── 上記各ポイント → KrisFlyer: 直接ルートなし（既に確認済み）に加え、間接ルートも存在しないことを確認 ───
+id('dmoney','kris',{rate:0,url:'https://www.google.com/search?q=%E3%83%89%E3%83%83%E3%83%88%E3%83%9E%E3%83%8D%E3%83%BC%20KrisFlyer%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: ドットマネーはマリオットBonvoyへの交換ルートを持たないため、KrisFlyerへの間接ルートも存在しません。']});
+id('gendama','kris',{rate:0,url:'https://www.google.com/search?q=%E3%81%92%E3%82%93%E7%8E%89%20KrisFlyer%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: げん玉はマリオットBonvoyへの交換ルートを持たないため、KrisFlyerへの間接ルートも存在しません。']});
+id('pincm','kris',{rate:0,url:'https://www.google.com/search?q=%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%E3%82%A4%E3%83%B3%E3%82%AB%E3%83%A0%20KrisFlyer%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: ポイントインカムはマリオットBonvoyへの交換ルートを持たないため、KrisFlyerへの間接ルートも存在しません。']});
+id('ecnavi','kris',{rate:0,url:'https://www.google.com/search?q=EC%E3%83%8A%E3%83%93%20KrisFlyer%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: ECナビはマリオットBonvoyへの交換ルートを持たないため、KrisFlyerへの間接ルートも存在しません。']});
+id('ptown','kris',{rate:0,url:'https://www.google.com/search?q=%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%E3%82%BF%E3%82%A6%E3%83%B3%20KrisFlyer%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: ポイントタウンはマリオットBonvoyへの交換ルートを持たないため、KrisFlyerへの間接ルートも存在しません。']});
+id('pex','kris',{rate:0,url:'https://www.google.com/search?q=PeX%20KrisFlyer%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: PeXはマリオットBonvoyへの交換ルートを持たないため、KrisFlyerへの間接ルートも存在しません。']});
+id('dpoint','kris',{rate:0,url:'https://www.google.com/search?q=d%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20KrisFlyer%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: dポイントはマリオットBonvoyへの交換ルートを持たないため、KrisFlyerへの間接ルートも存在しません。']});
+id('ponta','kris',{rate:0,url:'https://www.google.com/search?q=Ponta%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20KrisFlyer%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: PontaポイントはマリオットBonvoyへの交換ルートを持たないため、KrisFlyerへの間接ルートも存在しません。']});
+id('vpoint','kris',{rate:0,url:'https://www.google.com/search?q=V%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20KrisFlyer%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: VポイントはマリオットBonvoyへの交換ルートを持たないため、KrisFlyerへの間接ルートも存在しません。']});
+id('paypay','kris',{rate:0,url:'https://www.google.com/search?q=PayPay%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20KrisFlyer%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: PayPayポイントはマリオットBonvoyへの交換ルートを持たないため、KrisFlyerへの間接ルートも存在しません。']});
+id('jre','kris',{rate:0,url:'https://www.google.com/search?q=JRE%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20KrisFlyer%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: JREポイントはマリオットBonvoyへの交換ルートを持たないため、KrisFlyerへの間接ルートも存在しません。']});
+id('nanaco','kris',{rate:0,url:'https://www.google.com/search?q=nanaco%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20KrisFlyer%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: nanacoポイントはマリオットBonvoyへの交換ルートを持たないため、KrisFlyerへの間接ルートも存在しません。']});
+id('waon','kris',{rate:0,url:'https://www.google.com/search?q=WAON%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20KrisFlyer%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: WAONポイントはマリオットBonvoyへの交換ルートを持たないため、KrisFlyerへの間接ルートも存在しません。']});
+id('au','kris',{rate:0,url:'https://www.google.com/search?q=au%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20KrisFlyer%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: auポイントはマリオットBonvoyへの交換ルートを持たないため、KrisFlyerへの間接ルートも存在しません。']});
+id('gpoint','kris',{rate:0,url:'https://www.google.com/search?q=G%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20KrisFlyer%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: GポイントはマリオットBonvoyへの交換ルートを持たないため、KrisFlyerへの間接ルートも存在しません。']});
+id('yamada','kris',{rate:0,url:'https://www.google.com/search?q=%E3%83%A4%E3%83%9E%E3%83%80%E9%9B%BB%E6%A9%9F%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20KrisFlyer%20%E9%96%93%E6%8E%A5%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],notices:['✅ 調査済み: ヤマダ電機ポイントはマリオットBonvoyへの交換ルートを持たないため、KrisFlyerへの間接ルートも存在しません。']});
+
+d('yamada','jal',{rate:0,
+  url:'https://www.yamada-denki.jp/point/',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['ヤマダP→JALマイルの変換ルートなし。マイル交換先はANAのみ（楽天・dポイント・Pontaポイント等への交換も不可）。','ヤマダP→ANAマイル（4,000P→1,000マイル・25%）は可能だが、ANAマイルからJALマイルへの変換ルートは存在しないためJALターゲットでは利用不可。','JALマイルを目指す場合はANA目標に切替えてヤマダポイントをANAマイルとして集計することを推奨。']});
+id('yamada','jal',{rate:0,
+  url:'https://www.yamada-denki.jp/point/',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['✅ 調査済み: ヤマダポイントは他の共通ポイントへの出口ブリッジを一切持たないため、間接ルートも存在しません。']});
+d('yamada','marriott',{rate:0,
+  url:'https://www.yamada-denki.jp/point/',
+  history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],
+  notices:['マリオットBonvoyへの直接換算ルートなし。ヤマダ電機ポイントからマリオットへの変換経路は存在しません。','ヤマダ電機ポイント→ANAマイル（4,000P→1,000マイル・25%）は可能なため、ANA目標として集計することを推奨します。']});
+
+// ─── Vポイント→ANAマイル ───
+// 公式: 500Vポイント→250ANAマイル（50%）。ANAカード保有者は60%優遇。
+// JQみずほルート（Vポイント→JRキューポ→永久不滅P→ANA）で70%も可能
+d('vpoint','ana',{rate:0.50,url:'https://t-point.tsite.jp/store/list/ana/',
+  history:[{d:'2024-04',r:0.50},{d:'2026-01',r:0.50},{d:'2026-07',r:0.50}],verified:true,
+  notices:['✅ 2026年7月時点で確認：500Vポイント→250ANAマイル（50%）に変更なし。500P単位。約2〜3週間で反映。',
+    '三井住友カード発行のANAカード保有者は60%の優遇レート（1P→0.6マイル）が適用されるが、⚠️重要：Vポイントサイト（旧Tサイト）から手続きすると保有カードに関わらず一律50%になってしまう。60%を得るには「Vpass」（三井住友カードの会員サイト）から手続きする必要がある。混同しやすい注意点として複数の独立ブログで一致。',
+    'JQみずほルート経由なら70%も可能（下記「間接ルート」参照）。ただし2026年1月21日以降みずほルート対応カードは新規発行終了（既存保有者のみ継続可）。',
+    '2024年4月22日にTポイントがVポイントに統合。T-SITEサイトのANA交換ページで手続き可。']});
+id('vpoint','ana',{rate:0.70,
+  route:[{from:'Vポイント',to:'JRキューポ',rate:1.0,url:'https://www.google.com/search?q=JRキューポ+Vポイント+交換+公式'},{from:'JRキューポ',to:'永久不滅P(1,000P→200P)',rate:0.2,url:'https://www.jrkyushu.co.jp/jq/support/faq/7-4.html'},{from:'永久不滅P',to:'ANAマイル(みずほ・100P→350マイル)',rate:3.5,url:'https://www.google.com/search?q=永久不滅ポイント+ANAマイル+交換レート+セゾンカード'}],
+  url:'https://www.google.com/search?q=Vポイント+ANAマイル+JQみずほルート',
+  history:[{d:'2024-04',r:0.70},{d:'2026-01',r:0.70}],
+  notices:['JQみずほルート（Vポイント→JRキューポ→永久不滅P→ANAマイル）で70%。',
+    '2026年1月21日以降、みずほマイレージクラブカード/ANAの新規発行終了。既存カード保有者のみ継続利用可。',
+    '所要時間: 申請月末締め切り→翌月20日頃完了（最大約8週間）。',
+    'JRキューポ→永久不滅Pは1,000P→200P（永久不滅Pは1P=5円のため金額としては等価交換）。永久不滅P→ANAマイル(みずほ)は100P→350マイル（70%）。']});
+
+// ─── PayPayポイント→Vポイント（2026年3月24日から相互交換開始） ───
+// ⚠ PayPayから交換したVポイントはANAマイル等への交換が不可（利用制限あり）
+d('paypay','vpoint',{rate:1.0,url:'https://www.google.com/search?q=PayPayポイント+Vポイント+相互交換+2026',
+  history:[{d:'2026-03',r:1.0}],change:'up',verified:true,
+  notices:['2026年3月24日から相互交換開始。1:1等価交換・手数料無料。',
+    '交換上限: 1日1回100Pから、月間30,000P（PayPay→V方向）。PayPay公式発表で確認。',
+    '⚠️【重要】PayPayポイントから交換したVポイントはANAマイル等への他ポイント・マイル交換が不可（利用制限付きVポイント）。マイル獲得目的には使えない。',
+    'VポイントをPayPayポイントへの逆方向交換（V→PayPay）は可能で、PayPay加盟店での決済に使用可能。']});
+// PayPayポイント→KrisFlyer・マリオットBonvoy: 直接・間接ともに変換ルートなし（確認済み）
+d('paypay','kris',{rate:0,url:'https://www.google.com/search?q=PayPayポイント+KrisFlyer+マイル+交換',
+  history:[{d:'2026-03',r:0}],
+  notices:['⚠️ KFへの換算ルートなし。PayPayポイント→Vポイント(制限付き)経由でもKrisFlyerへの変換経路は存在しません。','KFマイルを目指す場合は、ANAマイル目標（Vポイント運用の裏技経由で50%）またはJALマイル目標（同50%）への切替を検討してください。']});
+d('paypay','marriott',{rate:0,url:'https://www.google.com/search?q=PayPayポイント+マリオットBonvoy+交換',
+  history:[{d:'2026-03',r:0}],
+  notices:['⚠️ マリオットBonvoyへの換算ルートなし。PayPayポイント→Vポイント(制限付き)経由でもマリオットへの変換経路は存在しません。','マリオット経由のKFブリッジも利用不可です。ANAまたはJALマイル目標（Vポイント運用の裏技経由で各50%）への切替を検討してください。']});
+// 各ポイントサイト→ドットマネーは1:1等価
+// ドットマネー→JAL: 2マネー=1マイル（50%）/ 500マネー最低 / キャンペーン時+10%増量（実質55%）
+d('dmoney','jal',{rate:0.50,url:'https://www.google.com/search?q=ドットマネー+JALマイル+交換+公式',
+  history:[{d:'2020-01',r:0.50},{d:'2024-01',r:0.50},{d:'2026-01',r:0.50}],verified:true,
+  notices:['2マネー→1JALマイル（50%）。最低500マネー単位。手数料無料。','申請後:1〜15日申請→申請月下旬、16〜末日申請→翌月上旬に積算。','キャンペーン時10%増量（2026年3月実績: 実質55%）。年1回程度。','複数ポイントサイトのポイントをドットマネーに集約後まとめてJAL交換が可能。より高いレートを狙う場合はPontaポイント経由の間接ルート（下記参照）も検討可能。']});
+id('dmoney','jal',{rate:1.0*0.60,
+  route:[{from:'ドットマネー',to:'Pontaポイント',rate:1.0,url:'https://www.google.com/search?q=ドットマネー+Pontaポイント+交換+公式'},{from:'Pontaポイント',to:'JALマイル(増量キャンペーン)',rate:0.60,url:'https://www.google.com/search?q=Pontaポイント+JALマイル+レートアップキャンペーン'}],
+  url:'https://www.google.com/search?q=ドットマネー+Pontaポイント+交換+公式',
+  history:[{d:'2019-01',r:0.60},{d:'2026-01',r:0.60}],
+  notices:["✅ 2026年7月時点で確認：ドットマネー→Pontaポイントの等価交換、Pontaポイント→JALマイルの基本レート50%・キャンペーン時60%を再確認。",'ドットマネー→Pontaポイントは等価交換。Pontaポイント→JALマイルは通常50%だが、年3回程度（3月・7〜8月・11〜12月頃）のレートアップキャンペーン中は60%に上昇。','ドットマネー自身のJAL増量キャンペーン（55%）よりも高レート。ただしキャンペーン時期が重ならない場合は直接交換(50%)と同水準。']});
+// ドットマネー→ANA: 300マネー=85マイル(約28.3%)　※みずほルート経由なら70%も可
+d('dmoney','ana',{rate:85/300,url:'https://www.google.com/search?q=ドットマネー+ANAマイル+交換+公式',
+  history:[{d:'2020-01',r:85/300},{d:'2024-01',r:85/300},{d:'2026-01',r:85/300}],verified:true,
+  notices:['300マネー→85ANAマイル（≈28.3%）。直接交換は低レートのため非推奨。','みずほルート経由（ドットマネー→Vポイント→JRキューポ→永久不滅P→ANA）なら70%。ただしみずほカードは2026年1月21日以降新規発行終了。','nimocaルート（ドットマネー→Gポイント→nimoca→ANA）でも70%可（九州・函館限定）。']});
+id('dmoney','ana',{rate:1.0*0.70,
+  route:[{from:'ドットマネー',to:'Vポイント',rate:1.0,url:'https://d-money.jp/withdrawal/point/detail/1135'},{from:'Vポイント',to:'ANAマイル(みずほ)',rate:0.70,url:'https://www.google.com/search?q=ANAマイル+みずほルート+交換+公式'}],
+  url:'https://d-money.jp/withdrawal/point/detail/1135',
+  history:[{d:'2020-01',r:0.70},{d:'2026-01',r:0.70}],
+  notices:["✅ 2026年7月時点で確認：ドットマネー→Vポイントの等価交換・手数料無料を公式ページ（d-money.jp）で再確認。月間上限100,000マネーも確認。",'ドットマネー→Vポイントは公式に等価交換（1:1）。Vポイント→ANAマイル(みずほルート)の70%と組み合わせて総合70%。直接交換(28.3%)より大幅に高レート。','2026年1月21日以降、みずほマイレージクラブカード/ANAは新規発行終了（既存保有者のみ利用可）。新規の方は60%ルート（三井住友ANAカード経由）を検討。','ドットマネー→Vポイントの反映まで4営業日程度。']});
+// ドットマネー→共通ポイント（1:1等価）
+d('dmoney','dpoint',{rate:1.0,url:'https://www.google.com/search?q=ドットマネー+dポイント+交換+公式',
+  history:[{d:'2020-01',r:1},{d:'2026-01',r:1}],verified:true,notices:['等価交換。キャンペーン時dポイント10%増量対象。']});
+d('dmoney','ponta',{rate:1.0,url:'https://www.google.com/search?q=ドットマネー+Pontaポイント+交換+公式',
+  history:[{d:'2020-01',r:1},{d:'2026-01',r:1}],verified:true,notices:['等価交換。']});
+d('dmoney','rakuten',{rate:1.0,url:'https://www.google.com/search?q=ドットマネー+楽天ポイント+交換+公式',
+  history:[{d:'2020-01',r:1},{d:'2026-01',r:1}],verified:true,notices:['等価交換。']});
+// ドットマネー→KF・マリオットBonvoy: 直接・間接ともに変換ルートなし（確認済み）
+d('dmoney','kris',{rate:0,url:'https://www.google.com/search?q=ドットマネー+KrisFlyer+マイル+交換',
+  history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],
+  notices:['KFへの直接換算ルートなし。ドットマネーからマリオットBonvoyへの変換経路が存在しないため、マリオット経由のKFブリッジも利用できません。','KFマイルを目指す場合は、ANAマイル（300マネー→85マイル≈28.3%）またはJALマイル（2マネー→1マイル=50%）への変換を検討してください。']});
+d('dmoney','marriott',{rate:0,url:'https://www.google.com/search?q=ドットマネー+マリオットBonvoy+交換',
+  history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],
+  notices:['マリオットBonvoyへの直接換算ルートなし。ドットマネーからマリオットへの変換経路は存在しません。','ドットマネー→ANAマイル（300マネー→85マイル≈28.3%）またはJALマイル（2マネー→1マイル=50%）への変換が現実的なルートです。']});
+// ドットマネー←各ポイントサイト(間接: ポイントサイト→dmoney等価)
+id('moppy','dmoney',{rate:1.0,route:[{from:'モッピー',to:'ドットマネー',rate:1.0,url:'https://www.google.com/search?q=モッピー+ドットマネー+交換+公式'}],url:'https://www.google.com/search?q=モッピー+ドットマネー+交換+公式',history:[{d:'2020-01',r:1},{d:'2026-01',r:1}],notices:['等価交換。']});
+d('hapitas','dmoney',{rate:0,url:'https://sp.hapitas.jp/notifications/view/1895',
+  history:[{d:'2020-01',r:1.0},{d:'2024-01',r:1.0},{d:'2025-10',r:0},{d:'2026-07',r:0}],
+  change:'down',verified:true,
+  notices:['2025年10月31日（23:59受付分まで）をもってハピタス→ドットマネーギフトコードへの交換は終了しており、現在このルートは利用不可。','代替ルートとして、ハピタス→PeX（等価交換・手数料無料）→Vポイント（500PeX=50円相当の手数料あり）、またはハピタス→デジタルギフト経由での現金化が案内されている。','みずほルート（ANAマイル交換）はハピタス→Vポイント直接交換を使用しており、ドットマネーを経由しないため今回の終了の影響はなし。','✅ 2026年7月時点で確認：終了状態が継続していることを確認。']});
+
+// ─── 現金購入レート ───
+// マリオット公式購入: 1,000pt=$12.50USD(セール以外)。通常時1pt≈1.875円(150円/ドル)→1円で約0.53pt
+d('jpy','marriott',{rate:1000/1875,url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi',
+  history:[{d:'2022-01',r:1000/1875},{d:'2024-01',r:1000/1875},{d:'2026-07',r:1000/1875}],verified:true,
+  notices:['マリオット公式から購入可能。通常1,000pt=$12.50(≈1,875円/150円換算)。2026年7月時点でも$12.50/1,000ptの基本価格は変わらず継続を複数のブログで確認（実際の円建て金額はカード会社適用の為替レートにより変動）。','定期的に30〜50%増量セールがあり、セール時は実質コスト大幅減。','購入は公式サイトで検索→「ポイントを購入」から。']});
+d('usd','marriott',{rate:80,url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi',
+  history:[{d:'2022-01',r:80},{d:'2024-01',r:80},{d:'2026-07',r:80}],verified:true,
+  notices:['1,000pt=$12.50USD → 1ドルで約80マリオットpt。2026年7月時点で基本価格に変更なしを確認。','セール時(30〜50%増量)は最大116ptになることも。']});
+// ─── 日本円/米ドル(現金) → ANA/JALマイル ───
+// ⚠ ANA・JALともに「バイマイル」制度（現金でのマイル直接購入）は存在しない。JAL公式規約(JMB一般規約25条)でマイル等の売買自体が禁止されている。
+// 米系エアラインやマリオット/ヒルトン/IHG/ハイアットのような公式ポイント購入制度は日系エアラインには無い。
+d('jpy','ana',{rate:0,url:'https://www.google.com/search?q=ANAマイル+購入+現金+公式',
+  history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['ANAマイルの現金購入（バイマイル）制度は公式には存在しません（複数のマイル専門ブログ・JAL規約で確認）。','ヤフオク・フリマアプリや海外の「Buy Airline Miles」等でマイルを購入する非公式な手段はありますが、規約違反のグレーゾーン行為であり、当サイトでは推奨しません。','公式ルートで現金からANAマイルを得たい場合は、マリオットBonvoyポイントを現金購入（1,000pt=$12.50）→ANAマイルへ変換（60,000pt→25,000マイル）という間接ルートが利用できます（下記参照、1マイルあたり約4.5円）。']});
+d('usd','ana',{rate:0,url:'https://www.google.com/search?q=ANA+miles+buy+official',
+  history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['ANAマイルの現金購入（バイマイル）制度は公式には存在しません。','マリオットBonvoyポイント経由（下記参照）が唯一の現実的な間接ルートです。']});
+id('jpy','ana',{rate:(1000/1875)*(25000/60000),
+  route:[{from:'日本円',to:'マリオットBonvoy(公式購入)',rate:1000/1875,url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi'},{from:'マリオットBonvoy',to:'ANAマイル',rate:25000/60000,url:'https://www.ana.co.jp/ja/us/amc/exchange-point/marriott-bonvoy/'}],
+  url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi',
+  history:[{d:'2022-01',r:(1000/1875)*(25000/60000)},{d:'2026-07',r:(1000/1875)*(25000/60000)}],
+  notices:['マリオットBonvoyポイントを公式購入（1,000pt=$12.50≈1,875円）→ANAマイルへ変換（60,000pt→25,000マイル、5,000pt単位のボーナス込み）した場合の実質レート。','1マイルあたり約4.5円のコスト。特典航空券の価値が1マイル5円以上の路線であれば理論上は割に合う場合もありますが、一般的にはポイントサイト経由での獲得の方がはるかに安価です。','マリオット購入セール（30〜50%増量）時はさらにお得になります。']});
+id('usd','ana',{rate:80*(25000/60000),
+  route:[{from:'米ドル',to:'マリオットBonvoy(公式購入)',rate:80,url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi'},{from:'マリオットBonvoy',to:'ANAマイル',rate:25000/60000,url:'https://www.ana.co.jp/ja/us/amc/exchange-point/marriott-bonvoy/'}],
+  url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi',
+  history:[{d:'2022-01',r:80*(25000/60000)},{d:'2026-07',r:80*(25000/60000)}],
+  notices:['1,000pt=$12.50 → 80マリオットpt/ドル → ANAマイル(60,000pt→25,000マイル)で、1ドルあたり約33.3マイル相当。']});
+d('jpy','jal',{rate:0,url:'https://www.google.com/search?q=JALマイル+購入+現金+公式',
+  history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['JALマイルの現金購入（バイマイル）制度は公式には存在しません。JMB一般規約第25条で特典の売買自体が明確に禁止されています。','ヤフオク等での非公式なマイル売買はJAL規約違反のグレーゾーン行為であり、当サイトでは推奨しません。','公式ルートで現金からJALマイルを得たい場合は、マリオットBonvoyポイントを現金購入→JALマイルへ変換（60,000pt→25,000マイル）という間接ルートが利用できます（下記参照）。']});
+d('usd','jal',{rate:0,url:'https://www.google.com/search?q=JAL+miles+buy+official',
+  history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['JALマイルの現金購入（バイマイル）制度は公式には存在しません（JMB一般規約第25条で売買禁止）。','マリオットBonvoyポイント経由（下記参照）が唯一の現実的な間接ルートです。']});
+id('jpy','jal',{rate:(1000/1875)*(25000/60000),
+  route:[{from:'日本円',to:'マリオットBonvoy(公式購入)',rate:1000/1875,url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi'},{from:'マリオットBonvoy',to:'JALマイル',rate:25000/60000,url:'https://www.google.com/search?q=JALマイル+マリオットBonvoy+交換+公式'}],
+  url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi',
+  history:[{d:'2022-01',r:(1000/1875)*(25000/60000)},{d:'2026-07',r:(1000/1875)*(25000/60000)}],
+  notices:['マリオットBonvoyポイントを公式購入（1,000pt=$12.50≈1,875円）→JALマイルへ変換（60,000pt→25,000マイル）した場合の実質レート。1マイルあたり約4.5円。','マリオット購入セール（30〜50%増量）時はさらにお得になります。']});
+id('usd','jal',{rate:80*(25000/60000),
+  route:[{from:'米ドル',to:'マリオットBonvoy(公式購入)',rate:80,url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi'},{from:'マリオットBonvoy',to:'JALマイル',rate:25000/60000,url:'https://www.google.com/search?q=JALマイル+マリオットBonvoy+交換+公式'}],
+  url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi',
+  history:[{d:'2022-01',r:80*(25000/60000)},{d:'2026-07',r:80*(25000/60000)}],
+  notices:['1,000pt=$12.50 → 80マリオットpt/ドル → JALマイル(60,000pt→25,000マイル)で、1ドルあたり約33.3マイル相当。']});
+// ─── 日本円/米ドル(現金) → KrisFlyer ───
+// ⚠ KrisFlyer(シンガポール航空)も、ANA/JAL同様に現金でのマイル直接購入制度は日本からは公式に案内されていない。
+d('jpy','kris',{rate:0,url:'https://www.google.com/search?q=KrisFlyer+マイル+購入+現金+公式',
+  history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['KrisFlyerマイルの現金購入（バイマイル）制度は、シンガポール航空公式には確認できませんでした（ANA/JAL同様、日系エアラインに準じた対応）。','公式ルートで現金からKFマイルを得たい場合は、マリオットBonvoyポイントを現金購入→KrisFlyerへ変換（60,000pt→25,000マイル）という間接ルートが利用できます（下記参照、1マイルあたり約4.5円）。']});
+d('usd','kris',{rate:0,url:'https://www.google.com/search?q=KrisFlyer+miles+buy+official',
+  history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],verified:true,
+  notices:['KrisFlyerマイルの現金購入（バイマイル）制度は確認できませんでした。','マリオットBonvoyポイント経由（下記参照）が唯一の現実的な間接ルートです。']});
+id('jpy','kris',{rate:(1000/1875)*(25000/60000),
+  route:[{from:'日本円',to:'マリオットBonvoy(公式購入)',rate:1000/1875,url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi'},{from:'マリオットBonvoy',to:'KrisFlyer',rate:25000/60000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/points-to-miles.mi'}],
+  url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi',
+  history:[{d:'2022-01',r:(1000/1875)*(25000/60000)},{d:'2026-07',r:(1000/1875)*(25000/60000)}],
+  notices:['マリオットBonvoyポイントを公式購入（1,000pt=$12.50≈1,875円）→KrisFlyerへ変換（60,000pt→25,000マイル）した場合の実質レート。1マイルあたり約4.5円。','マリオット購入セール（30〜50%増量）時はさらにお得になります。']});
+id('usd','kris',{rate:80*(25000/60000),
+  route:[{from:'米ドル',to:'マリオットBonvoy(公式購入)',rate:80,url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi'},{from:'マリオットBonvoy',to:'KrisFlyer',rate:25000/60000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/points-to-miles.mi'}],
+  url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi',
+  history:[{d:'2022-01',r:80*(25000/60000)},{d:'2026-07',r:80*(25000/60000)}],
+  notices:['1,000pt=$12.50 → 80マリオットpt/ドル → KrisFlyer(60,000pt→25,000マイル)で、1ドルあたり約33.3マイル相当。']});
+// ─── 日本円/米ドル(現金) → デルタSkyMiles ───
+// ⚠ ANA/JAL/KFと異なり、デルタ航空は公式の「バイマイル」制度を持つ（日系エアラインとの大きな違い）。
+// 公式価格: 1マイル=US$0.035（2,000マイル単位、年間6万マイルまで）。ここに米国連邦消費税7.5%が別途加算される。
+d('usd','delta',{rate:1/(0.035*1.075),url:'https://ja.delta.com/buygftxfer/displayBuyMiles.action',
+  history:[{d:'2022-01',r:1/(0.035*1.075)},{d:'2026-07',r:1/(0.035*1.075)}],verified:true,
+  notices:['デルタ航空公式のバイマイル制度で確認: 1マイル=US$0.035（基本価格）+米国連邦消費税7.5%で、実質1マイル≈$0.0376。','2,000マイル単位、1回最大60,000マイルまで購入可能（年間上限も60,000マイル）。','ANA/JALと異なり公式に現金でのマイル購入が可能。ただし1マイル約4.1円（150円/$換算）と、一般的なマイル価値評価（1マイル1.5〜2円程度）よりかなり割高。']});
+d('jpy','delta',{rate:1/(0.035*1.075*150),url:'https://ja.delta.com/buygftxfer/displayBuyMiles.action',
+  history:[{d:'2022-01',r:1/(0.035*1.075*150)},{d:'2026-07',r:1/(0.035*1.075*150)}],verified:true,
+  notices:['同上のUSD建て公式レートを150円/ドルで円換算。1マイル≈4.1円相当（消費税7.5%込み）。','決済通貨は米ドル建てのため、実際の負担額はクレジットカード会社適用の為替レートにより変動します。']});
+id('usd','delta',{rate:80*(20000/60000),
+  route:[{from:'米ドル',to:'マリオットBonvoy(公式購入)',rate:80,url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi'},{from:'マリオットBonvoy',to:'デルタSkyMiles',rate:20000/60000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/points-to-miles.mi'}],
+  url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi',
+  history:[{d:'2022-01',r:80*(20000/60000)},{d:'2026-07',r:80*(20000/60000)}],
+  notices:['マリオット経由（1ドルあたり約26.7マイル相当）は、デルタ公式バイマイル（約26.6マイル/ドル、税込）とほぼ同水準です。','デルタはマリオット向けにボーナスなし（60,000pt→20,000マイルの低い方の枠）のため、ANA/JAL/KF(41.7%)より低い33.3%止まりとなり、公式バイマイルとの差がほぼなくなっています。']});
+id('jpy','delta',{rate:(1000/1875)*(20000/60000),
+  route:[{from:'日本円',to:'マリオットBonvoy(公式購入)',rate:1000/1875,url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi'},{from:'マリオットBonvoy',to:'デルタSkyMiles',rate:20000/60000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/points-to-miles.mi'}],
+  url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi',
+  history:[{d:'2022-01',r:(1000/1875)*(20000/60000)},{d:'2026-07',r:(1000/1875)*(20000/60000)}],
+  notices:['マリオット経由は、デルタ公式バイマイル（円換算・税込）とほぼ同水準です。どちらを使っても大差ありません。']});
+
+// ヒルトン公式購入: 10,000pts≈$95USD → 1USD≈105pt / 1円≈0.70pt(150円換算)
+d('jpy','hilton',{rate:105/150,url:'https://www.google.com/search?q=ヒルトンHonors+ポイント+購入+日本円+公式',
+  history:[{d:'2022-01',r:1/142.5},{d:'2024-01',r:1/142.5},{d:'2026-07',r:105/150}],verified:false,notices:['ヒルトン公式: 10,000pts≈$95USD(≈14,250円/150円換算)なので、14,250円→10,000ptで0.70pt/円（usdレート105pt/$を150円/$で割った値と一致）。','セール時は最大100%ボーナスあり。','公式サイトで要確認。',
+    '⚠ 国内ポイントサイト（モッピー・ハピタス・楽天ポイント等）からヒルトン・オナーズへの直接交換ルートは存在しません（2026年7月時点、複数のポイ活ブログで横断確認済み）。宿泊実績・提携クレジットカード決済・この公式ポイント購入のいずれかでのみ入手可能です。']});
+d('usd','hilton',{rate:105,url:'https://www.google.com/search?q=ヒルトンHonors+ポイント+購入+USD+公式',
+  history:[{d:'2022-01',r:105},{d:'2024-01',r:105},{d:'2026-07',r:105}],verified:false,
+  notices:['✅ 2026年7月時点で確認：基本価格に変更がないことを確認。','10,000pts≈$95USD → 1ドル≈105ヒルトンpt。','セール時2倍も。公式サイトで要確認。']});
+// IHG公式購入: 1,000pt=$13.50USD(セール以外)。通常時1pt≈2.025円(150円/ドル)
+d('jpy','ihg',{rate:1000/2025,url:'https://www.google.com/search?q=IHG+One+Rewards+ポイント購入+公式',
+  history:[{d:'2026-07',r:1000/2025}],verified:true,
+  notices:['IHG公式: 1,000pt=$13.50USD(≈2,025円/150円換算、通常価格)。IHG公式・複数の陸マイラーブログで確認。','年数回、最大100%ボーナスのポイント購入セールを実施。セール時は実質1pt≈0.6〜1円程度まで下がる。',
+    '⚠ 国内ポイントサイト（モッピー・ハピタス・楽天ポイント等）からIHG One Rewardsへの直接交換ルートは存在しません（2026年7月時点で確認）。宿泊実績・提携クレジットカード決済・この公式ポイント購入のいずれかでのみ入手可能です。']});
+d('usd','ihg',{rate:1000/13.5,url:'https://www.google.com/search?q=IHG+One+Rewards+buy+points+official',
+  history:[{d:'2026-07',r:1000/13.5}],verified:true,
+  notices:['1,000pt=$13.50USD → 1ドル≈74.1 IHGpt(通常価格)。','セール時は最大100%増量。']});
+// World of Hyatt公式購入: 1,000pt=$24.00USD(1pt≈2.4セント、通常価格)。1円換算≈150円/ドルで1pt≈3.6円
+d('jpy','hyatt',{rate:1000/3600,url:'https://www.google.com/search?q=World+of+Hyatt+ポイント購入+公式',
+  history:[{d:'2026-07',r:1000/3600}],verified:true,
+  notices:['ハイアット公式: 1,000pt=$24.00USD(1pt≈2.4セント≈3.6円/150円換算、通常価格)。ハイアット公式FAQ・複数ブログで確認。','年1回あたり55,000ptまで購入可能(1,000pt単位)。20〜40%程度のセール(割引 or 増量)が不定期開催。',
+    '⚠ 国内ポイントサイト（モッピー・ハピタス・楽天ポイント等）からWorld of Hyattへの直接交換ルートは存在しません（2026年7月時点で確認）。宿泊実績・提携クレジットカード決済・この公式ポイント購入のいずれかでのみ入手可能です。']});
+d('usd','hyatt',{rate:1000/24,url:'https://www.google.com/search?q=World+of+Hyatt+buy+points+official',
+  history:[{d:'2026-07',r:1000/24}],verified:true,
+  notices:['1,000pt=$24.00USD → 1ドル≈41.7ハイアットpt(通常価格)。','セール時は20〜40%程度お得になることがある。']});
+// Accor ALL: 一般会員向けの公式ポイント購入制度は確認できず(2026年7月時点)。宿泊・提携カード決済でのみ蓄積可能。
+d('jpy','accor',{rate:0,url:'https://www.google.com/search?q=Accor+ALL+ポイント購入+公式',
+  history:[{d:'2026-07',r:0}],verified:false,
+  notices:['⚠ マリオット・ヒルトン・IHG・ハイアットと異なり、Accor ALLには一般会員向けの公式「ポイント購入」制度が見当たりません（2026年7月時点、ALL公式サイト複数ページで確認）。','宿泊(1泊10€ごとにClassic会員で12.5pt程度)・提携クレジットカード決済でのみ蓄積可能。','宿泊時は2,000pt=40€の固定レートで割引に充当できるのが特徴（マリオット/IHGのような変動制ではない）。',
+    '⚠ 国内ポイントサイト（モッピー・ハピタス・楽天ポイント等）からAccor ALLへの直接交換ルートも存在しません。']});
+d('usd','accor',{rate:0,url:'https://www.google.com/search?q=Accor+ALL+buy+points+official',
+  history:[{d:'2026-07',r:0}],verified:false,
+  notices:['マリオット・ヒルトン・IHG・ハイアットと異なり、Accor ALLには一般会員向けの公式「ポイント購入」制度が見当たりません（2026年7月時点で確認）。','宿泊・提携クレジットカード決済でのみ蓄積可能。']});
+// ─── マイル間 / SKYコイン ───
+d('kris','avios',{rate:0,url:'https://www.britishairways.com/content/ja/jp/the-british-airways-club/avios',
+  history:[{d:'2020-01',r:1.0},{d:'2024-01',r:1.0},{d:'2026-07',r:0}],
+  verified:true,
+  notices:['⚠ よくある誤情報にご注意: 「1:1で交換できる」という情報が一部で見られますが、そもそも航空会社間のマイル同士は原則として直接交換できません（Aviosグループ内でのみ相互移行可）。','Avios（英エアウェイズ・アビオス）はBA・イベリア航空・Aer Lingus・カタール航空・Finnairなど「Avios陣営」内でのみ1:1相互移行が可能で、KrisFlyer（シンガポール航空・スターアライアンス）はこのグループに属していないため、直接交換ルートは確認できなかった。']});
+d('avios','kris',{rate:0,url:'https://www.britishairways.com/content/ja/jp/the-british-airways-club/avios',
+  history:[{d:'2020-01',r:1.0},{d:'2024-01',r:1.0},{d:'2026-07',r:0}],
+  verified:true,
+  notices:['⚠ よくある誤情報にご注意: 「1:1で交換できる」という情報が一部で見られますが、そもそも航空会社間のマイル同士は原則として直接交換できません。KrisFlyerはAviosグループに属していないため、直接交換ルートは確認できませんでした。']});
+d('kris','united',{rate:0,url:'https://www.flyertalk.com/forum/united-airlines-mileageplus/2041264-exchanging-my-krisflyer-miles-mileageplus-miles.html',
+  history:[{d:'2020-01',r:1.0},{d:'2024-01',r:1.0},{d:'2026-07',r:0}],
+  verified:true,
+  notices:['⚠ よくある誤情報にご注意: 「1:1で交換できる」という情報が一部で見られますが、航空会社のマイル同士は提携関係にあっても直接交換できないのが原則です（FlyerTalkフォーラムでも明確に確認）。','KrisFlyer→UAマイルへの間接ルートとしてはShangri-La Golden Circleポイント経由（12:1で大幅に目減り）があるが、実用的ではない。']});
+d('ana','anacoin',{rate:1.0,url:'https://www.google.com/search?q=ANA+SKYコイン+マイル+交換+公式',
+  history:[{d:'2020-01',r:1},{d:'2024-01',r:1},{d:'2026-01',r:1}],verified:true,
+  notices:['1マイル=1SKYコイン(基本)。','10,000マイル以上交換でステータス・カード種別に応じ1.2〜1.7倍。(例: 一般カード10,000マイル→12,000コイン)','最大200,000マイル/回。SKYコイン有効期限12ヶ月。ANA便・ツアー支払いに使用可。']});
+d('ana','marriott',{rate:1.0,url:'https://www.ana.co.jp/ja/jp/shoppingandlife/point/tukau_marriott/',
+  history:[{d:'2020-01',r:1},{d:'2024-01',r:1},{d:'2026-07',r:1}],verified:true,
+  notices:['10,000マイル単位。3回目以降は2マイル:1ptに逓減。','2026年7月、ANA公式ページで再確認済み（数値に変更なし）。']});
+
+// ════════════════════════════════
+// マイル集約電卓 専用設定
+// ════════════════════════════════
+// 電卓だけに必要な上限・所要日数・保守的なレート選択。マトリクスのレート自体は上の d()/id() が正。
+const AGG_UNIT_OVERRIDES = { dmoney:'マネー', jpy:'円', usd:'USD' };
+
+const AGG_OVERRIDES = {
+  kris: {
+    moppy:   { daysMax:21 },
+    hapitas: { daysMax:21 },
+    marriott:{ daysMax:14 },
+    rakuten: { daysMax:35 },
+  },
+  ana: {
+    marriott:{ daysMax:14 },
+    dmoney:  { daysMax:4 },
+    amex_mr: { annualCapMiles:40000, daysMax:14, daysNote:'初回移行:最大2週間／2回目以降:約5営業日' },
+    rakuten: { monthlyCapPoints:20000, overflowRate:0, overflowLabel:'交換ルートなし', daysMax:28 },
+    jpy: { rateOverride:0, routeNote:'ANAマイルの直接現金購入ルートはありません。不足分は下部の「現金購入参考額」（マリオット経由）をご利用ください' },
+    usd: { rateOverride:0, routeNote:'ANAマイルの直接現金購入ルートはありません。不足分は下部の「現金購入参考額」（マリオット経由）をご利用ください' },
+  },
+  jal: {
+    moppy:   { monthlyCapPoints:12000, overflowRate:0.60, overflowLabel:'Pontaポイント経由' },
+    marriott:{ daysMax:14 },
+    vpoint:  { daysMax:56 },
+    // マリオット経由(41.3%)は直接移行(40%)よりわずかに高いが、2段階の手続きと2週間程度かかり実益が薄いため、電卓は直接移行を採用
+    amex_mr: { rateOverride:1000/2500, routeNote:'MRプラス登録時：2,500pt=1,000JALマイル（40%・手数料無料・上限なし）。マリオット経由なら41.3%まで上がるが、2週間程度かかり実益がわずかなため直接移行を採用' },
+    // ハピタス/ドットマネーはPontaポイント経由の年3回程度のレートアップキャンペーン中のみ60%。常時ではないため電卓は50%を採用
+    hapitas: { rateOverride:0.50, routeNote:'直接交換50%。年3回程度のPontaポイント経由レートアップキャンペーン中は60%まで狙えるが常時ではない' },
+    dmoney:  { rateOverride:0.50, routeNote:'直接交換（2マネー=1マイル・50%）。年1回程度のキャンペーン時55%' },
+    jpy: { rateOverride:0, routeNote:'JALマイルの直接現金購入ルートはありません。不足分は下部の「現金購入参考額」（マリオット経由）をご利用ください' },
+    usd: { rateOverride:0, routeNote:'JALマイルの直接現金購入ルートはありません。不足分は下部の「現金購入参考額」（マリオット経由）をご利用ください' },
+  },
+  marriott: {
+    moppy: { dailyCapPoints:50000, daysMax:7, daysNote:'初回審査:約1週間／24時間あたり交換上限5万P' },
+  },
+};
+
+const AGG_TARGET_META = {
+  kris:     { label:'KFマイル',        unit:'マイル', color:'#1a5c1a', bg:'#e8f5e9', border:'#a5d6a7', note:'KrisFlyer(SQ)マイル — KF直接ルートなし項目はゼロ計上' },
+  ana:      { label:'ANAマイル',       unit:'マイル', color:'#185fa5', bg:'#e3f2fd', border:'#90caf9', note:'ANAマイル — みずほルートは2026年1月以降新規発行終了（既存保有者のみ継続可）' },
+  jal:      { label:'JALマイル',       unit:'マイル', color:'#c62828', bg:'#ffebee', border:'#ef9a9a', note:'JALマイル ※モッピーはドリームキャンペーン(ほぼ通年)利用で実質80%。12,000P→6,000マイル＋翌月末4,500P返還の仕組み' },
+  marriott: { label:'マリオットBonvoy', unit:'ポイント', color:'#7a2a60', bg:'#fce4ec', border:'#f48fb1', note:'マリオットBonvoy — 60,000pt単位でKF等に換算時ボーナス+5,000マイル' },
+};
+
+// Node.js等でのテスト用（ブラウザでは無視されます）
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { EXCHANGE_DATA_META, CASH_BUY, CATS, PTS, RD, AGG_UNIT_OVERRIDES, AGG_OVERRIDES, AGG_TARGET_META };
+}
