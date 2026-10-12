@@ -422,6 +422,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
       <div style="font-size:9.5px;color:var(--text-dim);margin-top:5px;line-height:1.55">
         目安：エコノミー2〜3円・ビジネス5〜7円・ファースト8〜10円。実質おトク額と並び順がリアルタイム更新されます。
       </div>
+      <div id="mvMbNote" style="display:none;font-size:9.5px;color:#7a5500;background:#fff8e1;border-radius:4px;padding:4px 6px;margin-top:5px;line-height:1.55"></div>
     </div>
     <div class="cs">
       <div class="ctrl-lbl"><span class="n">5</span>こだわり条件</div>
@@ -446,7 +447,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
           <span class="chip" data-k="multi" onclick="tgTag(this)">🔀 マルチ対応</span>
           <button class="tip-btn" type="button" onclick="void(0)">?</button>
         </span>
-        <span class="chip-wrap" data-tip="ホテル無料宿泊特典があるカードのみ表示。MBプレミアム（年400万円利用・世界対象）、アメックスゴールド・プリファード（年200万円利用・国内限定）が該当。">
+        <span class="chip-wrap" data-tip="ホテル無料宿泊特典があるカードのみ表示。MBプレミアム（年400万円利用・世界対象）、MBアメックス一般（年250万円利用・世界対象）、ヒルトンHonorsアメックス（年150万円利用・週末1泊）、アメックスゴールド・プリファード（年200万円利用・国内限定）が該当。特典の金銭価値は実質おトク額に含めていません。">
           <span class="chip" data-k="free-night" onclick="tgTag(this)">🏨 無料宿泊あり</span>
           <button class="tip-btn" type="button" onclick="void(0)">?</button>
         </span>
@@ -478,12 +479,12 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
         <div class="fy-sw"></div>
         <div class="fy-desc">
           <strong>📅 入会ボーナス込みで計算する</strong>
-          各カードの入会ボーナスの目安を加算して実質おトク額・並び順をリアルタイム更新します
+          各カードの入会ボーナスの目安を加算して実質おトク額・並び順をリアルタイム更新します（年間決済額のペースで達成できる条件の分だけ加算）
           <span class="fy-on-badge">初年度モード ON</span>
         </div>
       </div>
       <div style="font-size:9.5px;color:var(--text-dim);margin-top:6px;line-height:1.55">
-        ※ ボーナスは確認時点の公表キャンペーンの最大値（目安）で、内容は時期により大きく変わります。終了・未確認のキャンペーンは加算していません。アメックス・ダイナースからANAマイルへの移行は年4万マイルまでのため、超える分は表示上も上限で止めています。
+        ※ ボーナスは確認時点の公表キャンペーン（目安）で、内容は時期により大きく変わります。「◯か月で◯万円利用」などの条件は、設定した年間決済額を月割りしたペースで達成できる段階の分だけ加算します（例：年200万円なら3か月で50万円・6か月で100万円まで）。終了・未確認のキャンペーンは加算していません。アメックス・ダイナースからANAマイルへの移行は年4万マイルまでのため、超える分は表示上も上限で止めています。
       </div>
     </div>
 
@@ -852,10 +853,26 @@ function getMiles(c){return c.milesCalc(S.amt,S.mile)}
 function getRate(c){return(getMiles(c)/(S.amt*10000))*100}
 function getExtraFee(c){return (c.extraFees&&c.extraFees[S.mile])||0}
 function getCostFee(c){return c.fee+getExtraFee(c)}
+// 入会ボーナスのうち、年間決済額のペースで達成できる段階の値（card-rates.js の bonusTiers を使用）
+// 例：「6か月で150万円」は、年200万円ペースだと6か月で100万円なので未達 → 加算しない
+function bonusAchieved(c){
+  if(!c.bonusMilesApprox)return 0;
+  if(!Array.isArray(c.bonusTiers)||!c.bonusTiers.length)return c.bonusMilesApprox;
+  let v=0;
+  c.bonusTiers.forEach(t=>{ if(S.amt*(t.months||0)/12>=t.spend) v=Math.max(v,t.value); });
+  return v;
+}
+function bonusShortfall(c){return S.firstYear&&Array.isArray(c.bonusTiers)&&c.bonusTiers.length&&bonusAchieved(c)<c.bonusMilesApprox}
 function getBonusMiles(c){
   if(!S.firstYear||!c.bonusMilesApprox)return 0;
+  const base=bonusAchieved(c);
+  if(!base)return 0;
+  c={...c,bonusMilesApprox:base};
   if(c.bonusMbPt){
-    return S.mile==='MB'?c.bonusMilesApprox:mbmi(c.bonusMilesApprox);
+    if(S.mile==='MB')return c.bonusMilesApprox;
+    // 通常ポイントと合算して60,000pt単位のボーナスを計算（別々に換算すると端数が増えて過小になるため）
+    const basePt=c.milesCalc(S.amt,'MB');
+    return mbmi(basePt+c.bonusMilesApprox)-mbmi(basePt);
   }
   if(c.bonusHilton){
     // ヒルトンポイント：MB表示ならそのまま、マイル表示なら10,000pt=1,000マイル
@@ -869,6 +886,12 @@ function getBonusMiles(c){
   // その他：マイル（選んだ種別に対応している場合のみ）
   return (c.rates[S.mile]||0)>0?c.bonusMilesApprox:0;
 }
+// 実質おトク額に使う「1単位あたりの円換算」。マリオット／ヒルトン重視ではホテルポイントの目安単価、それ以外は1マイルの価値
+function hotelPtYen(c){
+  const H=(typeof HOTEL_PT_YEN!=='undefined')?HOTEL_PT_YEN:{marriott:0.8,hilton:0.5};
+  return c.bonusHilton||c.id==='hilton'?H.hilton:H.marriott;
+}
+function unitVal(c){return S.mile==='MB'?hotelPtYen(c):S.mileVal}
 function capApplies(c){return !!c.anaCap&&(S.mile==='ANA'||S.mile==='ALL')}
 function rawTotalMiles(c){return getMiles(c)+getBonusMiles(c)}
 function getEffectiveMiles(c){
@@ -904,6 +927,11 @@ function calcScore(c){
 
 // ━━━━━━━━ Render ━━━━━━━━
 function render(){
+  const mbNote=document.getElementById('mvMbNote');
+  if(mbNote){
+    mbNote.style.display=S.mile==='MB'?'block':'none';
+    mbNote.textContent=`「マリオット／ヒルトン重視」では、上の「1マイルの価値」ではなく、ホテルポイントの目安価値（マリオット1pt=${HOTEL_PT_YEN.marriott}円・ヒルトン1pt=${HOTEL_PT_YEN.hilton}円）で実質おトク額を計算します。`;
+  }
   let cards=[...CARDS];
   cards=cards.filter(c=>{
     if(!brandOK(c))return false;
@@ -918,7 +946,7 @@ function render(){
   });
   const sortFns={
     score:(a,b)=>calcScore(b)-calcScore(a),
-    profit:(a,b)=>(getEffectiveMiles(b)*S.mileVal-getEffectiveFee(b))-(getEffectiveMiles(a)*S.mileVal-getEffectiveFee(a)),
+    profit:(a,b)=>(getEffectiveMiles(b)*unitVal(b)-getEffectiveFee(b))-(getEffectiveMiles(a)*unitVal(a)-getEffectiveFee(a)),
     miles:(a,b)=>getEffectiveMiles(b)-getEffectiveMiles(a),
     fee:(a,b)=>getCostFee(a)-getCostFee(b),
   };
@@ -953,19 +981,24 @@ function cardHTML(c,best,maxMiles){
   const costFee=getCostFee(c);
   const extra=getExtraFee(c);
   const rate=getRate(c);
-  const profit=Math.round(totalMiles*S.mileVal-effectiveFee);
+  const profit=Math.round(totalMiles*unitVal(c)-effectiveFee);
   const goalMiles=getGoalMiles();
   const goalYrs=miles>0?(goalMiles/miles).toFixed(1):'—';
   const profitCls=profit>=0?'pos':'neg';
   const profitStr=(profit>=0?'+':'')+fmt(profit)+'円';
   const profitLabel=S.firstYear?'実質おトク額（初年度）':'実質おトク額';
-  const profitSub=S.firstYear?`初年度試算（ボーナス込）・${S.mileVal}円/M`:`年間試算・マイル価値${S.mileVal}円`;
+  const valLbl=S.mile==='MB'?`1pt=${hotelPtYen(c)}円`:`${S.mileVal}円/M`;
+  const profitSub=S.firstYear?`初年度試算（ボーナス込）・${valLbl}`:(S.mile==='MB'?`年間試算・ポイント価値${valLbl}`:`年間試算・マイル価値${S.mileVal}円`);
   const barPct=Math.min(100,Math.round((totalMiles/maxMiles)*100))||0;
 
   let bonusIndicator='';
   if(S.firstYear){
     const chips=[];
     if(bonusMiles>0)chips.push(`入会ボーナス +${fmt(bonusMiles)}${S.mile==='MB'?'pt':'マイル'}（目安）`);
+    if(bonusShortfall(c)){
+      const t=c.bonusTiers[c.bonusTiers.length-1];
+      chips.push(`年${S.amt}万円ペースでは入会ボーナスの条件（${t.months}か月で${t.spend}万円）に${bonusMiles>0?'一部':''}届かないため、${bonusMiles>0?'達成できる段階まで':'加算していません'}`);
+    }
     if(c.bonusFeeWaiver)chips.push(`初年度年会費無料 −${fmt(c.bonusFeeWaiver)}円`);
     if(isCapped(c))chips.push(capCarryNote(c));
     if(chips.length>0){
@@ -1248,7 +1281,7 @@ function buildCmpTable(c0,c1){
   const m0=getMiles(c0),m1=getMiles(c1);
   const t0=getEffectiveMiles(c0),t1=getEffectiveMiles(c1);
   const f0=getEffectiveFee(c0),f1=getEffectiveFee(c1);
-  const p0=Math.round(t0*S.mileVal-f0),p1=Math.round(t1*S.mileVal-f1);
+  const p0=Math.round(t0*unitVal(c0)-f0),p1=Math.round(t1*unitVal(c1)-f1);
   const r0=getRate(c0),r1=getRate(c1);
   const gm=getGoalMiles();
   const gy0=m0>0?(gm/m0).toFixed(1):'—';
@@ -1345,7 +1378,7 @@ function buildCmpTable(c0,c1){
     <td><div class="cmp-feat">${psL(c1.psType)}</div></td>
   </tr>
 </table>
-<div class="cmp-hint">🏆 緑のハイライトは優位な項目。実質おトク額は現在の設定（1マイル=${S.mileVal}円・${S.amt}万円/年）で計算。年会費注記・換算条件はカード詳細を必ずご確認ください。</div>
+<div class="cmp-hint">🏆 緑のハイライトは優位な項目。実質おトク額は現在の設定（${S.mile==='MB'?`マリオット1pt=${HOTEL_PT_YEN.marriott}円・ヒルトン1pt=${HOTEL_PT_YEN.hilton}円`:`1マイル=${S.mileVal}円`}・${S.amt}万円/年）で計算。年会費注記・換算条件はカード詳細を必ずご確認ください。</div>
 `;}
 
 // ━━━━━━━━ 初期化（ローカル保存→URLパラメータの順で復元）━━━━━━━━

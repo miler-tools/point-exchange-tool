@@ -17,6 +17,10 @@
  *  milesCalc   : 年間決済額（万円）から獲得マイル数を計算する関数
  *                ※ rates を変えたら、milesCalc 内の係数も同じ値に直すこと
  *  extraFees / anaCap : 移行に必要な追加費用・ANA年間移行上限
+ *  bonusMilesApprox    : 入会ボーナスの最大値（通常ポイント分は含めない。通常分は milesCalc 側で計算済み）
+ *  bonusTiers  : 入会ボーナスの達成段階 [{spend:利用額(万円), months:期間(か月), value:その段階までの累計ボーナス}]
+ *                初年度モードでは「年間決済額÷12×months ≧ spend」を満たす段階の value だけ加算する
+ *                （未設定のカードは従来どおり bonusMilesApprox をそのまま加算）
  *  その他（desc, alerts, outlook, bonusCurrent など）: 画面に出る説明文・キャンペーン情報
  *
  * 【読み込み方】 mile-card-tool.html で本ファイルを先に読み込みます。
@@ -40,6 +44,9 @@ const GLBL={
 // マリオットポイント→マイル（3pt=1マイル、60,000ptごとに5,000マイルのボーナス）
 function mbmi(pt){const b=Math.floor(pt/60000);return b*25000+Math.round((pt%60000)*(20000/60000))}
 const ANA_CAP_NOTE='ANAマイルへの移行は年4万マイルまで';
+// 「マリオット／ヒルトン重視」表示で使う、ホテルポイント1ptあたりの円換算の目安（実質おトク額の計算用）
+// この表示では「1マイルの価値」スライダーではなく、こちらの単価を使う。相場が変わったらここを更新
+const HOTEL_PT_YEN = { marriott:0.8, hilton:0.5 };
 
 // ━━━━━━━━ カードデータ（19枚・2026年10月7日確認） ━━━━━━━━
 // extraFees：選んだマイルへの移行に必要な年間参加費（カード年会費とは別）
@@ -52,6 +59,7 @@ const CARDS=[
     sources:['https://www.americanexpress.com/ja-jp/credit-cards/marriott-bonvoy-premium/'], // 出典（公式ページ）
     pointSystem:"マリオットBonvoy",
     name:'マリオットBonvoy アメックスプレミアム',issuer:'American Express',tagline:'40社超マルチ移行 × 最大1.25% — マイル先送り型の最終兵器',bonusMilesApprox:75000,bonusMbPt:true,bonusFeeWaiver:0,
+    bonusTiers:[{spend:150,months:6,value:75000}],
     psType:'referral',
     fee:82500,feeNote:'2025年8月21日以降の申込み・既存会員は順次（旧49,500円）。',ac:'linear-gradient(90deg,#7C3AED,#F97316)',
     brands:['AMEX'],
@@ -94,6 +102,7 @@ const CARDS=[
     sources:['https://www.americanexpress.com/ja-jp/credit-cards/gold-preferred-card/'], // 出典（公式ページ）
     pointSystem:"AMEXメンバーシップ・リワード",
     name:'アメックスゴールド・プリファード',issuer:'American Express',tagline:'13社マルチ + 入会キャンペーン大 — 初年度爆積みの定番カード',bonusMilesApprox:110000,bonusMrPt:true,bonusFeeWaiver:0,
+    bonusTiers:[{spend:50,months:3,value:30000},{spend:100,months:6,value:110000}],
     psType:'referral',
     fee:39600,feeNote:'ANA移行は「メンバーシップ・リワードANAコース」年5,500円が別途必要（年間移行上限40,000マイル）。メンバーシップ・リワード・プラスは無料で自動付帯。JAL移行は2,500pt→1,000マイル（0.4%）。',ac:'linear-gradient(90deg,#F59E0B,#EF4444)',
     brands:['AMEX'],
@@ -125,6 +134,7 @@ const CARDS=[
     sources:['https://www.americanexpress.com/ja-jp/credit-cards/ana-gold-card/'], // 出典（公式ページ）
     pointSystem:"ANAマイル直接",
     name:'ANAアメックスゴールドカード',issuer:'American Express（ANA）',tagline:'ANA移行の年間上限なし × 利用ボーナス — ANA一直線のアメックス',bonusMilesApprox:108000,bonusFeeWaiver:0,
+    bonusTiers:[{spend:0,months:0,value:2000},{spend:75,months:3,value:36000},{spend:150,months:3,value:77000},{spend:200,months:3,value:108000}],
     psType:'referral',
     fee:42900,feeNote:'2026年9月2日以降の申込みは年会費42,900円（旧34,100円・既存会員は順次）。ANAマイルへの移行はコース登録・参加費不要で、年間移行上限もなし。',ac:'linear-gradient(90deg,#0EA5E9,#2563EB)',
     brands:['AMEX'],
@@ -299,6 +309,7 @@ const CARDS=[
     sources:['https://www.americanexpress.com/ja-jp/credit-cards/card-types/both-marriott-bonvoy-mclp-ieep/'], // 出典（公式ページ）
     pointSystem:"マリオットBonvoy",
     name:'マリオットBonvoy アメックス（一般）',issuer:'American Express',tagline:'マルチ対応・最大0.833% — MBプレミアムのコスト抑え版',bonusMilesApprox:40000,bonusMbPt:true,bonusFeeWaiver:0,
+    bonusTiers:[{spend:100,months:6,value:40000}],
     psType:'referral',
     fee:34100,feeNote:'2025年の改定で公共料金・税金等のポイント付与率が引き下げ、事業用決済はポイント対象外に。',ac:'linear-gradient(90deg,#7C3AED,#A78BFA)',
     brands:['AMEX'],
@@ -318,7 +329,8 @@ const CARDS=[
     checked:'2026-10-07', // 最終確認日（公式サイト照合日）。数値を見直したらこの日付も更新
     sources:['https://www.americanexpress.com/ja-jp/credit-cards/hilton-classic-card/'], // 出典（公式ページ）
     pointSystem:"ヒルトンオナーズポイント",
-    name:'ヒルトンHonors アメックスカード',issuer:'American Express',tagline:'ヒルトンゴールド自動付帯 — マイルではなくホテル宿泊向け',bonusMilesApprox:16000,bonusMbPt:false,bonusHilton:true,bonusFeeWaiver:0,
+    name:'ヒルトンHonors アメックスカード',issuer:'American Express',tagline:'ヒルトンゴールド自動付帯 — マイルではなくホテル宿泊向け',bonusMilesApprox:10000,bonusMbPt:false,bonusHilton:true,bonusFeeWaiver:0, // 通常ポイント6,000ptはmilesCalc側で計上済みのため、ボーナス分の10,000ptのみ
+    bonusTiers:[{spend:30,months:3,value:10000}],
     psType:'referral',
     fee:16500,feeNote:'マイル換算効率：100円=2pt、10,000pt=1,000マイル（ANA・JAL）で0.2%と低効率。ホテル宿泊にポイントを使う前提のカード。',ac:'linear-gradient(90deg,#0EA5E9,#164E63)',
     brands:['AMEX'],
@@ -413,6 +425,7 @@ const CARDS=[
     sources:['https://www.americanexpress.com/ja-jp/credit-cards/green-card/'], // 出典（公式ページ）
     pointSystem:"AMEXメンバーシップ・リワード",
     name:'アメックスグリーンカード',issuer:'American Express',tagline:'ANA1.0% × 月1,100円 — AMEXブランドのスタートライン',bonusMilesApprox:35000,bonusMrPt:true,bonusFeeWaiver:0,
+    bonusTiers:[{spend:20,months:3,value:5000},{spend:50,months:6,value:35000}], // 3段目（対象加盟店で最大15,000pt）は達成できる前提
     psType:'referral',
     fee:13200,feeNote:'月会費1,100円（年13,200円）。ANA1.0%にはメンバーシップ・リワード・プラス（年3,300円）＋ANAコース（年5,500円）が別途必要。JAL・KFのレートアップにもプラス（年3,300円）が必要。',ac:'linear-gradient(90deg,#16A34A,#0EA5E9)',
     brands:['AMEX'],
@@ -485,5 +498,5 @@ function mbBatchToMiles(pt){ return mbmi(pt); }
 
 // Node.js等でのテスト用（ブラウザでは無視されます）
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { CARDS, CARD_RATES, CARD_DATA_META, GOAL_MPP, GLBL, mbmi, mbBatchToMiles, ANA_CAP_NOTE };
+  module.exports = { CARDS, CARD_RATES, CARD_DATA_META, GOAL_MPP, GLBL, mbmi, mbBatchToMiles, ANA_CAP_NOTE, HOTEL_PT_YEN };
 }
