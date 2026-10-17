@@ -2252,7 +2252,7 @@ function runAgg() {
     }
     const winCol = dualActive ? `<th style="text-align:center;padding:3px 5px;color:var(--text2)">振分先</th>` : '';
     let html = `<table style="width:100%;border-collapse:collapse;font-size:11px">`;
-    html += `<tr style="border-bottom:1px solid var(--border2)"><th style="text-align:left;padding:3px 5px;color:var(--text2)">ポイント種別</th><th style="text-align:right;padding:3px 5px;color:var(--text2)">保有数</th>${winCol}<th style="text-align:right;padding:3px 5px;color:var(--text2)">換算率</th><th style="text-align:right;padding:3px 5px;color:var(--text2)">換算値</th></tr>`;
+    html += `<tr style="border-bottom:1px solid var(--border2)"><th style="text-align:left;padding:3px 5px;color:var(--text2)">ポイント種別</th><th style="text-align:right;padding:3px 5px;color:var(--text2)">保有数<br><span style="font-size:9px;font-weight:400">（分割時は充当数）</span></th>${winCol}<th style="text-align:right;padding:3px 5px;color:var(--text2)">換算率</th><th style="text-align:right;padding:3px 5px;color:var(--text2)">換算値</th></tr>`;
     breakdown.forEach(b => {
       if (!b.amount) return;
       if (!b.parts.length) {
@@ -2272,14 +2272,20 @@ function runAgg() {
         const noteHtml = p.capNote ? `<br><span style="font-size:9px;color:#bf3800">${p.capNote}</span>` : (p.def && p.def.daysMax ? `<br><span style="font-size:9px;color:var(--text3)">⏱ 反映目安:最大${p.def.daysMax}日</span>` : '');
         const routeHtml = p.def ? `<br><span style="font-size:9px;color:var(--text3)">${p.def.route}</span>` : '';
         const nameCell = b.parts.length > 1
-          ? `${b.name}<br><span style="font-size:9px;color:var(--text3)">（分割 ${pi+1}/${b.parts.length}: ${p.srcAmount.toLocaleString()} ${b.unit}分）</span>${routeHtml}${noteHtml}`
+          ? `${b.name}<br><span style="font-size:9px;color:var(--text3)">（分割 ${pi+1}/${b.parts.length}）</span>${routeHtml}${noteHtml}`
           : `${b.name}${routeHtml}${noteHtml}`;
-        const amountCell = pi === 0 ? `${b.amount.toLocaleString()} ${b.unit}` : '';
+        // 分割時は「この行に充当した変換元ポイント数」を各行に表示（合計＝保有数）
+        const isSplit = b.parts.length > 1;
+        const srcAmt = Math.round(p.srcAmount || 0);
+        const amountCell = isSplit
+          ? `<span style="font-weight:700">${srcAmt.toLocaleString()} ${b.unit}</span><br><span style="font-size:9px;color:var(--text3)">充当（保有 ${b.amount.toLocaleString()} 中${b.amount>0?' / '+(srcAmt/b.amount*100).toFixed(1)+'%':''}）</span>`
+          : `${b.amount.toLocaleString()} ${b.unit}`;
+        const rowBorder = (isSplit && pi < b.parts.length - 1) ? '1px dashed var(--border)' : '1px solid var(--border)';
         const winLabel = dualActive ? (p.target === 0 ? '—' : (p.target === 2 ? '②' + meta2.label : '①' + meta1.label)) : null;
         const winCell = dualActive ? `<td style="padding:4px 5px;text-align:center;font-size:9.5px;font-weight:700;color:${p.meta.color}">${winLabel}</td>` : '';
-        html += `<tr style="border-bottom:1px solid var(--border)">
+        html += `<tr style="border-bottom:${rowBorder}">
           <td style="padding:4px 5px;color:var(--text)">${nameCell}</td>
-          <td style="padding:4px 5px;text-align:right;color:var(--text)">${amountCell}</td>
+          <td style="padding:4px 5px;text-align:right;color:var(--text);white-space:nowrap">${amountCell}</td>
           ${winCell}
           <td style="padding:4px 5px;text-align:right;color:var(--text)">${rateStr}</td>
           <td style="padding:4px 5px;text-align:right;font-weight:700;color:${p.converted>0?p.meta.color:'#aaa'}">${p.converted > 0 ? p.converted.toLocaleString() : '—'}</td>
