@@ -26,7 +26,7 @@
  * ============================================================ */
 
 // データ全体の最終更新日（画面ヘッダーの「レート最終更新」に表示）
-const EXCHANGE_DATA_META = { lastUpdated: '2026-10-17', lastUpdatedLabel: '2026年10月17日' };
+const EXCHANGE_DATA_META = { lastUpdated: '2026-10-21', lastUpdatedLabel: '2026年10月21日' };
 
 // 不足分の現金購入参考額（マイル集約電卓）で使う公式購入価格
 const CASH_BUY = {
@@ -511,42 +511,30 @@ d('waon','hyatt',{rate:0,url:'https://www.google.com/search?q=WAON%E3%83%9D%E3%8
 d('au','hyatt',{rate:0,url:'https://www.google.com/search?q=au%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20World%20of%20Hyatt%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: auポイントからWorld of Hyattへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','World of Hyattポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
 d('gpoint','hyatt',{rate:0,url:'https://www.google.com/search?q=G%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20World%20of%20Hyatt%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: GポイントからWorld of Hyattへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','World of Hyattポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
 d('yamada','hyatt',{rate:0,url:'https://www.google.com/search?q=%E3%83%A4%E3%83%9E%E3%83%80%E9%9B%BB%E6%A9%9F%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%20World%20of%20Hyatt%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ヤマダ電機ポイントからWorld of Hyattへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','World of Hyattポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
-d('moppy','accor',{rate:0,url:'https://www.google.com/search?q=%E3%83%A2%E3%83%83%E3%83%94%E3%83%BC%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['モッピーからALL Accorへの直接交換ルートはありません。','⚠ 2026年10月訂正：旧版は「直接・間接とも交換ルートなし」としていましたが、楽天ポイント経由の間接ルートがあります（下記参照、実質31.25%）。']});
-id('moppy','accor',{rate:1000/3200,
-  route:[{from:'モッピー',to:'ドットマネー',rate:1.0,url:'https://www.google.com/search?q=モッピー+ドットマネー+交換+公式'},{from:'ドットマネー',to:'楽天ポイント',rate:1.0,url:'https://www.google.com/search?q=ドットマネー+楽天ポイント+交換+手数料'},{from:'楽天ポイント',to:'ALL Accor(3,200P→1,000pt)',rate:1000/3200,url:'https://all.accor.com/a/ja/loyalty-program/partners/shopping/rakuten.html'}],
-  url:'https://all.accor.com/a/ja/loyalty-program/partners/shopping/rakuten.html',
-  history:[{d:'2026-10',r:1000/3200}],verified:true,
-  notices:['モッピー→ドットマネー→楽天ポイントは等価・手数料無料（モッピー→楽天の直接交換は2026年4月から手数料10%のため、ドットマネー経由が有利）。','楽天ポイント→ALL Accorは3,200P→1,000ポイント（31.25%）。最低3,200P、以降1,600P単位。日本居住の楽天ポイント会員のみ（ALL Accor公式の提携規約で確認）。移行分はALLのステータス判定には算入されません。','ALLポイントは宿泊時に2,000pt=40€の固定レートで使えるため、交換で目減りしやすい点に注意。']});
-d('hapitas','accor',{rate:0,url:'https://www.google.com/search?q=%E3%83%8F%E3%83%94%E3%82%BF%E3%82%B9%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['ハピタスからALL Accorへの直接交換ルートはありません。','⚠ 2026年10月訂正：旧版は「直接・間接とも交換ルートなし」としていましたが、楽天ポイント経由の間接ルートがあります（下記参照、実質31.25%）。']});
-id('hapitas','accor',{rate:1000/3200,
-  route:[{from:'ハピタス',to:'楽天ポイント',rate:1.0,url:'https://www.google.com/search?q=ハピタス+ポイント交換+公式'},{from:'楽天ポイント',to:'ALL Accor(3,200P→1,000pt)',rate:1000/3200,url:'https://all.accor.com/a/ja/loyalty-program/partners/shopping/rakuten.html'}],
-  url:'https://all.accor.com/a/ja/loyalty-program/partners/shopping/rakuten.html',
-  history:[{d:'2026-10',r:1000/3200}],verified:true,
-  notices:['ハピタス→楽天ポイントは等価交換。','楽天ポイント→ALL Accorは3,200P→1,000ポイント（31.25%）。最低3,200P、以降1,600P単位。日本居住の楽天ポイント会員のみ（ALL Accor公式の提携規約で確認）。移行分はALLのステータス判定には算入されません。','ALLポイントは宿泊時に2,000pt=40€の固定レートで使えるため、交換で目減りしやすい点に注意。']});
-d('fancrew','accor',{rate:0,url:'https://www.google.com/search?q=%E3%83%95%E3%82%A1%E3%83%B3%E3%81%8F%E3%82%8B%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['ファンくるからALL Accorへの直接交換ルートはありません。','⚠ 2026年10月訂正：旧版は「直接・間接とも交換ルートなし」としていましたが、楽天ポイント経由の間接ルートがあります（下記参照、実質31.25%）。']});
-id('fancrew','accor',{rate:1000/3200,
-  route:[{from:'ファンくる(10P=1円→1マネー・等価)',to:'ドットマネー',rate:1.0,url:'https://www.google.com/search?q=ファンくる+ドットマネー+交換'},{from:'ドットマネー',to:'楽天ポイント',rate:1.0,url:'https://www.google.com/search?q=ドットマネー+楽天ポイント+交換+手数料'},{from:'楽天ポイント',to:'ALL Accor(3,200P→1,000pt)',rate:1000/3200,url:'https://all.accor.com/a/ja/loyalty-program/partners/shopping/rakuten.html'}],
-  url:'https://all.accor.com/a/ja/loyalty-program/partners/shopping/rakuten.html',
-  history:[{d:'2026-10',r:1000/3200}],verified:true,
-  notices:['ファンくる→ドットマネー→楽天ポイントはどちらも手数料無料・等価（ファンくるは10P=1円）。','楽天ポイント→ALL Accorは3,200P→1,000ポイント（31.25%）。最低3,200P、以降1,600P単位。日本居住の楽天ポイント会員のみ（ALL Accor公式の提携規約で確認）。移行分はALLのステータス判定には算入されません。','ALLポイントは宿泊時に2,000pt=40€の固定レートで使えるため、交換で目減りしやすい点に注意。']});
-d('dmoney','accor',{rate:0,url:'https://www.google.com/search?q=%E3%83%89%E3%83%83%E3%83%88%E3%83%9E%E3%83%8D%E3%83%BC%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['ドットマネーからALL Accorへの直接交換ルートはありません。','⚠ 2026年10月訂正：旧版は「直接・間接とも交換ルートなし」としていましたが、楽天ポイント経由の間接ルートがあります（下記参照、実質31.25%）。']});
-id('dmoney','accor',{rate:1000/3200,
-  route:[{from:'ドットマネー',to:'楽天ポイント',rate:1.0,url:'https://www.google.com/search?q=ドットマネー+楽天ポイント+交換+公式'},{from:'楽天ポイント',to:'ALL Accor(3,200P→1,000pt)',rate:1000/3200,url:'https://all.accor.com/a/ja/loyalty-program/partners/shopping/rakuten.html'}],
-  url:'https://all.accor.com/a/ja/loyalty-program/partners/shopping/rakuten.html',
-  history:[{d:'2026-10',r:1000/3200}],verified:true,
-  notices:['ドットマネー→楽天ポイントは等価交換（月間交換上限100,000マネー）。','楽天ポイント→ALL Accorは3,200P→1,000ポイント（31.25%）。最低3,200P、以降1,600P単位。日本居住の楽天ポイント会員のみ（ALL Accor公式の提携規約で確認）。移行分はALLのステータス判定には算入されません。','ALLポイントは宿泊時に2,000pt=40€の固定レートで使えるため、交換で目減りしやすい点に注意。']});
-d('gendama','accor',{rate:0,url:'https://www.google.com/search?q=%E3%81%92%E3%82%93%E7%8E%89%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['げん玉からALL Accorへの直接交換ルートはありません。','⚠ 2026年10月訂正：旧版は「直接・間接とも交換ルートなし」としていましたが、楽天ポイント経由の間接ルートがあります（下記参照、実質31.25%）。']});
-id('gendama','accor',{rate:1000/3200,
-  route:[{from:'げん玉',to:'楽天ポイント',rate:1.0,url:'https://www.google.com/search?q=げん玉+ポイント交換+公式'},{from:'楽天ポイント',to:'ALL Accor(3,200P→1,000pt)',rate:1000/3200,url:'https://all.accor.com/a/ja/loyalty-program/partners/shopping/rakuten.html'}],
-  url:'https://all.accor.com/a/ja/loyalty-program/partners/shopping/rakuten.html',
-  history:[{d:'2026-10',r:1000/3200}],verified:true,
-  notices:['げん玉→楽天ポイントは等価交換（げん玉は10P=1円）。','楽天ポイント→ALL Accorは3,200P→1,000ポイント（31.25%）。最低3,200P、以降1,600P単位。日本居住の楽天ポイント会員のみ（ALL Accor公式の提携規約で確認）。移行分はALLのステータス判定には算入されません。','ALLポイントは宿泊時に2,000pt=40€の固定レートで使えるため、交換で目減りしやすい点に注意。']});
-d('pincm','accor',{rate:0,url:'https://www.google.com/search?q=%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%E3%82%A4%E3%83%B3%E3%82%AB%E3%83%A0%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['ポイントインカムからALL Accorへの直接交換ルートはありません。','⚠ 2026年10月訂正：旧版は「直接・間接とも交換ルートなし」としていましたが、楽天ポイント経由の間接ルートがあります（下記参照、実質31.25%）。']});
-id('pincm','accor',{rate:1000/3200,
-  route:[{from:'ポイントインカム',to:'ドットマネー',rate:1.0,url:'https://www.google.com/search?q=ポイントインカム+ドットマネー+交換+公式'},{from:'ドットマネー',to:'楽天ポイント',rate:1.0,url:'https://www.google.com/search?q=ドットマネー+楽天ポイント+交換+手数料'},{from:'楽天ポイント',to:'ALL Accor(3,200P→1,000pt)',rate:1000/3200,url:'https://all.accor.com/a/ja/loyalty-program/partners/shopping/rakuten.html'}],
-  url:'https://all.accor.com/a/ja/loyalty-program/partners/shopping/rakuten.html',
-  history:[{d:'2026-10',r:1000/3200}],verified:true,
-  notices:['ポイントインカム→ドットマネー→楽天ポイントはどちらも手数料無料・等価（ポイントインカムは10P=1円）。','楽天ポイント→ALL Accorは3,200P→1,000ポイント（31.25%）。最低3,200P、以降1,600P単位。日本居住の楽天ポイント会員のみ（ALL Accor公式の提携規約で確認）。移行分はALLのステータス判定には算入されません。','ALLポイントは宿泊時に2,000pt=40€の固定レートで使えるため、交換で目減りしやすい点に注意。']});
+d('moppy','accor',{rate:0,url:'https://www.google.com/search?q=%E3%83%A2%E3%83%83%E3%83%94%E3%83%BC%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['モッピーからALL Accorへの直接交換ルートはありません。','楽天ポイントを経由する間接ルートも使えません（ポイントサイト等から交換した楽天ポイントはALL Accorへの交換対象外）。']});
+id('moppy','accor',{rate:0,url:'https://ichiba.faq.rakuten.net/detail/000006556',
+  history:[{d:'2026-10',r:0}],verified:true,
+  notices:['✅ 調査済み: モッピーから楽天ポイントを経由してALL Accorへ移す間接ルートは使えません。','楽天のルールでは、提携サービス（ポイントサイト・ドットマネー等）から交換して得た楽天ポイントは、ALL Accorを含む他社ポイント・マイルへの交換に使えません（楽天市場ヘルプ「楽天ポイントを他社のポイントに交換したい」で確認）。','⚠ 2026年10月21日訂正：同月の更新で「楽天ポイント経由で実質31.25%」としていましたが、上記ルールにより成立しないため取り下げました。','楽天で直接貯めた通常ポイントであれば、楽天ポイント→ALL Accorの直接交換（期間限定）が使えます。']});
+d('hapitas','accor',{rate:0,url:'https://www.google.com/search?q=%E3%83%8F%E3%83%94%E3%82%BF%E3%82%B9%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['ハピタスからALL Accorへの直接交換ルートはありません。','楽天ポイントを経由する間接ルートも使えません（ポイントサイト等から交換した楽天ポイントはALL Accorへの交換対象外）。']});
+id('hapitas','accor',{rate:0,url:'https://ichiba.faq.rakuten.net/detail/000006556',
+  history:[{d:'2026-10',r:0}],verified:true,
+  notices:['✅ 調査済み: ハピタスから楽天ポイントを経由してALL Accorへ移す間接ルートは使えません。','楽天のルールでは、提携サービス（ポイントサイト・ドットマネー等）から交換して得た楽天ポイントは、ALL Accorを含む他社ポイント・マイルへの交換に使えません（楽天市場ヘルプ「楽天ポイントを他社のポイントに交換したい」で確認）。','⚠ 2026年10月21日訂正：同月の更新で「楽天ポイント経由で実質31.25%」としていましたが、上記ルールにより成立しないため取り下げました。','楽天で直接貯めた通常ポイントであれば、楽天ポイント→ALL Accorの直接交換（期間限定）が使えます。']});
+d('fancrew','accor',{rate:0,url:'https://www.google.com/search?q=%E3%83%95%E3%82%A1%E3%83%B3%E3%81%8F%E3%82%8B%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['ファンくるからALL Accorへの直接交換ルートはありません。','楽天ポイントを経由する間接ルートも使えません（ポイントサイト等から交換した楽天ポイントはALL Accorへの交換対象外）。']});
+id('fancrew','accor',{rate:0,url:'https://ichiba.faq.rakuten.net/detail/000006556',
+  history:[{d:'2026-10',r:0}],verified:true,
+  notices:['✅ 調査済み: ファンくるから楽天ポイントを経由してALL Accorへ移す間接ルートは使えません。','楽天のルールでは、提携サービス（ポイントサイト・ドットマネー等）から交換して得た楽天ポイントは、ALL Accorを含む他社ポイント・マイルへの交換に使えません（楽天市場ヘルプ「楽天ポイントを他社のポイントに交換したい」で確認）。','⚠ 2026年10月21日訂正：同月の更新で「楽天ポイント経由で実質31.25%」としていましたが、上記ルールにより成立しないため取り下げました。','楽天で直接貯めた通常ポイントであれば、楽天ポイント→ALL Accorの直接交換（期間限定）が使えます。']});
+d('dmoney','accor',{rate:0,url:'https://www.google.com/search?q=%E3%83%89%E3%83%83%E3%83%88%E3%83%9E%E3%83%8D%E3%83%BC%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['ドットマネーからALL Accorへの直接交換ルートはありません。','楽天ポイントを経由する間接ルートも使えません（ポイントサイト等から交換した楽天ポイントはALL Accorへの交換対象外）。']});
+id('dmoney','accor',{rate:0,url:'https://ichiba.faq.rakuten.net/detail/000006556',
+  history:[{d:'2026-10',r:0}],verified:true,
+  notices:['✅ 調査済み: ドットマネーから楽天ポイントを経由してALL Accorへ移す間接ルートは使えません。','楽天のルールでは、提携サービス（ポイントサイト・ドットマネー等）から交換して得た楽天ポイントは、ALL Accorを含む他社ポイント・マイルへの交換に使えません（楽天市場ヘルプ「楽天ポイントを他社のポイントに交換したい」で確認）。','⚠ 2026年10月21日訂正：同月の更新で「楽天ポイント経由で実質31.25%」としていましたが、上記ルールにより成立しないため取り下げました。','楽天で直接貯めた通常ポイントであれば、楽天ポイント→ALL Accorの直接交換（期間限定）が使えます。']});
+d('gendama','accor',{rate:0,url:'https://www.google.com/search?q=%E3%81%92%E3%82%93%E7%8E%89%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['げん玉からALL Accorへの直接交換ルートはありません。','楽天ポイントを経由する間接ルートも使えません（ポイントサイト等から交換した楽天ポイントはALL Accorへの交換対象外）。']});
+id('gendama','accor',{rate:0,url:'https://ichiba.faq.rakuten.net/detail/000006556',
+  history:[{d:'2026-10',r:0}],verified:true,
+  notices:['✅ 調査済み: げん玉から楽天ポイントを経由してALL Accorへ移す間接ルートは使えません。','楽天のルールでは、提携サービス（ポイントサイト・ドットマネー等）から交換して得た楽天ポイントは、ALL Accorを含む他社ポイント・マイルへの交換に使えません（楽天市場ヘルプ「楽天ポイントを他社のポイントに交換したい」で確認）。','⚠ 2026年10月21日訂正：同月の更新で「楽天ポイント経由で実質31.25%」としていましたが、上記ルールにより成立しないため取り下げました。','楽天で直接貯めた通常ポイントであれば、楽天ポイント→ALL Accorの直接交換（期間限定）が使えます。']});
+d('pincm','accor',{rate:0,url:'https://www.google.com/search?q=%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%E3%82%A4%E3%83%B3%E3%82%AB%E3%83%A0%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['ポイントインカムからALL Accorへの直接交換ルートはありません。','楽天ポイントを経由する間接ルートも使えません（ポイントサイト等から交換した楽天ポイントはALL Accorへの交換対象外）。']});
+id('pincm','accor',{rate:0,url:'https://ichiba.faq.rakuten.net/detail/000006556',
+  history:[{d:'2026-10',r:0}],verified:true,
+  notices:['✅ 調査済み: ポイントインカムから楽天ポイントを経由してALL Accorへ移す間接ルートは使えません。','楽天のルールでは、提携サービス（ポイントサイト・ドットマネー等）から交換して得た楽天ポイントは、ALL Accorを含む他社ポイント・マイルへの交換に使えません（楽天市場ヘルプ「楽天ポイントを他社のポイントに交換したい」で確認）。','⚠ 2026年10月21日訂正：同月の更新で「楽天ポイント経由で実質31.25%」としていましたが、上記ルールにより成立しないため取り下げました。','楽天で直接貯めた通常ポイントであれば、楽天ポイント→ALL Accorの直接交換（期間限定）が使えます。']});
 d('ecnavi','accor',{rate:0,url:'https://www.google.com/search?q=EC%E3%83%8A%E3%83%93%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ECナビからAccor ALLへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','Accor ALLポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
 d('ptown','accor',{rate:0,url:'https://www.google.com/search?q=%E3%83%9D%E3%82%A4%E3%83%B3%E3%83%88%E3%82%BF%E3%82%A6%E3%83%B3%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: ポイントタウンからAccor ALLへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','Accor ALLポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
 d('pex','accor',{rate:0,url:'https://www.google.com/search?q=PeX%20Accor%20ALL%20%E4%BA%A4%E6%8F%9B',history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,notices:['✅ 調査済み: PeXからAccor ALLへの直接・間接の交換ルートは存在しません（2026年7月時点で確認）。','Accor ALLポイントは宿泊実績・提携クレジットカード決済、または現金でのポイント購入でのみ入手可能です。']});
@@ -554,7 +542,7 @@ d('dpoint','accor',{rate:0,url:'https://www.google.com/search?q=d%E3%83%9D%E3%82
 // 楽天ポイント→ALL Accor: 2026年10月、ALL Accor公式の提携ページ・規約で直接交換を確認（旧版の「ルートなし」は誤り）
 d('rakuten','accor',{rate:1000/3200,url:'https://all.accor.com/a/ja/loyalty-program/partners/shopping/rakuten.html',
   history:[{d:'2026-10',r:1000/3200}],verified:true,
-  notices:['✅ 2026年10月、ALL Accor公式の楽天提携ページ・提携規約で確認：楽天ポイント3,200P→ALL Accorリワードポイント1,000pt（31.25%）。最低3,200P、以降1,600P単位。申込は楽天PointClubの交換ページから（https://point.rakuten.co.jp/exchange/accor/register）。','⚠ 2026年10月訂正：旧版は「楽天ポイントからAccor ALLへの直接・間接ルートは存在しない」としていましたが誤りでした。公式に直接交換が可能です。','日本居住の楽天ポイント会員のみ対象。楽天IDとALLアカウントは1対1で紐付け（自分名義のアカウント間のみ）。移行したポイントはALLのステータス昇格・維持には算入されません。','ALLポイントは宿泊時に2,000pt=40€の固定レートで割引に使えるため、楽天ポイントの価値（1P=1円）と比べると交換で目減りしやすい点に注意（為替によって実質価値は変動）。','1回・月間の交換上限や反映日数は楽天側ページで要確認（当ツールでは未確認）。']});
+  notices:['✅ 2026年10月、ALL Accor公式の楽天提携ページ・提携規約で確認：楽天ポイント3,200P→ALL Accorリワードポイント1,000pt（31.25%）。最低3,200P、以降1,600P単位。申込は楽天PointClubの交換ページから（https://point.rakuten.co.jp/exchange/accor/register）。','⚠ 楽天ポイント→ALL Accorは常設ではなく期間限定の交換です。交換申請できるのは楽天トラベルスーパーSALE実施月の第1営業日10:00〜SALE終了翌営業日9:59ごろまでで、期間外は申し込めません（時期は楽天PointClub・ALL公式サイトで告知）。','⚠ 2026年10月訂正：旧版は「楽天ポイントからAccor ALLへの直接・間接ルートは存在しない」としていましたが誤りでした。公式に直接交換が可能です。','日本居住の楽天ポイント会員のみ対象。楽天IDとALLアカウントは1対1で紐付け（自分名義のアカウント間のみ）。移行したポイントはALLのステータス昇格・維持には算入されません。','ALLポイントは宿泊時に2,000pt=40€の固定レートで割引に使えるため、楽天ポイントの価値（1P=1円）と比べると交換で目減りしやすい点に注意（為替によって実質価値は変動）。','交換申請は24時間に1回まで。1回・1か月あたりのポイント数の上限は公式に明示されていません（2026年10月時点）。反映まで最大6週間程度。','期間限定ポイントと、他社ポイントから交換した楽天ポイントは交換対象外。']});
 id('rakuten','accor',{rate:0,url:'https://all.accor.com/a/ja/loyalty-program/partners/shopping/rakuten.html',
   history:[{d:'2026-10',r:0}],
   notices:['✅ 調査済み: 楽天ポイントから他の経由先（マリオットBonvoy等）を挟んでALL Accorへ移す方が有利になるルートはありません。直接交換が唯一かつ最良のルートです。']});
@@ -575,12 +563,10 @@ d('yamada','accor',{rate:0,url:'https://www.google.com/search?q=%E3%83%A4%E3%83%
 // ─── げん玉・ポイントインカム・ECナビ ───
 d('gendama','dpoint',{rate:1.0,url:'https://www.google.com/search?q=げん玉+ポイント交換+公式',history:[{d:'2022-01',r:1},{d:'2026-01',r:1}],verified:true,notices:[]});
 d('gendama','rakuten',{rate:1.0,url:'https://www.google.com/search?q=げん玉+ポイント交換+公式',history:[{d:'2022-01',r:1},{d:'2026-01',r:1}],verified:true,notices:[]});
-d('gendama','jal',{rate:0.50,url:'https://www.google.com/search?q=げん玉+ポイント交換+公式',history:[{d:'2022-01',r:0.5},{d:'2026-01',r:0.5}],verified:true,notices:['より高いレートを狙う場合は楽天ポイント経由の間接ルート（下記参照）も検討可能。']});
-id('gendama','jal',{rate:1.0*0.60,
-  route:[{from:'げん玉',to:'楽天ポイント',rate:1.0,url:'https://www.google.com/search?q=げん玉+ポイント交換+公式'},{from:'楽天ポイント',to:'JALマイル(レートアップキャンペーン)',rate:0.60,url:'https://www.google.com/search?q=楽天ポイント+JALマイル+レートアップキャンペーン'}],
-  url:'https://www.google.com/search?q=げん玉+楽天ポイント+交換+公式',
-  history:[{d:'2019-01',r:0.60},{d:'2026-01',r:0.60}],
-  notices:['げん玉→楽天ポイントは等価交換。楽天ポイント→JALマイルは通常50%だが、年1回程度のレートアップキャンペーン中は60%前後（過去実績62.5%・65%等）まで上昇。','キャンペーン時期以外は直接交換(50%)と同水準。開催時期は楽天ポイント公式サイトで要確認。']});
+d('gendama','jal',{rate:0.50,url:'https://www.google.com/search?q=げん玉+ポイント交換+公式',history:[{d:'2022-01',r:0.5},{d:'2026-01',r:0.5}],verified:true,notices:['楽天ポイント経由の間接ルートは使えません（他社ポイントから交換した楽天ポイントはJALマイルへの交換対象外）。']});
+id('gendama','jal',{rate:0,url:'https://ichiba.faq.rakuten.net/detail/000006556',
+  history:[{d:'2026-10',r:0}],verified:true,
+  notices:['✅ 調査済み: げん玉→楽天ポイント→JALマイルの間接ルートは使えません。','楽天のルールでは、提携サービス（ポイントサイト・ドットマネー等）から交換して得た楽天ポイントは、JALマイルを含む他社ポイント・マイルへの交換に使えません（楽天市場ヘルプ「楽天ポイントを他社のポイントに交換したい」で確認）。','⚠ 2026年10月21日訂正：旧版は「楽天ポイント経由でレートアップキャンペーン時60%前後」としていましたが、上記ルールにより成立しないため取り下げました。げん玉からJALマイルへは直接交換（50%）を使ってください。']});
 d('gendama','ana',{rate:0,url:'https://www.google.com/search?q=げん玉+ANAマイル+直接交換',
   history:[{d:'2022-01',r:0},{d:'2026-01',r:0}],verified:true,
   notices:['げん玉の交換先一覧にANAマイルは含まれていません（PeX経由の間接交換のみ）。直接交換ルートは確認済みで存在しません。','ANAマイルを狙う場合は、ドットマネー等を経由した間接ルート（下記参照、最大70%）を利用してください。']});
