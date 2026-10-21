@@ -310,6 +310,10 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:2px solid 
 .rlink{font-size:9px;color:#185fa5;text-decoration:underline;cursor:pointer;margin-left:2px}
 /* notices */
 .nbox{background:#fff8e1;border:1px solid #ffc107;border-radius:var(--rsm);padding:8px 10px;font-size:10px;line-height:1.7;margin-bottom:3px}
+.nbox.ok{background:#eef7ef;border-color:#9ccc9f}
+.nbox.info{background:var(--bg2);border-color:var(--border2)}
+.mbg.lim{background:#6a1b9a;color:#fff}
+.cell .lim{font-size:9px;margin-left:2px;opacity:.85}
 /* hist btns */
 .hbtns{display:flex;gap:5px;margin-bottom:7px}
 .hbtn{font-size:9px;padding:3px 9px;border:1px solid var(--border2);border-radius:99px;cursor:pointer;background:var(--bg)}
@@ -980,7 +984,7 @@ function renderCell(fromId,toId){
   const botDerived=hasI&&ir.derived?'<span title="ANAマイル基準の自動算出値" style="opacity:.6;font-size:8px;margin-left:1px">📐</span>':'';
 
   return `<td><div class="cell" onclick="openMod('${fromId}','${toId}')">
-    <div class="cr ${topCls}">${topTxt}${topArrow}</div>
+    <div class="cr ${topCls}">${topTxt}${topArrow}${hasD&&dr.limited&&dr.rate>0?'<span class="lim" title="期間限定の交換">⏳</span>':''}</div>
     <div class="cb ${botCls}">${botTxt}${botArrow}${botDerived}</div>
   </div></td>`;
 }
@@ -1107,6 +1111,27 @@ function changeBadgeHtml(entry){
   return `<span class="mbg ${cls}">${arrow} ${entry.change==='up'?'過去に有利改定あり':'過去に不利改定あり'}（詳細は下部レート履歴参照）</span>`;
 }
 
+// 注意事項の箱：文頭の記号で種類を分ける（✅=確認記録、⚠=注意、それ以外=補足）。
+// 以前は全件に「⚠」を付けていたため「⚠ ✅」「⚠ ⚠」と記号が重なっていた。
+function noticeHtml(n){
+  const t=String(n).trim();
+  if(t.startsWith('✅'))return `<div class="nbox ok">${t}</div>`;
+  if(t.startsWith('⚠'))return `<div class="nbox">${t}</div>`;
+  return `<div class="nbox info">${t}</div>`;
+}
+// 情報源リンクの表示名：Google検索URLなら「検索」、公式URLならドメインを出す
+function srcLabel(url,name){
+  if(/google\.[^/]+\/search/.test(url))return `${name} の公式情報をGoogleで検索`;
+  let host='';try{host=new URL(url).hostname.replace(/^www\./,'');}catch(e){}
+  return host?`公式ページを開く（${host}）`:`${name} 公式ページ`;
+}
+// 期間限定の交換（limited フィールド）を示すバッジ
+function limitedBadge(entry){
+  if(!entry||!entry.limited)return '';
+  const tip=typeof entry.limited==='string'?entry.limited:'期間限定の交換';
+  return `<span class="mbg lim" title="${tip}">⏳ 期間限定</span>`;
+}
+
 function renderMod(fid,tid,rd){
   const fn=PTS.find(p=>p.id===fid)?.name||fid;
   const tn=PTS.find(p=>p.id===tid)?.name||tid;
@@ -1119,15 +1144,16 @@ function renderMod(fid,tid,rd){
   if(hasD){
     let bg=changeBadgeHtml(dr);
     if(dr.verified===false)bg+='<span class="mbg nv">要確認</span>';
+    bg+=limitedBadge(dr);
     html+=`<div class="sh">直接交換レート</div>`;
     html+=`<div class="mrate"${dr.rate===0?' style="background:var(--cash-bg);color:var(--cash-fg)"':''}>${dr.rate===0?'交換不可（調査済み）':fid==='jpy'?Math.round(1000/dr.rate).toLocaleString()+'円/1,000'+toUnitShort(tid):fid==='usd'?'$'+(1000/dr.rate).toFixed(2)+'/1,000'+toUnitShort(tid):(dr.rate*100).toFixed(2)+'%'}${bg}</div>`;
     html+=`<div class="mrate-n">${fid==='jpy'?'1円 → 約'+dr.rate.toFixed(4)+' '+tn:fid==='usd'?'1ドル → 約'+Math.round(dr.rate)+' '+tn:(ptYen(fid)!==1?'1円相当（'+unitNote(fid)+'）':'1 '+fn)+' → '+dr.rate.toFixed(4)+' '+tn+' ／ 10,000pt → '+Math.round(10000*ptYen(fid)*dr.rate).toLocaleString()+'pt'}</div>`;
     if(dr.notices?.length){
-      dr.notices.forEach(n=>{html+=`<div class="nbox">⚠ ${n}</div>`;});
+      dr.notices.forEach(n=>{html+=noticeHtml(n);});
     }
     if(dr.url){
       html+=`<div class="sh">公式情報源（直接）</div><div class="srcl">`;
-      html+=`<div class="srci" onclick="window.open('${dr.url}','_blank')"><span>🔗</span><span style="flex:1">${fn} 公式交換ページを検索</span><span class="sarr">↗</span></div>`;
+      html+=`<div class="srci" onclick="window.open('${dr.url}','_blank')"><span>🔗</span><span style="flex:1">${srcLabel(dr.url,fn)}</span><span class="sarr">↗</span></div>`;
       html+=`</div>`;
     }
   }
@@ -1152,11 +1178,11 @@ function renderMod(fid,tid,rd){
       html+=`</div>`;
     }
     if(ir.notices?.length){
-      ir.notices.forEach(n=>{html+=`<div class="nbox">⚠ ${n}</div>`;});
+      ir.notices.forEach(n=>{html+=noticeHtml(n);});
     }
     if(ir.url||ir.route?.some(s=>s.url)){
       html+=`<div class="sh">公式情報源（間接）</div><div class="srcl">`;
-      if(ir.url)html+=`<div class="srci" onclick="window.open('${ir.url}','_blank')"><span>🔗</span><span style="flex:1">${fn} 交換ページ</span><span class="sarr">↗</span></div>`;
+      if(ir.url)html+=`<div class="srci" onclick="window.open('${ir.url}','_blank')"><span>🔗</span><span style="flex:1">${srcLabel(ir.url,fn)}</span><span class="sarr">↗</span></div>`;
       ir.route?.forEach(step=>{
         if(step.url)html+=`<div class="srci" onclick="window.open('${step.url}','_blank')"><span>🔗</span><span style="flex:1">${step.from}→${step.to}</span><span class="sarr">↗</span></div>`;
       });
@@ -1166,13 +1192,15 @@ function renderMod(fid,tid,rd){
     // 間接ルートを調査した結果「存在しない／直接より不利」と判明したケース。
     // 誤解を招く「0.00%」ではなく、直接レート側と同じ「交換不可（調査済み）」表記で統一する。
     html+=`<div class="sh">間接ルートの調査結果</div>`;
-    html+=`<div class="mrate" style="font-size:20px;background:var(--na-bg);color:var(--na-fg);display:inline-block;padding:4px 12px;border-radius:6px">交換不可（調査済み）</div>`;
+    // 直接交換が可能な組み合わせで「交換不可」と出すと、交換自体ができないように見えるため表記を分ける
+    const directOk=hasD&&dr.rate>0;
+    html+=`<div class="mrate" style="font-size:${directOk?16:20}px;background:var(--na-bg);color:var(--na-fg);display:inline-block;padding:4px 12px;border-radius:6px">${directOk?'有利な間接ルートなし（直接交換が最良）':'交換不可（調査済み）'}</div>`;
     if(ir.notices?.length){
-      ir.notices.forEach(n=>{html+=`<div class="nbox">⚠ ${n}</div>`;});
+      ir.notices.forEach(n=>{html+=noticeHtml(n);});
     }
     if(ir.url){
       html+=`<div class="sh">公式情報源（間接調査）</div><div class="srcl">`;
-      html+=`<div class="srci" onclick="window.open('${ir.url}','_blank')"><span>🔗</span><span style="flex:1">${fn} 交換ページ</span><span class="sarr">↗</span></div>`;
+      html+=`<div class="srci" onclick="window.open('${ir.url}','_blank')"><span>🔗</span><span style="flex:1">${srcLabel(ir.url,fn)}</span><span class="sarr">↗</span></div>`;
       html+=`</div>`;
     }
   }
@@ -1200,7 +1228,7 @@ function renderMod(fid,tid,rd){
     <div class="hcap" id="hcap"></div>`;
   }
 
-  html+=`<div style="font-size:9px;color:var(--text3);margin-top:12px;line-height:1.6">※ リンクはGoogle検索ページが開きます。「公式サイト」等で検索結果から最新ページにアクセスしてください。レートは改定される場合があるため、交換前に各社公式サイトで必ずご確認ください。</div>`;
+  html+=`<div style="font-size:9px;color:var(--text3);margin-top:12px;line-height:1.6">※ 「Googleで検索」のリンクは検索結果ページが開きます。「公式サイト」等で検索結果から最新ページにアクセスしてください。レートは改定される場合があるため、交換前に各社公式サイトで必ずご確認ください。</div>`;
 
   document.getElementById('mc').innerHTML=html;
   document.getElementById('ov').classList.add('open');

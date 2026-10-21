@@ -16,7 +16,8 @@
  *     history  : レート履歴 [{d:'YYYY-MM', r:レート}]  ← 改定時は末尾に追記
  *     change   : 'up' / 'down'（最近の改定で有利/不利になった場合のみ）
  *     verified : 公式サイトで確認済みなら true
- *     notices  : 詳細モーダルに出る注意事項
+ *     notices  : 詳細モーダルに出る注意事項（文頭が ✅=確認記録／⚠=注意／それ以外=補足 として色分け表示）
+ *     limited  : 常設でない期間限定の交換なら説明文を入れる（「⏳ 期間限定」バッジを表示）
  *  AGG_OVERRIDES      : マイル集約電卓専用の上限・所要日数・保守的レート設定
  *  AGG_TARGET_META    : 電卓の目標マイル種別ごとの表示設定と注記
  *  CASH_BUY           : 不足分の現金購入参考額の計算に使う公式購入価格
@@ -542,6 +543,7 @@ d('dpoint','accor',{rate:0,url:'https://www.google.com/search?q=d%E3%83%9D%E3%82
 // 楽天ポイント→ALL Accor: 2026年10月、ALL Accor公式の提携ページ・規約で直接交換を確認（旧版の「ルートなし」は誤り）
 d('rakuten','accor',{rate:1000/3200,url:'https://all.accor.com/a/ja/loyalty-program/partners/shopping/rakuten.html',
   history:[{d:'2026-10',r:1000/3200}],verified:true,
+  limited:'楽天トラベルスーパーSALE期間に合わせた期間限定の交換',
   notices:['✅ 2026年10月、ALL Accor公式の楽天提携ページ・提携規約で確認：楽天ポイント3,200P→ALL Accorリワードポイント1,000pt（31.25%）。最低3,200P、以降1,600P単位。申込は楽天PointClubの交換ページから（https://point.rakuten.co.jp/exchange/accor/register）。','⚠ 楽天ポイント→ALL Accorは常設ではなく期間限定の交換です。交換申請できるのは楽天トラベルスーパーSALE実施月の第1営業日10:00〜SALE終了翌営業日9:59ごろまでで、期間外は申し込めません（時期は楽天PointClub・ALL公式サイトで告知）。','⚠ 2026年10月訂正：旧版は「楽天ポイントからAccor ALLへの直接・間接ルートは存在しない」としていましたが誤りでした。公式に直接交換が可能です。','日本居住の楽天ポイント会員のみ対象。楽天IDとALLアカウントは1対1で紐付け（自分名義のアカウント間のみ）。移行したポイントはALLのステータス昇格・維持には算入されません。','ALLポイントは宿泊時に2,000pt=40€の固定レートで割引に使えるため、楽天ポイントの価値（1P=1円）と比べると交換で目減りしやすい点に注意（為替によって実質価値は変動）。','交換申請は24時間に1回まで。1回・1か月あたりのポイント数の上限は公式に明示されていません（2026年10月時点）。反映まで最大6週間程度。','期間限定ポイントと、他社ポイントから交換した楽天ポイントは交換対象外。']});
 id('rakuten','accor',{rate:0,url:'https://all.accor.com/a/ja/loyalty-program/partners/shopping/rakuten.html',
   history:[{d:'2026-10',r:0}],
