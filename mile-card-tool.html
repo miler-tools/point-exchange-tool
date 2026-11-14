@@ -359,7 +359,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
   <p>19枚比較｜年間200〜300万円決済を想定した日本在住者向けマイル獲得シミュレーター｜<span id="cardDataDate">2026年10月7日</span>更新</p>
 </div>
 
-<div class="disclosure">※本ツールはいずれのカード会社とも広告・提携関係はありません。ただし、カード欄の「モッピー経由で申込」ボタンは筆者のモッピー紹介リンク（アフィリエイトリンク）であり、リンク経由でモッピーに入会すると当ブログに紹介報酬が発生します。カードの比較・順位はこの報酬とは関係なく計算しています。</div>
+<div class="disclosure">※本ツールはいずれのカード会社とも広告・提携関係はありません。</div>
 
 <!-- ── URLシェアボタン ── -->
 <div class="url-share">
@@ -639,7 +639,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
   ④ セゾン系のJAL1.125%はSAISON MILE CLUB（プラチナ・ビジネス5,500円／ゴールド9,900円）加入が前提です。<br>
   ⑤ 三井住友カード ゴールド（NL）は年100万円以上の利用で翌年以降の年会費が永年無料（本ツールでは初年度の5,500円で計算）。<br>
   ⑥ 将来見通しは筆者の予測です。紹介特典・入会キャンペーン情報は確認時点の参考情報で、変更が多いため申込前に必ず公式サイトでご確認ください。<br>
-  ⑦ 本ツールはいずれのカード会社とも提携なし。「モッピー経由で申込」ボタンは筆者のモッピー紹介リンク（アフィリエイトリンク）で、リンク経由でモッピーに入会すると当ブログに紹介報酬が発生します。<br>
+  ⑦ 本ツールはいずれのカード会社とも提携なし。<br>
   ⑧ 無料宿泊特典の対象範囲：マリオットBonvoyアメックスプレミアムは世界中のマリオット系列が対象（シンガポールを含む）。アメックスゴールド・プリファードのフリー・ステイ・ギフトは国内（日本）の対象ホテル限定。<br>
   <br>
   <strong>📌 非掲載カードの判断根拠（KFマイル・JALマイル・ANAマイル）</strong><br>
@@ -1046,7 +1046,7 @@ function cardHTML(c,best,maxMiles){
   const kpiStat2=`<div class="sc"><div class="sl_">目標達成まで</div><div class="sv sky">${goalYrs}年<sub>分</sub></div><div class="ssub">${goalUnit}（決済分のみ）</div></div>`;
 
   const applyBtn=c.psType==='psite'
-    ?`<a class="sbtn2" href="https://pc.moppy.jp/entry/invite.php?invite=gFgmA1d9" target="_blank" rel="nofollow sponsored noopener">🏅 モッピー経由で申込（PR）</a>`
+    ?`<span class="sbtn2" style="cursor:default" title="ポイントサイト経由で申し込むと、公式の通常特典より上乗せされる場合があります">🏅 ポイントサイト経由の申込がおトク</span>`
     :`<span class="sbtn2" style="cursor:default" title="既存会員から紹介URLを受け取って申し込むと、公式の通常特典より上乗せされる場合があります">👥 紹介経由の申込がおトク</span>`;
 
   const isCompared=S.compare.has(c.id);

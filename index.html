@@ -643,18 +643,6 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:2px solid 
         </div>
       </div>
 
-      <!-- CTA①（モッピー未登録者向け・共通） -->
-      <div id="aggCtaHint" style="display:none;background:linear-gradient(135deg,#fff8e1 0%,#ffecb3 100%);border:2px solid #ff8f00;border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:11px;color:#5a3e00;line-height:1.7">
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <div style="flex:1;min-width:180px">
-            💡 <strong style="color:#bf3800">まだモッピー未登録の方へ</strong><br>
-            <span style="font-size:10.5px">紹介コード経由で登録 → 翌々月末までに5,000P獲得で<strong>＋2,000P（約1,000マイル相当）</strong>がプレゼント。スタート時の不足分を縮められます。</span>
-          </div>
-          <a href="https://pc.moppy.jp/entry/invite.php?invite=gFgmA1d9" target="_blank" rel="noopener noreferrer nofollow" onclick="window.open(this.href,&apos;_blank&apos;,&apos;noopener&apos;);return false;" style="display:inline-block;background:#ff6b00;color:#fff;font-size:12px;font-weight:bold;padding:8px 16px;border-radius:6px;text-decoration:none;white-space:nowrap;box-shadow:0 2px 6px rgba(255,107,0,0.3);cursor:pointer">
-            +2,000Pを受け取る →
-          </a>
-        </div>
-      </div>
       <!-- 上限・所要日数の警告バナー（両目標共通） -->
       <div id="aggCapWarning" style="display:none;background:#fff3e0;border:2px solid #ff8f00;border-radius:6px;padding:8px 12px;margin-bottom:10px;font-size:11px;color:#5a3000;line-height:1.8"></div>
 
@@ -726,18 +714,6 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:2px solid 
       <span>「<strong style="color:var(--text2)">斜線</strong>」＝FROMとTOが同一ポイントのため対象外（調査不要）</span>
       <span>数値表示（0.0%〜）＝調査済みで判明した実際の交換レート</span>
       <span>※レートは「1円相当あたり」で統一（げん玉・ポイントインカム・ECナビ・PeX・ファンくるは10P=1円、ポイントタウンは20P=1円、永久不滅ポイントは1P=5円。電卓では入力ポイント数を自動で円換算して計算します）</span>
-  </div>
-
-  <!-- CTA③ -->
-  <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:11px 14px;margin:0 0 10px;color:#5a3e00;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-    <div style="font-size:22px;flex-shrink:0">🎁</div>
-    <div style="flex:1;min-width:200px;line-height:1.5">
-      <span style="font-size:10.5px;color:#7a5500">— このツールを役立てていただけたなら —</span><br>
-      <span style="font-size:12px;color:#5a3e00">作者の紹介コード経由で登録 → 翌々月末までに5,000P獲得で<strong style="color:#bf3800">2,000P（約1,000マイル相当）</strong>プレゼント！マイル計画を加速させましょう</span>
-    </div>
-    <a href="https://pc.moppy.jp/entry/invite.php?invite=gFgmA1d9" target="_blank" rel="noopener noreferrer nofollow" onclick="window.open(this.href,&apos;_blank&apos;,&apos;noopener&apos;);return false;" style="display:inline-block;background:#ff6b00;color:#fff;font-size:12px;font-weight:bold;padding:9px 18px;border-radius:6px;text-decoration:none;white-space:nowrap;box-shadow:0 2px 6px rgba(255,107,0,0.3);cursor:pointer">
-      モッピー無料登録 →
-    </a>
   </div>
 
   <div class="footer-info">
@@ -1511,21 +1487,6 @@ function runCalc() {
   });
 
   resEl.innerHTML = html;
-
-  // CTA②
-  if (results.length > 0) {
-    const url = 'https://pc.moppy.jp/entry/invite.php?invite=gFgmA1d9';
-    const ctaDiv = document.createElement('div');
-    ctaDiv.style.cssText = 'margin-top:8px;padding:9px 12px;background:#fff8e1;border-left:3px solid #ff8f00;border-radius:4px;font-size:10.5px;color:#5a3e00;line-height:1.6';
-    ctaDiv.innerHTML = '💡 <strong>+2,000P特典</strong>: モッピー未登録の方は紹介コード経由で登録し、翌々月末までに5,000P獲得すると<strong style="color:#bf3800">+2,000P（約1,000マイル相当）がプレゼント</strong>されます。 <a href="' + url + '" rel="noopener noreferrer nofollow" style="color:#bf3800;font-weight:bold;text-decoration:underline;margin-left:3px;cursor:pointer">→ 詳細</a>';
-    // 確認ダイアログをスキップして直接新規タブで開く
-    const aTag = ctaDiv.querySelector('a');
-    aTag.addEventListener('click', function(e) {
-      e.preventDefault();
-      window.open(url, '_blank', 'noopener');
-    });
-    resEl.appendChild(ctaDiv);
-  }
 }
 
 // ════════════════════════════════
@@ -2274,8 +2235,6 @@ function runAgg() {
       bdEl.innerHTML = '<div style="color:var(--text3);text-align:center;padding:6px 0">ポイントを入力してください</div>';
       const capWarnElEmpty = document.getElementById('aggCapWarning');
       if (capWarnElEmpty) capWarnElEmpty.style.display = 'none';
-      const aggCtaEmpty = document.getElementById('aggCtaHint');
-      if (aggCtaEmpty) aggCtaEmpty.style.display = 'none';
       return;
     }
     const winCol = dualActive ? `<th style="text-align:center;padding:3px 5px;color:var(--text2)">振分先</th>` : '';
@@ -2353,15 +2312,6 @@ function runAgg() {
     }
     if (lines.length) { capWarnEl.style.display = 'block'; capWarnEl.innerHTML = lines.join('<br>'); }
     else capWarnEl.style.display = 'none';
-  }
-
-  // CTA①表示制御（いずれかの目標が未達成なら表示）
-  const aggCta = document.getElementById('aggCtaHint');
-  if (aggCta) {
-    const hasInput = aggRowData.some(r => r.amount > 0);
-    const notReached1 = goal1 > 0 && total1 < goal1;
-    const notReached2 = dualActive && goal2 > 0 && total2 < goal2;
-    aggCta.style.display = (hasInput && (notReached1 || notReached2)) ? 'block' : 'none';
   }
 }
 
