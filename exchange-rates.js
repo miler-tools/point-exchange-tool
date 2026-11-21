@@ -1250,10 +1250,10 @@ d('hapitas','dmoney',{rate:0,url:'https://sp.hapitas.jp/notifications/view/1895'
   notices:['2025年10月31日（23:59受付分まで）をもってハピタス→ドットマネーギフトコードへの交換は終了しており、現在このルートは利用不可。','代替ルートとして、ハピタス→PeX（等価交換・手数料無料）→Vポイント（500PeX=50円相当の手数料あり）、またはハピタス→デジタルギフト経由での現金化が案内されている。','みずほルート（ANAマイル交換）はハピタス→Vポイント直接交換を使用しており、ドットマネーを経由しないため今回の終了の影響はなし。','✅ 2026年7月時点で確認：終了状態が継続していることを確認。']});
 
 // ─── 現金購入レート ───
-// マリオット公式購入: 1,000pt=$12.50USD(セール以外)。通常時1pt≈1.875円(150円/ドル)→1円で約0.53pt
-d('jpy','marriott',{rate:1000/1875,url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi',
-  history:[{d:'2022-01',r:1000/1875},{d:'2024-01',r:1000/1875},{d:'2026-07',r:1000/1875}],verified:true,
-  notices:['マリオット公式から購入可能。通常1,000pt=$12.50(≈1,875円/150円換算)。2026年7月時点でも$12.50/1,000ptの基本価格は変わらず継続を複数のブログで確認（実際の円建て金額はカード会社適用の為替レートにより変動）。','定期的に30〜50%増量セールがあり、セール時は実質コスト大幅減。','購入は公式サイトで検索→「ポイントを購入」から。']});
+// マリオット公式購入: 1,000pt=$12.50USD(セール以外)。通常時1pt≈2.0円(160円/ドル)→1円で約0.53pt
+d('jpy','marriott',{rate:1000/2000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi',
+  history:[{d:'2022-01',r:1000/2000},{d:'2024-01',r:1000/2000},{d:'2026-07',r:1000/2000}],verified:true,
+  notices:['マリオット公式から購入可能。通常1,000pt=$12.50(≈2,000円/160円換算)。2026年7月時点でも$12.50/1,000ptの基本価格は変わらず継続を複数のブログで確認（実際の円建て金額はカード会社適用の為替レートにより変動）。','定期的に30〜50%増量セールがあり、セール時は実質コスト大幅減。','購入は公式サイトで検索→「ポイントを購入」から。']});
 d('usd','marriott',{rate:80,url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi',
   history:[{d:'2022-01',r:80},{d:'2024-01',r:80},{d:'2026-07',r:80}],verified:true,
   notices:['1,000pt=$12.50USD → 1ドルで約80マリオットpt。2026年7月時点で基本価格に変更なしを確認。','セール時(30〜50%増量)は最大116ptになることも。']});
@@ -1266,10 +1266,10 @@ d('jpy','ana',{rate:0,url:'https://www.google.com/search?q=ANAマイル+購入+�
 d('usd','ana',{rate:0,url:'https://www.google.com/search?q=ANA+miles+buy+official',
   history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],verified:true,
   notices:['ANAマイルの現金購入（バイマイル）制度は公式には存在しません。','マリオットBonvoyポイント経由（下記参照）が唯一の現実的な間接ルートです。']});
-id('jpy','ana',{rate:(1000/1875)*(25000/60000),
-  route:[{from:'日本円',to:'マリオットBonvoy(公式購入)',rate:1000/1875,url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi'},{from:'マリオットBonvoy',to:'ANAマイル',rate:25000/60000,url:'https://www.ana.co.jp/ja/us/amc/exchange-point/marriott-bonvoy/'}],
+id('jpy','ana',{rate:(1000/2000)*(25000/60000),
+  route:[{from:'日本円',to:'マリオットBonvoy(公式購入)',rate:1000/2000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi'},{from:'マリオットBonvoy',to:'ANAマイル',rate:25000/60000,url:'https://www.ana.co.jp/ja/us/amc/exchange-point/marriott-bonvoy/'}],
   url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi',
-  history:[{d:'2022-01',r:(1000/1875)*(25000/60000)},{d:'2026-07',r:(1000/1875)*(25000/60000)}],
+  history:[{d:'2022-01',r:(1000/2000)*(25000/60000)},{d:'2026-07',r:(1000/2000)*(25000/60000)}],
   notices:['マリオットBonvoyポイントを公式購入（1,000pt=$12.50≈1,875円）→ANAマイルへ変換（60,000pt→25,000マイル、5,000pt単位のボーナス込み）した場合の実質レート。','1マイルあたり約4.5円のコスト。特典航空券の価値が1マイル5円以上の路線であれば理論上は割に合う場合もありますが、一般的にはポイントサイト経由での獲得の方がはるかに安価です。','マリオット購入セール（30〜50%増量）時はさらにお得になります。']});
 id('usd','ana',{rate:80*(25000/60000),
   route:[{from:'米ドル',to:'マリオットBonvoy(公式購入)',rate:80,url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi'},{from:'マリオットBonvoy',to:'ANAマイル',rate:25000/60000,url:'https://www.ana.co.jp/ja/us/amc/exchange-point/marriott-bonvoy/'}],
@@ -1282,10 +1282,10 @@ d('jpy','jal',{rate:0,url:'https://www.google.com/search?q=JALマイル+購入+�
 d('usd','jal',{rate:0,url:'https://www.google.com/search?q=JAL+miles+buy+official',
   history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],verified:true,
   notices:['JALマイルの現金購入（バイマイル）制度は公式には存在しません（JMB一般規約第25条で売買禁止）。','マリオットBonvoyポイント経由（下記参照）が唯一の現実的な間接ルートです。']});
-id('jpy','jal',{rate:(1000/1875)*(25000/60000),
-  route:[{from:'日本円',to:'マリオットBonvoy(公式購入)',rate:1000/1875,url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi'},{from:'マリオットBonvoy',to:'JALマイル',rate:25000/60000,url:'https://www.google.com/search?q=JALマイル+マリオットBonvoy+交換+公式'}],
+id('jpy','jal',{rate:(1000/2000)*(25000/60000),
+  route:[{from:'日本円',to:'マリオットBonvoy(公式購入)',rate:1000/2000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi'},{from:'マリオットBonvoy',to:'JALマイル',rate:25000/60000,url:'https://www.google.com/search?q=JALマイル+マリオットBonvoy+交換+公式'}],
   url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi',
-  history:[{d:'2022-01',r:(1000/1875)*(25000/60000)},{d:'2026-07',r:(1000/1875)*(25000/60000)}],
+  history:[{d:'2022-01',r:(1000/2000)*(25000/60000)},{d:'2026-07',r:(1000/2000)*(25000/60000)}],
   notices:['マリオットBonvoyポイントを公式購入（1,000pt=$12.50≈1,875円）→JALマイルへ変換（60,000pt→25,000マイル）した場合の実質レート。1マイルあたり約4.5円。','マリオット購入セール（30〜50%増量）時はさらにお得になります。']});
 id('usd','jal',{rate:80*(25000/60000),
   route:[{from:'米ドル',to:'マリオットBonvoy(公式購入)',rate:80,url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi'},{from:'マリオットBonvoy',to:'JALマイル',rate:25000/60000,url:'https://www.google.com/search?q=JALマイル+マリオットBonvoy+交換+公式'}],
@@ -1300,10 +1300,10 @@ d('jpy','kris',{rate:0,url:'https://www.google.com/search?q=KrisFlyer+マイル+
 d('usd','kris',{rate:0,url:'https://www.google.com/search?q=KrisFlyer+miles+buy+official',
   history:[{d:'2020-01',r:0},{d:'2026-01',r:0}],verified:true,
   notices:['KrisFlyerマイルの現金購入（バイマイル）制度は確認できませんでした。','マリオットBonvoyポイント経由（下記参照）が唯一の現実的な間接ルートです。']});
-id('jpy','kris',{rate:(1000/1875)*(25000/60000),
-  route:[{from:'日本円',to:'マリオットBonvoy(公式購入)',rate:1000/1875,url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi'},{from:'マリオットBonvoy',to:'KrisFlyer',rate:25000/60000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/points-to-miles.mi'}],
+id('jpy','kris',{rate:(1000/2000)*(25000/60000),
+  route:[{from:'日本円',to:'マリオットBonvoy(公式購入)',rate:1000/2000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi'},{from:'マリオットBonvoy',to:'KrisFlyer',rate:25000/60000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/points-to-miles.mi'}],
   url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi',
-  history:[{d:'2022-01',r:(1000/1875)*(25000/60000)},{d:'2026-07',r:(1000/1875)*(25000/60000)}],
+  history:[{d:'2022-01',r:(1000/2000)*(25000/60000)},{d:'2026-07',r:(1000/2000)*(25000/60000)}],
   notices:['マリオットBonvoyポイントを公式購入（1,000pt=$12.50≈1,875円）→KrisFlyerへ変換（60,000pt→25,000マイル）した場合の実質レート。1マイルあたり約4.5円。','マリオット購入セール（30〜50%増量）時はさらにお得になります。']});
 id('usd','kris',{rate:80*(25000/60000),
   route:[{from:'米ドル',to:'マリオットBonvoy(公式購入)',rate:80,url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi'},{from:'マリオットBonvoy',to:'KrisFlyer',rate:25000/60000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/points-to-miles.mi'}],
@@ -1315,40 +1315,40 @@ id('usd','kris',{rate:80*(25000/60000),
 // 公式価格: 1マイル=US$0.035（2,000マイル単位、年間6万マイルまで）。ここに米国連邦消費税7.5%が別途加算される。
 d('usd','delta',{rate:1/(0.035*1.075),url:'https://ja.delta.com/buygftxfer/displayBuyMiles.action',
   history:[{d:'2022-01',r:1/(0.035*1.075)},{d:'2026-07',r:1/(0.035*1.075)}],verified:true,
-  notices:['デルタ航空公式のバイマイル制度で確認: 1マイル=US$0.035（基本価格）+米国連邦消費税7.5%で、実質1マイル≈$0.0376。','2,000マイル単位、1回最大60,000マイルまで購入可能（年間上限も60,000マイル）。','ANA/JALと異なり公式に現金でのマイル購入が可能。ただし1マイル約4.1円（150円/$換算）と、一般的なマイル価値評価（1マイル1.5〜2円程度）よりかなり割高。']});
-d('jpy','delta',{rate:1/(0.035*1.075*150),url:'https://ja.delta.com/buygftxfer/displayBuyMiles.action',
-  history:[{d:'2022-01',r:1/(0.035*1.075*150)},{d:'2026-07',r:1/(0.035*1.075*150)}],verified:true,
-  notices:['同上のUSD建て公式レートを150円/ドルで円換算。1マイル≈4.1円相当（消費税7.5%込み）。','決済通貨は米ドル建てのため、実際の負担額はクレジットカード会社適用の為替レートにより変動します。']});
+  notices:['デルタ航空公式のバイマイル制度で確認: 1マイル=US$0.035（基本価格）+米国連邦消費税7.5%で、実質1マイル≈$0.0376。','2,000マイル単位、1回最大60,000マイルまで購入可能（年間上限も60,000マイル）。','ANA/JALと異なり公式に現金でのマイル購入が可能。ただし1マイル約6.0円（160円/$換算）と、一般的なマイル価値評価（1マイル1.5〜2円程度）よりかなり割高。']});
+d('jpy','delta',{rate:1/(0.035*1.075*160),url:'https://ja.delta.com/buygftxfer/displayBuyMiles.action',
+  history:[{d:'2022-01',r:1/(0.035*1.075*160)},{d:'2026-07',r:1/(0.035*1.075*160)}],verified:true,
+  notices:['同上のUSD建て公式レートを160円/ドルで円換算。1マイル≈6.0円相当（消費税7.5%込み）。','決済通貨は米ドル建てのため、実際の負担額はクレジットカード会社適用の為替レートにより変動します。']});
 id('usd','delta',{rate:80*(20000/60000),
   route:[{from:'米ドル',to:'マリオットBonvoy(公式購入)',rate:80,url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi'},{from:'マリオットBonvoy',to:'デルタSkyMiles',rate:20000/60000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/points-to-miles.mi'}],
   url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi',
   history:[{d:'2022-01',r:80*(20000/60000)},{d:'2026-07',r:80*(20000/60000)}],
   notices:['マリオット経由（1ドルあたり約26.7マイル相当）は、デルタ公式バイマイル（約26.6マイル/ドル、税込）とほぼ同水準です。','デルタはマリオット向けにボーナスなし（60,000pt→20,000マイルの低い方の枠）のため、ANA/JAL/KF(41.7%)より低い33.3%止まりとなり、公式バイマイルとの差がほぼなくなっています。']});
-id('jpy','delta',{rate:(1000/1875)*(20000/60000),
-  route:[{from:'日本円',to:'マリオットBonvoy(公式購入)',rate:1000/1875,url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi'},{from:'マリオットBonvoy',to:'デルタSkyMiles',rate:20000/60000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/points-to-miles.mi'}],
+id('jpy','delta',{rate:(1000/2000)*(20000/60000),
+  route:[{from:'日本円',to:'マリオットBonvoy(公式購入)',rate:1000/2000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi'},{from:'マリオットBonvoy',to:'デルタSkyMiles',rate:20000/60000,url:'https://www.marriott.com/ja/loyalty/redeem/travel/points-to-miles.mi'}],
   url:'https://www.marriott.com/ja/loyalty/redeem/travel/buy-points.mi',
-  history:[{d:'2022-01',r:(1000/1875)*(20000/60000)},{d:'2026-07',r:(1000/1875)*(20000/60000)}],
+  history:[{d:'2022-01',r:(1000/2000)*(20000/60000)},{d:'2026-07',r:(1000/2000)*(20000/60000)}],
   notices:['マリオット経由は、デルタ公式バイマイル（円換算・税込）とほぼ同水準です。どちらを使っても大差ありません。']});
 
-// ヒルトン公式購入: 10,000pts≈$95USD → 1USD≈105pt / 1円≈0.70pt(150円換算)
-d('jpy','hilton',{rate:105/150,url:'https://www.google.com/search?q=ヒルトンHonors+ポイント+購入+日本円+公式',
-  history:[{d:'2022-01',r:1/142.5},{d:'2024-01',r:1/142.5},{d:'2026-07',r:105/150}],verified:false,notices:['ヒルトン公式: 10,000pts≈$95USD(≈14,250円/150円換算)なので、14,250円→10,000ptで0.70pt/円（usdレート105pt/$を150円/$で割った値と一致）。','セール時は最大100%ボーナスあり。','公式サイトで要確認。',
+// ヒルトン公式購入: 10,000pts≈$95USD → 1USD≈105pt / 1円≈0.66pt(160円換算)
+d('jpy','hilton',{rate:105/160,url:'https://www.google.com/search?q=ヒルトンHonors+ポイント+購入+日本円+公式',
+  history:[{d:'2022-01',r:1/142.5},{d:'2024-01',r:1/142.5},{d:'2026-07',r:105/160}],verified:false,notices:['ヒルトン公式: 10,000pts≈$95USD(≈15,200円/160円換算)なので、15,200円→10,000ptで0.66pt/円（usdレート105pt/$を160円/$で割った値と一致）。','セール時は最大100%ボーナスあり。','公式サイトで要確認。',
     '⚠ 国内ポイントサイト（モッピー・ハピタス・楽天ポイント等）からヒルトン・オナーズへの直接交換ルートは存在しません（2026年7月時点、複数のポイ活ブログで横断確認済み）。宿泊実績・提携クレジットカード決済・この公式ポイント購入のいずれかでのみ入手可能です。']});
 d('usd','hilton',{rate:105,url:'https://www.google.com/search?q=ヒルトンHonors+ポイント+購入+USD+公式',
   history:[{d:'2022-01',r:105},{d:'2024-01',r:105},{d:'2026-07',r:105}],verified:false,
   notices:['✅ 2026年7月時点で確認：基本価格に変更がないことを確認。','10,000pts≈$95USD → 1ドル≈105ヒルトンpt。','セール時2倍も。公式サイトで要確認。']});
-// IHG公式購入: 1,000pt=$13.50USD(セール以外)。通常時1pt≈2.025円(150円/ドル)
-d('jpy','ihg',{rate:1000/2025,url:'https://www.google.com/search?q=IHG+One+Rewards+ポイント購入+公式',
-  history:[{d:'2026-07',r:1000/2025}],verified:true,
-  notices:['IHG公式: 1,000pt=$13.50USD(≈2,025円/150円換算、通常価格)。IHG公式・複数の陸マイラーブログで確認。','年数回、最大100%ボーナスのポイント購入セールを実施。セール時は実質1pt≈0.6〜1円程度まで下がる。',
+// IHG公式購入: 1,000pt=$13.50USD(セール以外)。通常時1pt≈2.16円(160円/ドル)
+d('jpy','ihg',{rate:1000/2160,url:'https://www.google.com/search?q=IHG+One+Rewards+ポイント購入+公式',
+  history:[{d:'2026-07',r:1000/2160}],verified:true,
+  notices:['IHG公式: 1,000pt=$13.50USD(≈2,160円/160円換算、通常価格)。IHG公式・複数の陸マイラーブログで確認。','年数回、最大100%ボーナスのポイント購入セールを実施。セール時は実質1pt≈0.6〜1円程度まで下がる。',
     '⚠ 国内ポイントサイト（モッピー・ハピタス・楽天ポイント等）からIHG One Rewardsへの直接交換ルートは存在しません（2026年7月時点で確認）。宿泊実績・提携クレジットカード決済・この公式ポイント購入のいずれかでのみ入手可能です。']});
 d('usd','ihg',{rate:1000/13.5,url:'https://www.google.com/search?q=IHG+One+Rewards+buy+points+official',
   history:[{d:'2026-07',r:1000/13.5}],verified:true,
   notices:['1,000pt=$13.50USD → 1ドル≈74.1 IHGpt(通常価格)。','セール時は最大100%増量。']});
-// World of Hyatt公式購入: 1,000pt=$24.00USD(1pt≈2.4セント、通常価格)。1円換算≈150円/ドルで1pt≈3.6円
-d('jpy','hyatt',{rate:1000/3600,url:'https://www.google.com/search?q=World+of+Hyatt+ポイント購入+公式',
-  history:[{d:'2026-07',r:1000/3600}],verified:true,
-  notices:['ハイアット公式: 1,000pt=$24.00USD(1pt≈2.4セント≈3.6円/150円換算、通常価格)。ハイアット公式FAQ・複数ブログで確認。','年1回あたり55,000ptまで購入可能(1,000pt単位)。20〜40%程度のセール(割引 or 増量)が不定期開催。',
+// World of Hyatt公式購入: 1,000pt=$24.00USD(1pt≈2.4セント、通常価格)。1円換算≈160円/ドルで1pt≈3.84円
+d('jpy','hyatt',{rate:1000/3840,url:'https://www.google.com/search?q=World+of+Hyatt+ポイント購入+公式',
+  history:[{d:'2026-07',r:1000/3840}],verified:true,
+  notices:['ハイアット公式: 1,000pt=$24.00USD(1pt≈2.4セント≈3.84円/160円換算、通常価格)。ハイアット公式FAQ・複数ブログで確認。','年1回あたり55,000ptまで購入可能(1,000pt単位)。20〜40%程度のセール(割引 or 増量)が不定期開催。',
     '⚠ 国内ポイントサイト（モッピー・ハピタス・楽天ポイント等）からWorld of Hyattへの直接交換ルートは存在しません（2026年7月時点で確認）。宿泊実績・提携クレジットカード決済・この公式ポイント購入のいずれかでのみ入手可能です。']});
 d('usd','hyatt',{rate:1000/24,url:'https://www.google.com/search?q=World+of+Hyatt+buy+points+official',
   history:[{d:'2026-07',r:1000/24}],verified:true,

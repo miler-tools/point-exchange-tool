@@ -446,7 +446,7 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:2px solid 
 <body>
 <div class="hdr">
   <h1>✈️ マイル集約電卓・マイル交換レート一覧</h1>
-  <span class="hdr-sub">レート最終更新: <span id="rateUpdated">2026年10月7日</span> ／ 交換前に必ず各社公式サイトをご確認ください</span>
+  <span class="hdr-sub">レート最終更新: <span id="rateUpdated">2026年11月21日</span> ／ 交換前に必ず各社公式サイトをご確認ください</span>
 </div>
 
 <!-- 静的説明テキスト（Googlebot向け・ツール概要を静的HTMLで提供） -->
@@ -648,7 +648,7 @@ tbody td{padding:0;border-right:1px solid var(--border);border-bottom:2px solid 
 
       <!-- 内訳テーブル -->
       <div style="font-size:10px;font-weight:700;color:var(--text2);margin-bottom:5px">換算内訳（有利な方へ優先充当し、100%到達後は残りを自動的にもう一方へ振分）</div>
-      <div id="aggBreakdown" style="background:var(--bg2);border-radius:6px;padding:8px 10px;font-size:11px;color:var(--text2)">
+      <div id="aggBreakdown" style="background:var(--bg2);border-radius:6px;padding:8px 8px;font-size:11px;color:var(--text2);overflow-x:auto;max-width:100%">
         <div style="color:var(--text3);text-align:center;padding:6px 0">ポイントを入力してください</div>
       </div>
       <div style="font-size:9px;color:var(--text3);margin-top:6px;line-height:1.6" id="aggNote">
@@ -2150,23 +2150,62 @@ function computeRowConversion(row, def, meta, capWarnings, capInfos, name){
   return { converted, rowNote, unit, rate };
 }
 
+// マリオット購入→航空マイル移行の必要pt・購入額を計算する
+//  strategy 'A': 6万pt単位（→2.5万マイル）のみ使用（レート重視）
+//  strategy 'B': 現金支出が最小になる組み合わせ（6万pt口＋端数は3pt=1マイル・3,000pt単位）
+//  bonusPct: 購入時の増量ボーナス率（0/30/50）。購入は1,000pt単位。
+function calcMarriottPlan(R, strategy, bonusPct, usdJpy){
+  const lotPt = CASH_BUY.marriottLotPt, lotMi = CASH_BUY.marriottLotMiles;
+  let plan;
+  if (strategy === 'A') {
+    const lots = Math.ceil(R / lotMi);
+    plan = { lots, extraMi: 0, needPt: lots * lotPt, miles: lots * lotMi };
+  } else {
+    let best = null;
+    for (let k = 0; k <= Math.ceil(R / lotMi); k++) {
+      const r = R - lotMi * k;
+      const extraMi = r > 0 ? Math.ceil(r / 1000) * 1000 : 0;
+      const needPt = k * lotPt + extraMi * 3;
+      const miles = k * lotMi + extraMi;
+      if (!best || needPt < best.needPt || (needPt === best.needPt && miles > best.miles)) best = { lots: k, extraMi, needPt, miles };
+    }
+    plan = best;
+  }
+  plan.buyPt = Math.ceil(plan.needPt * 100 / (100 + bonusPct) / 1000) * 1000;
+  plan.usd = plan.buyPt / 1000 * CASH_BUY.marriottUsdPer1000;
+  plan.jpy = Math.round(plan.usd * usdJpy);
+  plan.yenPerMile = plan.miles > 0 ? plan.jpy / plan.miles : 0;
+  return plan;
+}
+
 // 不足分の現金購入参考額（マリオット経由 or 直接購入）を1目標分ぶん組み立てる
 function buildCashHint(targetId, meta, remain, usdJpy){
   let hints = [];
   if (targetId === 'kris' || targetId === 'ana' || targetId === 'jal') {
-    const milePerLot = CASH_BUY.marriottLotMiles, usdPerLot = CASH_BUY.marriottLotPt / 1000 * CASH_BUY.marriottUsdPer1000;
-    const jpyPerLot = Math.round(usdPerLot * usdJpy);
-    const lotsNeeded = Math.ceil(remain / milePerLot);
-    const totalUsd = lotsNeeded * usdPerLot, totalJpy = lotsNeeded * jpyPerLot, totalMilesIfBuy = lotsNeeded * milePerLot;
-    const milePerLot30 = Math.floor(milePerLot * 1.3), milePerLot50 = Math.floor(milePerLot * 1.5);
-    const lots30 = Math.ceil(remain / milePerLot30), lots50 = Math.ceil(remain / milePerLot50);
-    const jpy30 = lots30 * jpyPerLot, jpy50 = lots50 * jpyPerLot;
-    hints.push(`<b>マリオット購入→${meta.label}換算（最低60,000pt単位）</b>`);
-    hints.push(`不足 ${remain.toLocaleString()} ${meta.unit} に対して必要口数と参考額:`);
-    hints.push(`・通常時: ${lotsNeeded}口（${(lotsNeeded*CASH_BUY.marriottLotPt).toLocaleString()}pt）≈ <b>$${totalUsd.toLocaleString()}（${totalJpy.toLocaleString()}円）</b> → +${totalMilesIfBuy.toLocaleString()} ${meta.unit}`);
-    hints.push(`・30%増量セール時: ${lots30}口（${(lots30*CASH_BUY.marriottLotPt).toLocaleString()}pt）≈ <b>$${(lots30*usdPerLot).toLocaleString()}（${jpy30.toLocaleString()}円）</b> → +${(lots30*milePerLot30).toLocaleString()} ${meta.unit}`);
-    hints.push(`・50%増量セール時: ${lots50}口（${(lots50*CASH_BUY.marriottLotPt).toLocaleString()}pt）≈ <b>$${(lots50*usdPerLot).toLocaleString()}（${jpy50.toLocaleString()}円）</b> → +${(lots50*milePerLot50).toLocaleString()} ${meta.unit}`);
-    hints.push(`<span style="font-size:10px;color:#7a5500">※ 1USD=${usdJpy}円換算。増量セールは不定期開催。購入前に公式サイトで要確認。</span>`);
+    const fmt = n => n.toLocaleString();
+    const line = (label, p, bonusPct) => {
+      const got = bonusPct ? `→${fmt(Math.round(p.buyPt * (100 + bonusPct) / 100))}pt` : '';
+      return `・${label}: 購入 ${fmt(p.buyPt)}pt${got} ≈ <b>$${fmt(Math.round(p.usd * 100) / 100)}（${fmt(p.jpy)}円）</b>`
+        + `<br><span style="font-size:10px;margin-left:1em;color:#7a5500">→ +${fmt(p.miles)} ${meta.unit}（約${p.yenPerMile.toFixed(1)}円/${meta.unit}）</span>`;
+    };
+    const mk = strategy => [0, 30, 50].map(b => calcMarriottPlan(remain, strategy, b, usdJpy));
+    const A = mk('A'), B = mk('B');
+    hints.push(`<b>マリオット購入→${meta.label}換算</b>（不足 ${fmt(remain)} ${meta.unit}）`);
+    hints.push(`<b>(A) 換算レート重視</b>（6万pt単位で移行＝6万pt→2.5万マイル）`);
+    hints.push(`<span style="font-size:10px">必要: ${A[0].lots}口 = ${fmt(A[0].needPt)}pt</span>`);
+    hints.push(line('通常時', A[0], 0));
+    hints.push(line('30%増量セール時', A[1], 30));
+    hints.push(line('50%増量セール時', A[2], 50));
+    const b0 = B[0];
+    const bDesc = (b0.lots > 0 ? `6万pt×${b0.lots}口` : '') + (b0.lots > 0 && b0.extraMi > 0 ? ' ＋ ' : '') + (b0.extraMi > 0 ? `3pt=1マイル換算 ${fmt(b0.extraMi * 3)}pt` : '');
+    hints.push(`<b style="display:block;margin-top:4px">(B) 現金支出を抑える重視</b>（高レートにこだわらず必要分だけ購入）`);
+    hints.push(`<span style="font-size:10px">必要: ${bDesc} = ${fmt(b0.needPt)}pt</span>`);
+    hints.push(line('通常時', B[0], 0));
+    hints.push(line('30%増量セール時', B[1], 30));
+    hints.push(line('50%増量セール時', B[2], 50));
+    const diff = A[0].jpy - B[0].jpy;
+    if (diff > 0) hints.push(`<span style="font-size:10px">通常時は(B)の方が約${fmt(diff)}円少なく済みます。</span>`);
+    hints.push(`<span style="font-size:10px;color:#7a5500">※ 1USD=${usdJpy}円換算。購入は1,000pt単位、増量率は購入ptへの上乗せとして計算（必要pt÷(1+増量率)を切上げ）。マリオット→航空マイルは3pt=1マイル（3,000pt単位）、6万pt交換ごとに5,000マイルのボーナス。増量セールは不定期開催で、購入上限・単位は公式サイトで要確認。</span>`);
   } else if (targetId === 'marriott') {
     const usdNeeded = (remain / 1000) * CASH_BUY.marriottUsdPer1000;
     const jpyNeeded = Math.round(usdNeeded * usdJpy);
@@ -2238,8 +2277,9 @@ function runAgg() {
       return;
     }
     const winCol = dualActive ? `<th style="text-align:center;padding:3px 5px;color:var(--text2)">振分先</th>` : '';
-    let html = `<table style="width:100%;border-collapse:collapse;font-size:11px">`;
-    html += `<tr style="border-bottom:1px solid var(--border2)"><th style="text-align:left;padding:3px 5px;color:var(--text2)">ポイント種別</th><th style="text-align:right;padding:3px 5px;color:var(--text2)">保有数<br><span style="font-size:9px;font-weight:400">（分割時は充当数）</span></th>${winCol}<th style="text-align:right;padding:3px 5px;color:var(--text2)">換算率</th><th style="text-align:right;padding:3px 5px;color:var(--text2)">換算値</th></tr>`;
+    const colW = dualActive ? [30,20,13,15,22] : [36,23,16,25];
+    let html = `<table style="width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed"><colgroup>${colW.map(w=>`<col style="width:${w}%">`).join('')}</colgroup>`;
+    html += `<tr style="border-bottom:1px solid var(--border2)"><th style="text-align:left;padding:3px 5px;color:var(--text2)">ポイント種別</th><th style="text-align:right;padding:3px 3px;color:var(--text2);line-height:1.3">保有数<br><span style="font-size:9px;font-weight:400">（分割時は充当数）</span></th>${winCol}<th style="text-align:right;padding:3px 5px;color:var(--text2)">換算率</th><th style="text-align:right;padding:3px 5px;color:var(--text2)">換算値</th></tr>`;
     breakdown.forEach(b => {
       if (!b.amount) return;
       if (!b.parts.length) {
@@ -2265,31 +2305,31 @@ function runAgg() {
         const isSplit = b.parts.length > 1;
         const srcAmt = Math.round(p.srcAmount || 0);
         const amountCell = isSplit
-          ? `<span style="font-weight:700">${srcAmt.toLocaleString()} ${b.unit}</span><br><span style="font-size:9px;color:var(--text3)">充当（保有 ${b.amount.toLocaleString()} 中${b.amount>0?' / '+(srcAmt/b.amount*100).toFixed(1)+'%':''}）</span>`
-          : `${b.amount.toLocaleString()} ${b.unit}`;
+          ? `<span style="font-weight:700">${srcAmt.toLocaleString()}</span> <span style="font-size:9px">${b.unit}</span><br><span style="font-size:9px;color:var(--text3)">充当（保有 ${b.amount.toLocaleString()} 中${b.amount>0?' / '+(srcAmt/b.amount*100).toFixed(1)+'%':''}）</span>`
+          : `${b.amount.toLocaleString()} <span style="font-size:9px">${b.unit}</span>`;
         const rowBorder = (isSplit && pi < b.parts.length - 1) ? '1px dashed var(--border)' : '1px solid var(--border)';
         const winLabel = dualActive ? (p.target === 0 ? '—' : (p.target === 2 ? '②' + meta2.label : '①' + meta1.label)) : null;
         const winCell = dualActive ? `<td style="padding:4px 5px;text-align:center;font-size:9.5px;font-weight:700;color:${p.meta.color}">${winLabel}</td>` : '';
         html += `<tr style="border-bottom:${rowBorder}">
-          <td style="padding:4px 5px;color:var(--text)">${nameCell}</td>
-          <td style="padding:4px 5px;text-align:right;color:var(--text);white-space:nowrap">${amountCell}</td>
+          <td style="padding:4px 4px 4px 2px;color:var(--text);overflow-wrap:anywhere;line-height:1.35">${nameCell}</td>
+          <td style="padding:4px 3px;text-align:right;color:var(--text);overflow-wrap:anywhere;line-height:1.35">${amountCell}</td>
           ${winCell}
-          <td style="padding:4px 5px;text-align:right;color:var(--text)">${rateStr}</td>
-          <td style="padding:4px 5px;text-align:right;font-weight:700;color:${p.converted>0?p.meta.color:'#aaa'}">${p.converted > 0 ? p.converted.toLocaleString() : '—'}</td>
+          <td style="padding:4px 3px;text-align:right;color:var(--text);overflow-wrap:anywhere;line-height:1.3">${rateStr}</td>
+          <td style="padding:4px 2px 4px 3px;text-align:right;font-weight:700;overflow-wrap:anywhere;color:${p.converted>0?p.meta.color:'#aaa'}">${p.converted > 0 ? p.converted.toLocaleString() : '—'}</td>
         </tr>`;
       });
     });
     const colspanBase = dualActive ? 4 : 3;
-    html += `<tr style="background:${meta1.bg}"><td colspan="${colspanBase}" style="padding:5px 5px;font-weight:700;color:var(--text)">目標①合計（${meta1.label}）</td><td style="padding:5px 5px;text-align:right;font-weight:800;font-size:13px;color:${meta1.color}">${total1.toLocaleString()} ${meta1.unit}</td></tr>`;
+    html += `<tr style="background:${meta1.bg}"><td colspan="${colspanBase}" style="padding:5px 5px;font-weight:700;color:var(--text)">目標①合計（${meta1.label}）</td><td style="padding:5px 2px 5px 3px;text-align:right;font-weight:800;font-size:13px;color:${meta1.color};overflow-wrap:anywhere;line-height:1.3">${total1.toLocaleString()} ${meta1.unit}</td></tr>`;
     if (goal1 > 0) {
-      if (total1 < goal1) html += `<tr style="background:#fce4ec"><td colspan="${colspanBase}" style="padding:5px 5px;font-weight:700;color:#7a1a1a">目標①まであと</td><td style="padding:5px 5px;text-align:right;font-weight:800;font-size:13px;color:#c62828">${(goal1 - total1).toLocaleString()} ${meta1.unit}</td></tr>`;
-      else html += `<tr style="background:#e8f5e9"><td colspan="${colspanBase}" style="padding:5px 5px;font-weight:700;color:#1a5c1a">目標①達成！余剰</td><td style="padding:5px 5px;text-align:right;font-weight:800;font-size:13px;color:#1a5c1a">${(total1 - goal1).toLocaleString()} ${meta1.unit}</td></tr>`;
+      if (total1 < goal1) html += `<tr style="background:#fce4ec"><td colspan="${colspanBase}" style="padding:5px 5px;font-weight:700;color:#7a1a1a">目標①まであと</td><td style="padding:5px 2px 5px 3px;text-align:right;font-weight:800;font-size:13px;color:#c62828;overflow-wrap:anywhere;line-height:1.3">${(goal1 - total1).toLocaleString()} ${meta1.unit}</td></tr>`;
+      else html += `<tr style="background:#e8f5e9"><td colspan="${colspanBase}" style="padding:5px 5px;font-weight:700;color:#1a5c1a">目標①達成！余剰</td><td style="padding:5px 2px 5px 3px;text-align:right;font-weight:800;font-size:13px;color:#1a5c1a;overflow-wrap:anywhere;line-height:1.3">${(total1 - goal1).toLocaleString()} ${meta1.unit}</td></tr>`;
     }
     if (dualActive) {
-      html += `<tr style="background:${meta2.bg}"><td colspan="${colspanBase}" style="padding:5px 5px;font-weight:700;color:var(--text)">目標②合計（${meta2.label}）</td><td style="padding:5px 5px;text-align:right;font-weight:800;font-size:13px;color:${meta2.color}">${total2.toLocaleString()} ${meta2.unit}</td></tr>`;
+      html += `<tr style="background:${meta2.bg}"><td colspan="${colspanBase}" style="padding:5px 5px;font-weight:700;color:var(--text)">目標②合計（${meta2.label}）</td><td style="padding:5px 2px 5px 3px;text-align:right;font-weight:800;font-size:13px;color:${meta2.color};overflow-wrap:anywhere;line-height:1.3">${total2.toLocaleString()} ${meta2.unit}</td></tr>`;
       if (goal2 > 0) {
-        if (total2 < goal2) html += `<tr style="background:#fce4ec"><td colspan="${colspanBase}" style="padding:5px 5px;font-weight:700;color:#7a1a1a">目標②まであと</td><td style="padding:5px 5px;text-align:right;font-weight:800;font-size:13px;color:#c62828">${(goal2 - total2).toLocaleString()} ${meta2.unit}</td></tr>`;
-        else html += `<tr style="background:#e8f5e9"><td colspan="${colspanBase}" style="padding:5px 5px;font-weight:700;color:#1a5c1a">目標②達成！余剰</td><td style="padding:5px 5px;text-align:right;font-weight:800;font-size:13px;color:#1a5c1a">${(total2 - goal2).toLocaleString()} ${meta2.unit}</td></tr>`;
+        if (total2 < goal2) html += `<tr style="background:#fce4ec"><td colspan="${colspanBase}" style="padding:5px 5px;font-weight:700;color:#7a1a1a">目標②まであと</td><td style="padding:5px 2px 5px 3px;text-align:right;font-weight:800;font-size:13px;color:#c62828;overflow-wrap:anywhere;line-height:1.3">${(goal2 - total2).toLocaleString()} ${meta2.unit}</td></tr>`;
+        else html += `<tr style="background:#e8f5e9"><td colspan="${colspanBase}" style="padding:5px 5px;font-weight:700;color:#1a5c1a">目標②達成！余剰</td><td style="padding:5px 2px 5px 3px;text-align:right;font-weight:800;font-size:13px;color:#1a5c1a;overflow-wrap:anywhere;line-height:1.3">${(total2 - goal2).toLocaleString()} ${meta2.unit}</td></tr>`;
       }
     }
     html += '</table>';
